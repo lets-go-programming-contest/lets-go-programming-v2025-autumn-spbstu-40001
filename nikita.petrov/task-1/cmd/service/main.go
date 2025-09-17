@@ -5,8 +5,7 @@ import (
 )
 
 func main() {
-	var firstOp int
-	var secondOp int
+	var firstOp, secondOp int
 	var operation string
 
 	_, err := fmt.Scan(&firstOp)
@@ -25,26 +24,21 @@ func main() {
 		return
 	}
 
-	var result int
-
 	switch operation {
 	case "+":
-		result = firstOp + secondOp
+		fmt.Println(firstOp + secondOp)
 	case "-":
-		result = firstOp - secondOp
+		fmt.Println(firstOp - secondOp)
 	case "*":
-		result = firstOp * secondOp
+		fmt.Println(firstOp * secondOp)
 	case "/":
-		if secondOp != 0 {
-			result = firstOp / secondOp
-		} else {
+		if secondOp == 0 {
 			fmt.Println("Division by zero")
 			return
 		}
+		fmt.Println(firstOp / secondOp)
 	default:
 		fmt.Println("Invalid operation")
 		return
 	}
-
-	fmt.Println(result)
 }
