@@ -5,8 +5,6 @@ import (
 )
 
 func main() {
-	runtime.version()
-
 	var first_op int
 	var second_op int
 	var operation string
