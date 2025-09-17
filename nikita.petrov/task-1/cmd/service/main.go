@@ -19,7 +19,11 @@ func main() {
 		fmt.Println("Invalid second operand")
 		return
 	}
-	fmt.Scan(&operation)
+	_, err = fmt.Scan(&operation)
+	if err != nil {
+		fmt.Println("Operation input error")
+		return
+	}
 
 	var result int
 
