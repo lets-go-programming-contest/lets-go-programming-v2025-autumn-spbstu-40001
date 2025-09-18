@@ -33,7 +33,7 @@ func main() {
 	case "-":
 		fmt.Println(a - b)
 	case "*":
-		fmt.Println(a + b)
+		fmt.Println(a * b)
 	case "/":
 		switch b {
 		case 0:
