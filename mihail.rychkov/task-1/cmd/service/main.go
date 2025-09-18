@@ -2,6 +2,23 @@ package main;
 
 import "fmt";
 
+func evaluate(lhs int, operation string, rhs int) (int, error) {
+	switch operation {
+	case "+":
+		return lhs + rhs, nil;
+	case "-":
+		return lhs - rhs, nil;
+	case "*":
+		return lhs * rhs, nil;
+	case "/":
+		if rhs == 0 {
+			return 0, fmt.Errorf("Division by zero");
+		}
+		return lhs / rhs, nil;
+	}
+	return 0, fmt.Errorf("Invalid operation");
+}
+
 func main() {
 	var (
 		lhs, rhs int = 0, 0;
@@ -20,4 +37,11 @@ func main() {
 		fmt.Println("Invalid operation");
 		return;
 	}
+
+	res, err := evaluate(lhs, operation, rhs);
+	if err != nil {
+		fmt.Println(err);
+		return;
+	}
+	fmt.Println(res);
 }
