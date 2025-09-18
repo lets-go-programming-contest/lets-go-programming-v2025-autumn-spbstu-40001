@@ -3,8 +3,10 @@ package main
 import "fmt"
 
 func main() {
-	var firstOp, secondOp int
-	var operation string
+	var (
+		firstOp, secondOp int
+		operation         string
+	)
 
 	_, err := fmt.Scan(&firstOp)
 	if err != nil {
