@@ -33,11 +33,12 @@ func main() {
 		fmt.Println("Invalid second operand")
 	case 2:
 		fmt.Println("Operation input error")
+	default:
+		result, err := calc(lhs, rhs, operation)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(result)
 	}
-	result, err := calc(lhs, rhs, operation)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println(result)
 }
