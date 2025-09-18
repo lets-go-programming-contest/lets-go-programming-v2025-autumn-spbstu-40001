@@ -12,7 +12,7 @@ func calc(a, b int, operation string) (int, error) {
 		return a * b, nil
 	case "/":
 		if b == 0 {
-			return 0, fmt.Errorf("Devision by zero")
+			return 0, fmt.Errorf("Division by zero")
 		}
 		return a / b, nil
 	default:
