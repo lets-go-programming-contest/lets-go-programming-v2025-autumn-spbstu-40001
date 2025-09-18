@@ -12,10 +12,14 @@ func main() {
 		fmt.Println("Invalid first operand")
 		return
 	}
-	fmt.Scan(&oper)
 	_, err2 := fmt.Scan(&op2)
 	if err2 != nil {
 		fmt.Println("Invalid second operand")
+		return
+	}
+	_, err3 := fmt.Scan(&oper)
+	if err3 != nil {
+		fmt.Println("Invalid input operation")
 		return
 	}
 
