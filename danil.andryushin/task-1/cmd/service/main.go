@@ -22,8 +22,8 @@ func calc(a, b int, operation string) (int, error) {
 
 func main() {
 	var (
-		lhs, rhs  int    = 0, 0
-		operation string = ""
+		lhs, rhs  int
+		operation string
 	)
 	scanned, _ := fmt.Scan(&lhs, &rhs, &operation)
 	switch scanned {
