@@ -35,7 +35,7 @@ func main() {
 
 	scanned, err := fmt.Scan(&lhs, &rhs, &operation)
 	switch {
-	case err != nil:
+	case err == nil:
 	case scanned == 0:
 		fmt.Println("Invalid first operand")
 		return
