@@ -4,8 +4,8 @@ import "fmt"
 import "errors"
 
 var (
-	ZeroDivisionError = errors.New("Division by zero")
-	InvalidOperationError = errors.New("Invalid operation")
+	ErrZeroDivision = errors.New("Division by zero")
+	ErrInvalidOperation = errors.New("Invalid operation")
 )
 
 func evaluate(lhs int, operation string, rhs int) (int, error) {
