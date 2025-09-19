@@ -1,13 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 )
 
 var (
-	ErrZeroDivision error = errors.New("Division by zero")
-	ErrInvalidOperation error = errors.New("Invalid operation")
+	ErrZeroDivision     = errors.New("Division by zero")
+	ErrInvalidOperation = errors.New("Invalid operation")
 )
 
 func evaluate(lhs int, operation string, rhs int) (int, error) {
@@ -29,7 +29,7 @@ func evaluate(lhs int, operation string, rhs int) (int, error) {
 
 func main() {
 	var (
-		lhs, rhs int
+		lhs, rhs  int
 		operation string
 	)
 
