@@ -6,9 +6,23 @@ func main() {
  var firstOperand, secondOperand int
  var operation string
 
- fmt.Scan(&firstOperand)
- fmt.Scan(&secondOperand)
- fmt.Scan(&operation)
+ _, err := fmt.Scan(&firstOperand)
+ if err != nil {
+  fmt.Println("Invalid first operand")
+  return
+ }
+
+ _, err = fmt.Scan(&secondOperand)
+ if err != nil {
+  fmt.Println("Invalid second operand")
+  return
+ }
+
+ _, err = fmt.Scan(&operation)
+ if err != nil {
+  fmt.Println("Invalid operation")
+  return
+ }
 
  if operation == "/" && secondOperand == 0 {
   fmt.Println("Division by zero")
