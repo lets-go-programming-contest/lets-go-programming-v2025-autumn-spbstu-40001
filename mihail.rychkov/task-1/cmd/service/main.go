@@ -1,11 +1,13 @@
 package main
 
-import "fmt"
-import "errors"
+import (
+	"fmt"
+	"errors"
+)
 
 var (
-	ErrZeroDivision = errors.New("Division by zero")
-	ErrInvalidOperation = errors.New("Invalid operation")
+	ErrZeroDivision error = errors.New("Division by zero")
+	ErrInvalidOperation error = errors.New("Invalid operation")
 )
 
 func evaluate(lhs int, operation string, rhs int) (int, error) {
