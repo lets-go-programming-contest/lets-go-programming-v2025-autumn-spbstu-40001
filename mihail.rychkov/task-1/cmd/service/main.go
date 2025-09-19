@@ -18,11 +18,11 @@ func evaluate(lhs int, operation string, rhs int) (int, error) {
 		return lhs * rhs, nil
 	case "/":
 		if rhs == 0 {
-			return 0, ZeroDivisionError
+			return 0, ErrZeroDivision
 		}
 		return lhs / rhs, nil
 	}
-	return 0, InvalidOperationError
+	return 0, ErrInvalidOperation
 }
 
 func main() {
