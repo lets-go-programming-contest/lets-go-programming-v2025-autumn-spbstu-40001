@@ -33,15 +33,16 @@ func main() {
 		operation string
 	)
 
-	scanned, _ := fmt.Scan(&lhs, &rhs, &operation)
-	switch scanned {
-	case 0:
+	scanned, err := fmt.Scan(&lhs, &rhs, &operation)
+	switch {
+	case err != nil:
+	case scanned == 0:
 		fmt.Println("Invalid first operand")
 		return
-	case 1:
+	case scanned == 1:
 		fmt.Println("Invalid second operand")
 		return
-	case 2:
+	case scanned == 2:
 		fmt.Println("Invalid operation")
 		return
 	}
