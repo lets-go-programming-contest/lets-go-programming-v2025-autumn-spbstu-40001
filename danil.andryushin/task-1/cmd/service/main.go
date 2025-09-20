@@ -43,6 +43,7 @@ func main() {
 		case 2:
 			fmt.Println("Operation input error")
 		}
+		return
 	}
 	result, err := calc(lhs, rhs, operation)
 	if err != nil {
