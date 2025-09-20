@@ -5,8 +5,10 @@ import (
 )
 
 func main() {
-	var op1, op2 float32
-	var oper string
+	var (
+		op1, op2  int
+		operation string
+	)
 	_, err1 := fmt.Scan(&op1)
 	if err1 != nil {
 		fmt.Println("Invalid first operand")
@@ -17,30 +19,27 @@ func main() {
 		fmt.Println("Invalid second operand")
 		return
 	}
-	_, err3 := fmt.Scan(&oper)
+	_, err3 := fmt.Scan(&operation)
 	if err3 != nil {
 		fmt.Println("Invalid input operation")
 		return
 	}
 
-	var result float32
-	switch oper {
+	switch operation {
 	case "+":
-		result = op1 + op2
+		fmt.Println(op1 + op2)
 	case "-":
-		result = op1 - op2
+		fmt.Println(op1 - op2)
 	case "*":
-		result = op1 * op2
+		fmt.Println(op1 * op2)
 	case "/":
-		if op2 != 0 {
-			result = op1 / op2
-		} else {
+		if op2 == 0 {
 			fmt.Println("Division by zero")
 			return
 		}
+		fmt.Println(op1 / op2)
 	default:
 		fmt.Println("Invalid operation")
 		return
 	}
-	fmt.Println(result)
 }
