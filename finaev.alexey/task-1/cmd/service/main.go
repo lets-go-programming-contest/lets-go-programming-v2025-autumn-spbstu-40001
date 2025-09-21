@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func calculator(a float64, b float64, op string) (float64, error) {
+func calculator(a int, b int, op string) (int, error) {
 	switch op {
 	case "+":
 		return (a + b), nil
@@ -24,9 +24,10 @@ func calculator(a float64, b float64, op string) (float64, error) {
 }
 
 func main() {
-	var a float64 = 0.0
-	var b float64 = 0.0
-	var op string
+	var (
+		a, b int
+		op   string
+	)
 	_, err1 := fmt.Scan(&a)
 	if err1 != nil {
 		fmt.Println("Invalid first operand")
