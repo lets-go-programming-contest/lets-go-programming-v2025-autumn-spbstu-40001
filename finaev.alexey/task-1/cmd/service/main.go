@@ -26,7 +26,7 @@ func calculator(a int, b int, op string) (int, error) {
 func main() {
 	var (
 		a, b int
-		oper string
+		op   string
 	)
 	_, err1 := fmt.Scan(&a)
 	if err1 != nil {
@@ -38,8 +38,8 @@ func main() {
 		fmt.Println("Invalid second operand")
 		return
 	}
-	fmt.Scan(&oper)
-	res, err := calculator(a, b, oper)
+	fmt.Scan(&op)
+	res, err := calculator(a, b, op)
 	if err == nil {
 		fmt.Println(res)
 		return
