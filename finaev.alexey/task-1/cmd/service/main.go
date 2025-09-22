@@ -1,27 +1,8 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 )
-
-func calculator(a int, b int, op string) (int, error) {
-	switch op {
-	case "+":
-		return (a + b), nil
-	case "-":
-		return (a - b), nil
-	case "*":
-		return (a * b), nil
-	case "/":
-		if b != 0 {
-			return (a / b), nil
-		}
-		return 0, errors.New("Division by zero")
-	default:
-		return 0, errors.New("Invalid operation")
-	}
-}
 
 func main() {
 	var (
@@ -39,10 +20,20 @@ func main() {
 		return
 	}
 	fmt.Scan(&op)
-	res, err := calculator(a, b, op)
-	if err == nil {
-		fmt.Println(res)
-		return
+	switch op {
+	case "+":
+		fmt.Println(a + b)
+	case "-":
+		fmt.Println(a - b)
+	case "*":
+		fmt.Println(a * b)
+	case "/":
+		if b != 0 {
+			fmt.Println(a / b)
+			return
+		}
+		fmt.Println("Division by zero")
+	default:
+		fmt.Println("Invalid operation")
 	}
-	fmt.Println(err)
 }
