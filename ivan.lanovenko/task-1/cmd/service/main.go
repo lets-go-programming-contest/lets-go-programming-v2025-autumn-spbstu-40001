@@ -1,15 +1,12 @@
 package main
 
-import (
-	"fmt"
-
-	"github.com/Tuc0Sa1amanka/task-1/pkg/calculator"
-)
+import "fmt"
 
 func main() {
-	var a int
-	var b int
-	var c rune
+	var (
+		a, b int
+		c    string
+	)
 
 	if _, err := fmt.Scanln(&a); err != nil {
 		fmt.Println("Invalid first operand")
@@ -21,25 +18,27 @@ func main() {
 		return
 	}
 
-	_, err := fmt.Scanf("%c", &c)
-	if err != nil || !calculator.IsOperator(c) {
-		fmt.Println("Invalid operation")
+	_, err := fmt.Scanln(&c)
+	if err != nil {
+		fmt.Println("Invalid input")
 		return
 	}
 
 	switch c {
-	case '+':
-		fmt.Println(calculator.Sum(a, b))
-	case '-':
-		fmt.Println(calculator.Dif(a, b))
-	case '*':
-		fmt.Println(calculator.Mul(a, b))
-	case '/':
-		res, err := calculator.Div(a, b)
-		if err != nil {
-			fmt.Println(err)
+	case "+":
+		fmt.Println(a + b)
+	case "-":
+		fmt.Println(a - b)
+	case "*":
+		fmt.Println(a * b)
+	case "/":
+		if b == 0 {
+			fmt.Println("Division by zero")
 			return
 		}
-		fmt.Println(res)
+		fmt.Println(a / b)
+	default:
+		fmt.Println("Invalid operation")
+		return
 	}
 }
