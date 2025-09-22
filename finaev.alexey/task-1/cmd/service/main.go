@@ -17,9 +17,9 @@ func calculator(a int, b int, op string) (int, error) {
 		if b != 0 {
 			return (a / b), nil
 		}
-		return 0, errors.New("division by zero")
+		return 0, errors.New("Division by zero")
 	default:
-		return 0, errors.New("invalid operation")
+		return 0, errors.New("Invalid operation")
 	}
 }
 
