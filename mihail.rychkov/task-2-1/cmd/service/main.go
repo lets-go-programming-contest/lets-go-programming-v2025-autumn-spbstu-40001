@@ -24,7 +24,7 @@ func main() {
 			return
 		}
 
-		var minTemperature, maxTemperature = 15, 30
+		minTemperature, maxTemperature := 15, 30
 
 		for range nEmployees {
 			var (
