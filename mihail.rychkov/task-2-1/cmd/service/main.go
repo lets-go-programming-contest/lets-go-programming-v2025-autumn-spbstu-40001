@@ -9,21 +9,24 @@ func main() {
 	if err != nil {
 		fmt.Println("Failed to read departments count")
 		fmt.Println(err)
+
 		return
 	}
 
-	for _ = range nDepartments {
+	for range nDepartments {
 		var nEmployees int
 
 		_, err = fmt.Scan(&nEmployees)
 		if err != nil {
 			fmt.Println("Failed to read employees count")
 			fmt.Println(err)
+
 			return
 		}
 
-		var minTemperature, maxTemperature int = 15, 30
-		for _ = range nEmployees {
+		var minTemperature, maxTemperature = 15, 30
+
+		for range nEmployees {
 			var (
 				sign        string
 				temperature int
@@ -33,6 +36,7 @@ func main() {
 			if err != nil {
 				fmt.Println("Failed to read employee's wish")
 				fmt.Println(err)
+
 				return
 			}
 
@@ -43,6 +47,7 @@ func main() {
 				maxTemperature = min(maxTemperature, temperature)
 			default:
 				fmt.Println("Unknown comparison sign")
+
 				return
 			}
 
