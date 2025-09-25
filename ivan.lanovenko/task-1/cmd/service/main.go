@@ -4,8 +4,8 @@ import "fmt"
 
 func main() {
 	var (
-		a, b int
-		c    string
+		a, b      int
+		operation string
 	)
 
 	if _, err := fmt.Scanln(&a); err != nil {
@@ -18,13 +18,13 @@ func main() {
 		return
 	}
 
-	_, err := fmt.Scanln(&c)
+	_, err := fmt.Scanln(&operation)
 	if err != nil {
 		fmt.Println("Invalid input")
 		return
 	}
 
-	switch c {
+	switch operation {
 	case "+":
 		fmt.Println(a + b)
 	case "-":
@@ -39,6 +39,5 @@ func main() {
 		fmt.Println(a / b)
 	default:
 		fmt.Println("Invalid operation")
-		return
 	}
 }
