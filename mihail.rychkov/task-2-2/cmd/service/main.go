@@ -66,9 +66,9 @@ func main() {
 		heap.Push(dishesQueue, dishValue)
 	}
 
-	var dishId int
+	var dishID int
 
-	_, err = fmt.Scan(&dishId)
+	_, err = fmt.Scan(&dishID)
 	if err != nil {
 		fmt.Println("Failed to read priority number")
 		fmt.Println(err)
@@ -76,13 +76,13 @@ func main() {
 		return
 	}
 
-	if (dishId > dishesQueue.Len()) || (dishId <= 0) {
+	if (dishID > dishesQueue.Len()) || (dishID <= 0) {
 		fmt.Println("Entered nonexistent priority number")
 
 		return
 	}
 
-	for range dishId - 1 {
+	for range dishID - 1 {
 		heap.Pop(dishesQueue)
 	}
 
