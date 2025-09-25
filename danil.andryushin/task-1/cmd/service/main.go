@@ -41,7 +41,7 @@ func main() {
 		case 1:
 			fmt.Println("Invalid second operand")
 		case 2:
-			fmt.Println("Operation input error")
+			fmt.Println("Invalid operation")
 		}
 		return
 	}
