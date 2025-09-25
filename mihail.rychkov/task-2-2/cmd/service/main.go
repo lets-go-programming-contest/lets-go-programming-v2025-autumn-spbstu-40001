@@ -9,7 +9,7 @@ func (slice IntHeap) Len() int {
 	return len(slice);
 }
 func (slice IntHeap) Less(i, j int) bool {
-	return slice[i] < slice[j];
+	return slice[i] > slice[j];
 }
 func (slice IntHeap) Swap(i, j int) {
 	slice[i], slice[j] = slice[j], slice[i];
@@ -27,11 +27,42 @@ func (slice IntHeap) Top() int {
 }
 
 func main() {
-	slice := &IntHeap{2, 1, 5};
-	heap.Init(slice);
-	heap.Push(slice, 3);
-	fmt.Printf("Minimum = %d\n", slice.Top());
-	for slice.Len() > 0 {
-		fmt.Println(heap.Pop(slice));
+	var nDishes int;
+	_, err := fmt.Scan(&nDishes);
+	if err != nil {
+		fmt.Println("Failed to read dishes count");
+		fmt.Println(err);
+		return;
 	}
+
+	dishesQueue := &IntHeap{};
+	for range(nDishes) {
+		var dishValue int;
+
+		_, err = fmt.Scan(&dishValue);
+		if err != nil {
+			fmt.Println("Failed to read dish value");
+			fmt.Println(err);
+			return;
+		}
+
+		heap.Push(dishesQueue, dishValue);
+	}
+
+	var dishId int;
+	_, err = fmt.Scan(&dishId);
+	if err != nil {
+		fmt.Println("Failed to read priority number");
+		fmt.Println(err);
+		return;
+	}
+	if (dishId > dishesQueue.Len()) || (dishId <= 0) {
+		fmt.Println("Entered nonexistent priority number");
+		return;
+	}
+
+	for range(dishId - 1) {
+		heap.Pop(dishesQueue);
+	}
+	fmt.Println(dishesQueue.Top());
 }
