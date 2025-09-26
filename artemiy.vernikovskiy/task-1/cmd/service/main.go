@@ -5,8 +5,7 @@ import (
 )
 
 func main() {
-	var a int
-	var b int
+	var a, b int
 
 	_, err := fmt.Scan(&a)
 	if err != nil {
@@ -35,10 +34,9 @@ func main() {
 	case "*":
 		fmt.Println(a * b)
 	case "/":
-		switch b {
-		case 0:
+		if (b == 0) {
 			fmt.Println("Division by zero")
-		default:
+		} else {
 			fmt.Println(a / b)
 		}
 	default:
