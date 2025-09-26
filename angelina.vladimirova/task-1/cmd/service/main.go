@@ -11,7 +11,6 @@ import (
 func main() {
 	r := bufio.NewReader(os.Stdin)
 
-	fmt.Print("Enter first operand: ")
 	aStr, _ := r.ReadString('\n')
 	aStr = strings.TrimSpace(aStr)
 
@@ -21,7 +20,6 @@ func main() {
 		return
 	}
 
-	fmt.Print("Enter second operand: ")
 	bStr, _ := r.ReadString('\n')
 	bStr = strings.TrimSpace(bStr)
 
@@ -31,7 +29,6 @@ func main() {
 		return
 	}
 
-	fmt.Print("Enter operation (+, -, *, /): ")
 	op, _ := r.ReadString('\n')
 	op = strings.TrimSpace(op)
 
