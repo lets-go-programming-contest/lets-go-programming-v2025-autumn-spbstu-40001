@@ -68,6 +68,7 @@ func changeStatus(someTM *TempManager, condition string, newTemp int) bool {
 		} else {
 			someTM.maxTemp = newTemp
 			someTM.broken = true
+
 			return false
 		}
 	case ">=":
