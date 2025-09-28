@@ -19,9 +19,9 @@ func main() {
 			condition             string
 		)
 
-		airConditioner := TempManager{30, 15, 0}
-
 		fmt.Scan(&staffNum)
+
+		airConditioner := TempManager{30, 15, 0}
 
 		for j := 0; j < staffNum; j++ {
 			fmt.Scan(&condition)
