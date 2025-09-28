@@ -12,9 +12,9 @@ func main() {
 	var deptNum int
 
 	_, err := fmt.Scan(&deptNum)
-
 	if err != nil {
 		fmt.Println("Input error")
+
 		return
 	}
 
@@ -25,9 +25,9 @@ func main() {
 		)
 
 		_, err := fmt.Scan(&staffNum)
-
 		if err != nil {
 			fmt.Println("Input error")
+
 			return
 		}
 
@@ -35,16 +35,16 @@ func main() {
 
 		for range staffNum {
 			_, err = fmt.Scan(&condition)
-
 			if err != nil {
 				fmt.Println("Input error")
+
 				return
 			}
 
 			_, err = fmt.Scan(&wishfulTemp)
-
 			if err != nil {
 				fmt.Println("Input error")
+
 				return
 			}
 
@@ -79,9 +79,6 @@ func changeStatus(someTM *TempManager, condition string, newTemp int) bool {
 
 			return false
 		}
-	default:
-
-		return false
 	}
 	someTM.optTemp = someTM.minTemp
 
