@@ -6,6 +6,7 @@ type TempManager struct {
 	maxTemp int
 	minTemp int
 	optTemp int
+	broken  bool
 }
 
 func main() {
@@ -31,7 +32,7 @@ func main() {
 			return
 		}
 
-		airConditioner := TempManager{30, 15, 15}
+		airConditioner := TempManager{30, 15, 15, false}
 
 		for range staffNum {
 			_, err = fmt.Scan(&condition)
@@ -48,7 +49,7 @@ func main() {
 				return
 			}
 
-			if changeStatus(&airConditioner, condition, wishfulTemp) {
+			if !airConditioner.broken && changeStatus(&airConditioner, condition, wishfulTemp) {
 				fmt.Println(airConditioner.optTemp)
 			} else {
 				fmt.Println(-1)
@@ -66,7 +67,7 @@ func changeStatus(someTM *TempManager, condition string, newTemp int) bool {
 			}
 		} else {
 			someTM.maxTemp = newTemp
-
+			someTM.broken = true
 			return false
 		}
 	case ">=":
@@ -77,6 +78,7 @@ func changeStatus(someTM *TempManager, condition string, newTemp int) bool {
 			}
 		} else {
 			someTM.minTemp = newTemp
+			someTM.broken = true
 
 			return false
 		}
