@@ -1,8 +1,11 @@
 package main
 
-import "os"
-import "fmt"
-import "github.com/Rychmick/task-2-1/internal/mainproc"
+import (
+	"fmt"
+	"os"
+
+	"github.com/Rychmick/task-2-1/internal/mainproc"
+)
 
 func main() {
 	var nDepartments int
@@ -16,9 +19,9 @@ func main() {
 	}
 
 	for range nDepartments {
-		_, err := mainproc.ProcessDepartmentWishes(os.Stdin, os.Stdout);
-		if (err != nil) {
-			fmt.Println(err);
+		_, err := mainproc.ProcessDepartmentWishes(os.Stdin, os.Stdout)
+		if err != nil {
+			fmt.Println(err)
 		}
 	}
 }
