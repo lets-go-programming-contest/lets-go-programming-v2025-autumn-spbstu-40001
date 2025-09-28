@@ -31,7 +31,7 @@ func main() {
 			return
 		}
 
-		airConditioner := TempManager{30, 15, 0}
+		airConditioner := TempManager{30, 15, 15}
 
 		for range staffNum {
 			_, err = fmt.Scan(&condition)
@@ -80,6 +80,9 @@ func changeStatus(someTM *TempManager, condition string, newTemp int) bool {
 
 			return false
 		}
+	default:
+
+		return false
 	}
 
 	return true
