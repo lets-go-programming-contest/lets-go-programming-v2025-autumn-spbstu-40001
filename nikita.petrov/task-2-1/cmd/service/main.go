@@ -80,9 +80,6 @@ func changeStatus(someTM *TempManager, condition string, newTemp int) bool {
 
 			return false
 		}
-	default:
-
-		return false
 	}
 
 	return true
