@@ -11,21 +11,42 @@ type TempManager struct {
 func main() {
 	var deptNum int
 
-	fmt.Scan(&deptNum)
+	_, err := fmt.Scan(&deptNum)
 
-	for i := 0; i < deptNum; i++ {
+	if err != nil {
+		fmt.Println("Input error")
+		return
+	}
+
+	for range deptNum {
 		var (
 			staffNum, wishfulTemp int
 			condition             string
 		)
 
-		fmt.Scan(&staffNum)
+		_, err := fmt.Scan(&staffNum)
+
+		if err != nil {
+			fmt.Println("Input error")
+			return
+		}
 
 		airConditioner := TempManager{30, 15, 0}
 
-		for j := 0; j < staffNum; j++ {
-			fmt.Scan(&condition)
-			fmt.Scan(&wishfulTemp)
+		for range staffNum {
+			_, err = fmt.Scan(&condition)
+
+			if err != nil {
+				fmt.Println("Input error")
+				return
+			}
+
+			_, err = fmt.Scan(&wishfulTemp)
+
+			if err != nil {
+				fmt.Println("Input error")
+				return
+			}
 
 			if changeStatus(&airConditioner, condition, wishfulTemp) {
 				fmt.Println(airConditioner.optTemp)
@@ -45,6 +66,7 @@ func changeStatus(someTM *TempManager, condition string, newTemp int) bool {
 			}
 		} else {
 			someTM.maxTemp = newTemp
+
 			return false
 		}
 	case ">=":
@@ -54,11 +76,14 @@ func changeStatus(someTM *TempManager, condition string, newTemp int) bool {
 			}
 		} else {
 			someTM.minTemp = newTemp
+
 			return false
 		}
 	default:
+
 		return false
 	}
 	someTM.optTemp = someTM.minTemp
+
 	return true
 }
