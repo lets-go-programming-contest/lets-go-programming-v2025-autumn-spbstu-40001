@@ -73,6 +73,7 @@ func changeStatus(someTM *TempManager, condition string, newTemp int) bool {
 		if newTemp <= someTM.maxTemp {
 			if newTemp > someTM.minTemp {
 				someTM.minTemp = newTemp
+				someTM.optTemp = someTM.minTemp
 			}
 		} else {
 			someTM.minTemp = newTemp
@@ -80,7 +81,6 @@ func changeStatus(someTM *TempManager, condition string, newTemp int) bool {
 			return false
 		}
 	}
-	someTM.optTemp = someTM.minTemp
 
 	return true
 }
