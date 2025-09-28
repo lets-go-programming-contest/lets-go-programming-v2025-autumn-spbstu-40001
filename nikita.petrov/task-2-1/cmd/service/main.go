@@ -44,6 +44,7 @@ func changeStatus(someTM *TempManager, condition string, newTemp int) bool {
 				someTM.maxTemp = newTemp
 			}
 		} else {
+			someTM.maxTemp = newTemp
 			return false
 		}
 	case ">=":
@@ -52,6 +53,7 @@ func changeStatus(someTM *TempManager, condition string, newTemp int) bool {
 				someTM.minTemp = newTemp
 			}
 		} else {
+			someTM.minTemp = newTemp
 			return false
 		}
 	default:
