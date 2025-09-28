@@ -1,13 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"cmp"
+	"fmt"
+
 	heap "github.com/Rychmick/task-2-2/pkg/primheap"
 )
 
 func greater[T cmp.Ordered](lhs, rhs T) bool {
-	return lhs > rhs;
+	return lhs > rhs
 }
 
 func main() {
@@ -21,7 +22,7 @@ func main() {
 		return
 	}
 
-	dishesQueue := heap.New[int](greater[int]);
+	dishesQueue := heap.New[int](greater[int])
 
 	for range nDishes {
 		var dishValue int
@@ -54,7 +55,7 @@ func main() {
 	}
 
 	for range dishID - 1 {
-		dishesQueue.Pop()
+		_, _ = dishesQueue.Pop()
 	}
 
 	result, _ := dishesQueue.Top()
