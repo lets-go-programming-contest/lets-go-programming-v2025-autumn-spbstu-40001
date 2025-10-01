@@ -10,10 +10,12 @@ func main() {
 		fmt.Println("Invalid first operand")
 		return
 	}
+
 	if _, err := fmt.Scanln(&b); err != nil {
 		fmt.Println("Invalid second operand")
 		return
 	}
+
 	if _, err := fmt.Scanln(&op); err != nil {
 		fmt.Println("Invalid operation")
 		return
