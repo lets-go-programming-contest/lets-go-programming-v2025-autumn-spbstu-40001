@@ -7,15 +7,16 @@ func main() {
 
 	if _, err := fmt.Scan(&departmentCount); err != nil {
 		fmt.Println("invalid input")
+
 		return
 	}
-
 	for range departmentCount {
 
 		var employeeCount int
 
 		if _, err := fmt.Scan(&employeeCount); err != nil {
 			fmt.Println("invalid input")
+
 			return
 		}
 
@@ -28,11 +29,13 @@ func main() {
 
 			if _, err := fmt.Scan(&direction); err != nil {
 				fmt.Println("invalid input")
+
 				return
 			}
 
 			if _, err := fmt.Scan(&degrees); err != nil {
 				fmt.Println("invalid input")
+
 				return
 			}
 			switch direction {
