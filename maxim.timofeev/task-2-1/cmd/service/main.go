@@ -46,15 +46,17 @@ func main() {
 			case ">=":
 				if degrees <= temperatureRange.defaultTemperature[1] {
 					temperatureRange.defaultTemperature[0] = degrees
+				} else {
+					temperatureRange.match = false
 				}
+
 			case "<=":
 				if degrees >= temperatureRange.defaultTemperature[0] {
 					temperatureRange.defaultTemperature[1] = degrees
+				} else {
+					temperatureRange.match = false
 				}
-			default:
-				temperatureRange.match = false
 			}
-
 			if !temperatureRange.match {
 				fmt.Println("-1")
 			} else {
