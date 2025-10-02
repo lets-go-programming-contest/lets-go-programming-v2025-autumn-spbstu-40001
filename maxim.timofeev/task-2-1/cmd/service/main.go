@@ -11,7 +11,6 @@ func main() {
 		return
 	}
 	for range departmentCount {
-
 		var employeeCount int
 
 		if _, err := fmt.Scan(&employeeCount); err != nil {
