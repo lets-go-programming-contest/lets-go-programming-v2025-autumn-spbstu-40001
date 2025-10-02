@@ -46,18 +46,23 @@ func main() {
 
 			switch direction {
 			case ">=":
-				if degrees <= temperatureRange.defaultTemperature[1] {
+				if degrees <= temperatureRange.defaultTemperature[1] && degrees >= temperatureRange.defaultTemperature[0] {
 					temperatureRange.defaultTemperature[0] = degrees
-				} else {
+				} else if degrees > temperatureRange.defaultTemperature[1] {
 					temperatureRange.match = false
 				}
 
 			case "<=":
-				if degrees >= temperatureRange.defaultTemperature[0] {
+				if degrees >= temperatureRange.defaultTemperature[0] && degrees <= temperatureRange.defaultTemperature[1] {
 					temperatureRange.defaultTemperature[1] = degrees
-				} else {
+				} else if degrees < temperatureRange.defaultTemperature[0] {
 					temperatureRange.match = false
 				}
+
+			default:
+				fmt.Println("invalid input")
+
+				return
 			}
 
 			if !temperatureRange.match {
