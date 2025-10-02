@@ -9,7 +9,7 @@ func main() {
 		fmt.Println("invalid input")
 	}
 
-	for i := range N {
+	for range N {
 		var K int
 
 		if _, err := fmt.Scan(&K); err != nil {
@@ -17,7 +17,7 @@ func main() {
 		}
 
 		temperatureRange := [2]int{15, 30}
-		for j := range K {
+		for range K {
 			var direction string
 			var degrees int
 
