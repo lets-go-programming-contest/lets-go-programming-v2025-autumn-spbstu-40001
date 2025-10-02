@@ -7,21 +7,20 @@ import (
 func main() {
 	var (
 		n, k int
-		minTemp int
-		maxTemp int
+		minTemp, maxTemp int
 		optimalTemp int
 		border string
 	)
 	
 	_, err := fmt.Scan(&n)
-	if err != nil {
+	if err != nil || n <= 0 {
 		fmt.Println("Invalid departure count")
 		return
 	}
 	
-	for range n {
+	for i := 0; i < n; i++ {
 		_, err = fmt.Scan(&k)
-		if err != nil {
+		if err != nil || k <= 0 {
 			fmt.Println("Invalid empolyees count")
 			return
 		}
@@ -29,7 +28,7 @@ func main() {
 		minTemp = 15
 		maxTemp = 30
 		
-		for range k {
+		for j := 0; j < k; j++ {
 			_, err = fmt.Scan(&border, &optimalTemp)
 			if err != nil {
 				fmt.Println("Invalid temperature")
