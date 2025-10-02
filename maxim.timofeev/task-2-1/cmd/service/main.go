@@ -2,6 +2,11 @@ package main
 
 import "fmt"
 
+type conditioner struct {
+	defaultTemperature [2]int
+	match              bool
+}
+
 func main() {
 	var departmentCount int
 
@@ -20,9 +25,8 @@ func main() {
 			return
 		}
 
-		temperatureRange := [2]int{15, 30}
+		temperatureRange := conditioner{[2]int{15, 30}, true}
 
-	regulation:
 		for range employeeCount {
 			var direction string
 			var degrees int
@@ -40,19 +44,22 @@ func main() {
 			}
 			switch direction {
 			case ">=":
-				if degrees <= temperatureRange[1] {
-					temperatureRange[0] = degrees
+				if degrees <= temperatureRange.defaultTemperature[1] {
+					temperatureRange.defaultTemperature[0] = degrees
 				}
 			case "<=":
-				if degrees >= temperatureRange[0] {
-					temperatureRange[1] = degrees
+				if degrees >= temperatureRange.defaultTemperature[0] {
+					temperatureRange.defaultTemperature[1] = degrees
 				}
 			default:
-				fmt.Println("-1")
-
-				break regulation
+				temperatureRange.match = false
 			}
-			fmt.Println(temperatureRange[0])
+
+			if !temperatureRange.match {
+				fmt.Println("-1")
+			} else {
+				fmt.Println(temperatureRange.defaultTemperature[0])
+			}
 		}
 	}
 }
