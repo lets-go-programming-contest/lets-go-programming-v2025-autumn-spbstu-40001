@@ -7,10 +7,10 @@ import (
 func main() {
 	var (
 		n, k int
-		var minTemp int
-		var maxTemp int
-		var optimalTemp int
-		var border string
+		minTemp int
+		maxTemp int
+		optimalTemp int
+		border string
 	)
 	
 	_, err := fmt.Scan(&n)
