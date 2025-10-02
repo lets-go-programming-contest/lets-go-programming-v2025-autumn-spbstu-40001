@@ -3,21 +3,26 @@ package main
 import "fmt"
 
 func main() {
-	var N int
 
-	if _, err := fmt.Scan(&N); err != nil {
+	var departmentCount int
+
+	if _, err := fmt.Scan(&departmentCount); err != nil {
 		fmt.Println("invalid input")
 	}
 
-	for range N {
-		var K int
+	for range departmentCount {
 
-		if _, err := fmt.Scan(&K); err != nil {
+		var employeeCount int
+
+		if _, err := fmt.Scan(&employeeCount); err != nil {
 			fmt.Println("invalid input")
 		}
 
 		temperatureRange := [2]int{15, 30}
-		for range K {
+
+	regulation:
+
+		for range employeeCount {
 			var direction string
 			var degrees int
 
@@ -40,7 +45,7 @@ func main() {
 			default:
 				fmt.Println("-1")
 
-				break
+				break regulation
 			}
 			fmt.Println(temperatureRange[0])
 		}
