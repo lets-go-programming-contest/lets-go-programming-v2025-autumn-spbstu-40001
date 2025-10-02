@@ -67,6 +67,7 @@ func directionManager(temperatureRange conditioner, direction string, degrees in
 		if degrees > temperatureRange.defaultTemperature[1] {
 			temperatureRange.match = false
 		}
+
 		if degrees >= temperatureRange.defaultTemperature[0] {
 			temperatureRange.defaultTemperature[0] = degrees
 		}
@@ -75,6 +76,7 @@ func directionManager(temperatureRange conditioner, direction string, degrees in
 		if degrees < temperatureRange.defaultTemperature[0] {
 			temperatureRange.match = false
 		}
+
 		if degrees <= temperatureRange.defaultTemperature[1] {
 			temperatureRange.defaultTemperature[1] = degrees
 		}
