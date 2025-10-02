@@ -27,6 +27,7 @@ func main() {
 		
 		minTemp = 15
 		maxTemp = 30
+		optimalTemp = 0
 		
 		for j := 0; j < k; j++ {
 			_, err = fmt.Scan(&border, &optimalTemp)
