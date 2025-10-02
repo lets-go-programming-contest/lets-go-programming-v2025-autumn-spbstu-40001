@@ -61,7 +61,7 @@ func main() {
 			}
 
 			if !temperatureRange.match {
-				fmt.Println("-1")
+				fmt.Println(-1)
 			} else {
 				fmt.Println(temperatureRange.defaultTemperature[0])
 			}
