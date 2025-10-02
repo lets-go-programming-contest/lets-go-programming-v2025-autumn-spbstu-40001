@@ -43,20 +43,23 @@ func main() {
 
 				return
 			}
-
 			switch direction {
 			case ">=":
-				if degrees <= temperatureRange.defaultTemperature[1] && degrees >= temperatureRange.defaultTemperature[0] {
-					temperatureRange.defaultTemperature[0] = degrees
-				} else if degrees > temperatureRange.defaultTemperature[1] {
+				if degrees > temperatureRange.defaultTemperature[1] {
 					temperatureRange.match = false
+
+				}
+				if degrees >= temperatureRange.defaultTemperature[0] {
+					temperatureRange.defaultTemperature[0] = degrees
 				}
 
 			case "<=":
-				if degrees >= temperatureRange.defaultTemperature[0] && degrees <= temperatureRange.defaultTemperature[1] {
-					temperatureRange.defaultTemperature[1] = degrees
-				} else if degrees < temperatureRange.defaultTemperature[0] {
+				if degrees < temperatureRange.defaultTemperature[0] {
 					temperatureRange.match = false
+
+				}
+				if degrees <= temperatureRange.defaultTemperature[1] {
+					temperatureRange.defaultTemperature[1] = degrees
 				}
 
 			default:
