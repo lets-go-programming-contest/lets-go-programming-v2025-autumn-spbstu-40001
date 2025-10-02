@@ -11,10 +11,7 @@ var ErrInvalidEmployeesCount = errors.New("invalid employees count")
 func MakeDepartmentTemperature(reader io.Reader, writer io.Writer) (int, error) {
 	var (
 		nEmployees  uint
-		conditioner = Conditioner{
-			minTemp: 15,
-			maxTemp: 30,
-		}
+		conditioner = Conditioner{15, 30}
 		temperature int
 	)
 
