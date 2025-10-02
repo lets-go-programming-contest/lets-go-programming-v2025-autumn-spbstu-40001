@@ -29,6 +29,7 @@ func main() {
 
 		for range employeeCount {
 			var direction string
+
 			var degrees int
 
 			if _, err := fmt.Scan(&direction); err != nil {
@@ -42,6 +43,7 @@ func main() {
 
 				return
 			}
+
 			switch direction {
 			case ">=":
 				if degrees <= temperatureRange.defaultTemperature[1] {
@@ -57,6 +59,7 @@ func main() {
 					temperatureRange.match = false
 				}
 			}
+
 			if !temperatureRange.match {
 				fmt.Println("-1")
 			} else {
