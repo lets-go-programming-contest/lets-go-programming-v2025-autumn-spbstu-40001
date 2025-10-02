@@ -43,26 +43,10 @@ func main() {
 
 				return
 			}
-			switch direction {
-			case ">=":
-				if degrees > temperatureRange.defaultTemperature[1] {
-					temperatureRange.match = false
 
-				}
-				if degrees >= temperatureRange.defaultTemperature[0] {
-					temperatureRange.defaultTemperature[0] = degrees
-				}
+			temperatureRange = directionManager(temperatureRange, direction, degrees)
 
-			case "<=":
-				if degrees < temperatureRange.defaultTemperature[0] {
-					temperatureRange.match = false
-
-				}
-				if degrees <= temperatureRange.defaultTemperature[1] {
-					temperatureRange.defaultTemperature[1] = degrees
-				}
-
-			default:
+			if temperatureRange.defaultTemperature == [2]int{0, 0} {
 				fmt.Println("invalid input")
 
 				return
@@ -75,4 +59,31 @@ func main() {
 			}
 		}
 	}
+}
+
+func directionManager(temperatureRange conditioner, direction string, degrees int) conditioner {
+	switch direction {
+	case ">=":
+		if degrees > temperatureRange.defaultTemperature[1] {
+			temperatureRange.match = false
+		}
+		if degrees >= temperatureRange.defaultTemperature[0] {
+			temperatureRange.defaultTemperature[0] = degrees
+		}
+
+	case "<=":
+		if degrees < temperatureRange.defaultTemperature[0] {
+			temperatureRange.match = false
+		}
+		if degrees <= temperatureRange.defaultTemperature[1] {
+			temperatureRange.defaultTemperature[1] = degrees
+		}
+
+	default:
+		fmt.Println("invalid input")
+
+		return conditioner{defaultTemperature: [2]int{0, 0}, match: false}
+	}
+
+	return temperatureRange
 }
