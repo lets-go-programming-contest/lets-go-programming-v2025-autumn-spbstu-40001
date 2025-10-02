@@ -10,6 +10,7 @@ func main() {
 
 		return
 	}
+
 	for range departmentCount {
 		var employeeCount int
 
