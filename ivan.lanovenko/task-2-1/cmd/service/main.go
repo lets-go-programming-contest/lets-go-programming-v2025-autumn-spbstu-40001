@@ -4,7 +4,10 @@ import "fmt"
 
 func main() {
 	var departmentsCount int
-	fmt.Scanln(&departmentsCount)
+	if _, err := fmt.Scanln(&departmentsCount); err != nil {
+		fmt.Println("Invalid input")
+		return
+	}
 
 	for range departmentsCount {
 		var (
@@ -13,7 +16,10 @@ func main() {
 			staffCount     int
 		)
 
-		fmt.Scanln(&staffCount)
+		if _, err := fmt.Scanln(&staffCount); err != nil {
+			fmt.Println("Invalid input")
+			return
+		}
 
 		for range staffCount {
 			var (
@@ -21,7 +27,10 @@ func main() {
 				currentTemperature int
 			)
 
-			fmt.Scanln(&border, &currentTemperature)
+			if _, err := fmt.Scanln(&border, &currentTemperature); err != nil {
+				fmt.Println("Invalid input")
+				return
+			}
 			func(border string, currentTemperature int) {
 				if border == ">=" {
 					minTemperature = max(minTemperature, currentTemperature)
