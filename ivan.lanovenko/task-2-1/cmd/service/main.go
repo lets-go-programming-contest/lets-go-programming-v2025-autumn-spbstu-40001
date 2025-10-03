@@ -7,11 +7,11 @@ type TemperatureLimits struct {
 	maxTemperature int
 }
 
-func processTemperature(tl *TemperatureLimits, border string, currentTemperature int) {
+func processTemperature(limits *TemperatureLimits, border string, currentTemperature int) {
 	if border == ">=" {
-		tl.minTemperature = max(tl.minTemperature, currentTemperature)
+		limits.minTemperature = max(limits.minTemperature, currentTemperature)
 	} else {
-		tl.maxTemperature = min(tl.maxTemperature, currentTemperature)
+		limits.maxTemperature = min(limits.maxTemperature, currentTemperature)
 	}
 
 	if tl.minTemperature <= tl.maxTemperature {
@@ -31,7 +31,7 @@ func main() {
 
 	for range departmentsCount {
 		var (
-			limits     TemperatureLimits = TemperatureLimits{15, 30}
+			limits     = TemperatureLimits{15, 30}
 			staffCount int
 		)
 
