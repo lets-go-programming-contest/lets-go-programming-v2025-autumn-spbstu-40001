@@ -6,6 +6,7 @@ func main() {
 	var departmentsCount int
 	if _, err := fmt.Scanln(&departmentsCount); err != nil {
 		fmt.Println("Invalid input")
+
 		return
 	}
 
@@ -18,6 +19,7 @@ func main() {
 
 		if _, err := fmt.Scanln(&staffCount); err != nil {
 			fmt.Println("Invalid input")
+
 			return
 		}
 
@@ -29,6 +31,7 @@ func main() {
 
 			if _, err := fmt.Scanln(&border, &currentTemperature); err != nil {
 				fmt.Println("Invalid input")
+
 				return
 			}
 			func(border string, currentTemperature int) {
