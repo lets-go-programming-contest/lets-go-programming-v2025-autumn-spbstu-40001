@@ -8,10 +8,10 @@ import (
 
 var ErrInvalidEmployeesCount = errors.New("invalid employees count")
 
-func MakeDepartmentTemperature(reader io.Reader, writer io.Writer) (int, error) {
+func CalcDepartmentTemperature(reader io.Reader, writer io.Writer) (int, error) {
 	var (
 		nEmployees  uint
-		conditioner = Conditioner{15, 30}
+		wish        = Wish{15, 30}
 		temperature int
 	)
 
@@ -21,14 +21,16 @@ func MakeDepartmentTemperature(reader io.Reader, writer io.Writer) (int, error) 
 	}
 
 	for range nEmployees {
-		temperature, err = fulfilWish(&conditioner, reader)
+		temperature, err = fulfilWish(&wish, reader)
 		if err != nil {
 			return 0, err
 		}
 
-		_, err = fmt.Fprintln(writer, temperature)
-		if err != nil {
-			return 0, fmt.Errorf("invalid output stream: %w", err)
+		if writer != nil {
+			_, err = fmt.Fprintln(writer, temperature)
+			if err != nil {
+				return 0, fmt.Errorf("invalid output stream: %w", err)
+			}
 		}
 	}
 
@@ -40,7 +42,7 @@ var (
 	ErrUnknownOperator = errors.New("unknown operator")
 )
 
-func fulfilWish(conditioner *Conditioner, reader io.Reader) (int, error) {
+func fulfilWish(wish *Wish, reader io.Reader) (int, error) {
 	var (
 		currentTemp int
 		operator    string
@@ -53,14 +55,14 @@ func fulfilWish(conditioner *Conditioner, reader io.Reader) (int, error) {
 
 	switch operator {
 	case ">=":
-		conditioner.UpdateMinTemp(currentTemp)
+		wish.UpdateMinTemp(currentTemp)
 	case "<=":
-		conditioner.UpdateMaxTemp(currentTemp)
+		wish.UpdateMaxTemp(currentTemp)
 	default:
 		return 0, ErrUnknownOperator
 	}
 
-	temp, err := conditioner.GetTemp()
+	temp, err := wish.GetTemp()
 	if err != nil {
 		temp = -1
 	}

@@ -18,7 +18,7 @@ func main() {
 	}
 
 	for range nDepartments {
-		_, err = conditioner.MakeDepartmentTemperature(os.Stdin, os.Stdout)
+		_, err = conditioner.CalcDepartmentTemperature(os.Stdin, os.Stdout)
 		if err != nil {
 			fmt.Println(err)
 
