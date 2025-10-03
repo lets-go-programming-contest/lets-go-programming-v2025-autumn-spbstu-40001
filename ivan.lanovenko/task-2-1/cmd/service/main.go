@@ -34,6 +34,7 @@ func main() {
 
 				return
 			}
+
 			func(border string, currentTemperature int) {
 				if border == ">=" {
 					minTemperature = max(minTemperature, currentTemperature)
