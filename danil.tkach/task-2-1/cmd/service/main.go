@@ -19,7 +19,6 @@ func processEmployee(currentMin, currentMax int) (int, int) {
 	)
 
 	_, err := fmt.Scanf("%s %d\n", &operation, &needTemp)
-
 	if err != nil {
 		return ErrorMin, ErrorMax
 	}
@@ -38,27 +37,24 @@ func processEmployee(currentMin, currentMax int) (int, int) {
 
 func main() {
 	var departCount int
-	_, err := fmt.Scanln(&departCount)
 
+	_, err := fmt.Scanln(&departCount)
 	if err != nil {
 		return
 	}
 
 	for range departCount {
-
 		currentMin := MinTemp
 		currentMax := MaxTemp
 
 		var peopleCount int
 
 		_, err := fmt.Scanln(&peopleCount)
-
 		if err != nil {
 			return
 		}
 
 		for range peopleCount {
-
 			currentMin, currentMax = processEmployee(currentMin, currentMax)
 
 			if currentMin <= currentMax && currentMax <= 30 && currentMin >= 15 {
