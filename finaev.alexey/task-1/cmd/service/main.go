@@ -9,18 +9,18 @@ func main() {
 		a, b int
 		op   string
 	)
-	_, err1 := fmt.Scan(&a)
-	if err1 != nil {
+	_, err := fmt.Scan(&a)
+	if err != nil {
 		fmt.Println("Invalid first operand")
 		return
 	}
-	_, err2 := fmt.Scan(&b)
-	if err2 != nil {
+	_, err = fmt.Scan(&b)
+	if err != nil {
 		fmt.Println("Invalid second operand")
 		return
 	}
-	_, errOP := fmt.Scan(&op)
-	if errOP != nil {
+	_, err = fmt.Scan(&op)
+	if err != nil {
 		fmt.Println("Invalid operation")
 		return
 	}
