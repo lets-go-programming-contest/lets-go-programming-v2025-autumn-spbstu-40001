@@ -37,6 +37,9 @@ func (objHeap *unwrappedPrimHeap[T]) Pop() any {
 		return nil
 	}
 
+	var empty T
+
+	objHeap.data[objHeap.Len()-1] = empty
 	result := objHeap.data[objHeap.Len()-1]
 	objHeap.data = objHeap.data[0 : objHeap.Len()-1]
 
