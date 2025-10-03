@@ -11,13 +11,11 @@ func main() {
 		optimalTemp int
 		border string
 	)
-	
 	_, err := fmt.Scan(&n)
 	if err != nil || n <= 0 {
 		fmt.Println("Invalid departure count")
 		return
 	}
-	
 	for i := 0; i < n; i++ {
 		_, err = fmt.Scan(&k)
 		if err != nil || k <= 0 {
