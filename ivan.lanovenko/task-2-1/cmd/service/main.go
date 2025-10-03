@@ -5,11 +5,15 @@ import "fmt"
 func main() {
 	var departmentsCount int
 	fmt.Scanln(&departmentsCount)
+
 	for range departmentsCount {
-		var minTemperature int = 15
-		var maxTemperature int = 30
-		var staffCount int
+		var (
+			minTemperature int = 15
+			maxTemperature int = 30
+			staffCount     int
+		)
 		fmt.Scanln(&staffCount)
+
 		for range staffCount {
 			var border string
 			var currentTemperature int
