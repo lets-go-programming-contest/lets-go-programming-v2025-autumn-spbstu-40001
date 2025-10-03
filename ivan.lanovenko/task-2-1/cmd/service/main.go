@@ -3,29 +3,30 @@ package main
 import "fmt"
 
 func main() {
-	var departments_count int
-	fmt.Scanln(&departments_count)
-	for range departments_count {
-		var min_temperature int = 15
-		var max_temperature int = 30
-		var staff_count int
-		fmt.Scanln(&staff_count)
-		for range staff_count {
+	var departmentsCount int
+	fmt.Scanln(&departmentsCount)
+	for i := 0; i < departmentsCount; i++ {
+		var minTemperature int = 15
+		var maxTemperature int = 30
+		var staffCount int
+		fmt.Scanln(&staffCount)
+		for i := 0; i < staffCount; i++ {
 			var border string
-			var current_temperature int
-			fmt.Scanln(&border, &current_temperature)
-			func(border string, current_temperature int) {
+			var currentTemperature int
+			fmt.Scanln(&border, &currentTemperature)
+			func(border string, currentTemperature int) {
 				if border == ">=" {
-					min_temperature = max(min_temperature, current_temperature)
+					minTemperature = max(minTemperature, currentTemperature)
 				} else {
-					max_temperature = min(max_temperature, current_temperature)
+					maxTemperature = min(maxTemperature, currentTemperature)
 				}
-				if min_temperature <= max_temperature {
-					fmt.Println(min_temperature)
+
+				if minTemperature <= maxTemperature {
+					fmt.Println(minTemperature)
 				} else {
 					fmt.Println(-1)
 				}
-			}(border, current_temperature)
+			}(border, currentTemperature)
 		}
 	}
 }
