@@ -2,23 +2,23 @@ package conditioner
 
 import "errors"
 
-type Conditioner struct {
+type Wish struct {
 	minTemp, maxTemp int
 }
 
-func (cond *Conditioner) UpdateMaxTemp(temp int) {
-	cond.maxTemp = min(cond.maxTemp, temp)
+func (wish *Wish) UpdateMaxTemp(temp int) {
+	wish.maxTemp = min(wish.maxTemp, temp)
 }
 
-func (cond *Conditioner) UpdateMinTemp(temp int) {
-	cond.minTemp = max(cond.minTemp, temp)
+func (wish *Wish) UpdateMinTemp(temp int) {
+	wish.minTemp = max(wish.minTemp, temp)
 }
 
 var ErrInvalidTemp = errors.New("invalid temperature")
 
-func (cond *Conditioner) GetTemp() (int, error) {
-	if cond.maxTemp >= cond.minTemp {
-		return cond.minTemp, nil
+func (wish *Wish) GetTemp() (int, error) {
+	if wish.maxTemp >= wish.minTemp {
+		return wish.minTemp, nil
 	}
 
 	return 0, ErrInvalidTemp
