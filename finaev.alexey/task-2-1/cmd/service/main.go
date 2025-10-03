@@ -6,37 +6,36 @@ import (
 
 func main() {
 	var (
-		a    int
-		sign string
-		k    int
-		n    int
+		grade    int
+		sign     string
+		emploees int
+		depart   int
 	)
-	_, err := fmt.Scan(&n)
+	_, err := fmt.Scan(&depart)
 	if err != nil {
-		fmt.Println("Invalid first operand")
+		fmt.Println("Invalid input")
+
 		return
 	}
-	i := 1
-	for i <= n {
-		_, err = fmt.Scan(&k)
+	for range depart {
+		_, err = fmt.Scan(&emploees)
 		if err != nil {
 			fmt.Println("Invalid first operand")
 			return
 		}
 
-		max_t := 30
-		min_t := 15
-		recom_t := 0
-		j := 1
+		maxT := 30
+		minT := 15
+		recomT := 0
 
 	innerFor:
-		for j <= k {
+		for range emploees {
 			_, err = fmt.Scan(&sign)
 			if err != nil {
 				fmt.Println("Invalid first operand")
 				return
 			}
-			_, err = fmt.Scan(&a)
+			_, err = fmt.Scan(&grade)
 			if err != nil {
 				fmt.Println("Invalid first operand")
 				return
@@ -44,28 +43,26 @@ func main() {
 
 			switch sign {
 			case "<=":
-				if a < min_t {
+				if grade < minT {
 					fmt.Println("-1")
 					break innerFor
 				}
-				if max_t > a {
-					max_t = a
+				if maxT > grade {
+					maxT = grade
 				}
-				recom_t = min_t
+				recomT = minT
 			case ">=":
-				if a > max_t {
+				if grade > maxT {
 					fmt.Println("-1")
 					break innerFor
 				}
-				if min_t < a {
-					min_t = a
+				if minT < grade {
+					minT = grade
 				}
-				recom_t = max_t
+				recomT = maxT
 			}
 
-			fmt.Println(recom_t)
-			j++
+			fmt.Println(recomT)
 		}
-		i++
 	}
 }
