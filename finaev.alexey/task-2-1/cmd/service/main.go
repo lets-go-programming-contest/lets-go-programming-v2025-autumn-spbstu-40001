@@ -33,7 +33,6 @@ func main() {
 
 	innerFor:
 		for range emploees {
-
 			_, err = fmt.Scan(&sign)
 			if err != nil {
 				fmt.Println("Invalid input")
