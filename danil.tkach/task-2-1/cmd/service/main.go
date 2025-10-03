@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 )
 
 func processEmployee(currentMin, currentMax int) (int, int) {
@@ -13,7 +14,15 @@ func processEmployee(currentMin, currentMax int) (int, int) {
 	if err != nil {
 		return 31, 14
 	}
-	return 0, 0
+	switch operation {
+	case "<=":
+		currentMax = int(math.Min(float64(currentMax), float64(need_temp)))
+	case ">=":
+		currentMax = int(math.Max(float64(currentMin), float64(need_temp)))
+	default:
+		return 31, 14
+	}
+	return currentMin, currentMax
 }
 
 func main() {
