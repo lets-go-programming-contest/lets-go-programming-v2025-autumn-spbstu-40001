@@ -5,42 +5,62 @@ import (
 	"math"
 )
 
+const (
+	MinTemp  = 15
+	MaxTemp  = 30
+	ErrorMin = 31
+	ErrorMax = 14
+)
+
 func processEmployee(currentMin, currentMax int) (int, int) {
 	var (
 		operation string
-		need_temp int
+		needTemp  int
 	)
-	_, err := fmt.Scanf("%s %d\n", &operation, &need_temp)
+
+	_, err := fmt.Scanf("%s %d\n", &operation, &needTemp)
+
 	if err != nil {
-		return 31, 14
+		return ErrorMin, ErrorMax
 	}
+
 	switch operation {
 	case "<=":
-		currentMax = int(math.Min(float64(currentMax), float64(need_temp)))
+		currentMax = int(math.Min(float64(currentMax), float64(needTemp)))
 	case ">=":
-		currentMin = int(math.Max(float64(currentMin), float64(need_temp)))
+		currentMin = int(math.Max(float64(currentMin), float64(needTemp)))
 	default:
-		return 31, 14
+		return ErrorMin, ErrorMax
 	}
+
 	return currentMin, currentMax
 }
 
 func main() {
-	var depart_count int
-	_, err := fmt.Scanln(&depart_count)
+	var departCount int
+	_, err := fmt.Scanln(&departCount)
+
 	if err != nil {
 		return
 	}
-	for count := 0; count < depart_count; count++ {
-		currentMin := 15
-		currentMax := 30
-		var people_count int
-		_, err := fmt.Scanln(&people_count)
+
+	for range departCount {
+
+		currentMin := MinTemp
+		currentMax := MaxTemp
+
+		var peopleCount int
+
+		_, err := fmt.Scanln(&peopleCount)
+
 		if err != nil {
 			return
 		}
-		for count2 := 0; count2 < people_count; count2++ {
+
+		for range peopleCount {
+
 			currentMin, currentMax = processEmployee(currentMin, currentMax)
+
 			if currentMin <= currentMax && currentMax <= 30 && currentMin >= 15 {
 				fmt.Println(currentMin)
 			} else {
