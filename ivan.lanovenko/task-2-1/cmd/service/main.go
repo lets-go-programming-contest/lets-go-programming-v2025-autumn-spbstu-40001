@@ -7,7 +7,6 @@ func main() {
 	fmt.Scanln(&departmentsCount)
 
 	for range departmentsCount {
-
 		var (
 			minTemperature = 15
 			maxTemperature = 30
@@ -17,7 +16,6 @@ func main() {
 		fmt.Scanln(&staffCount)
 
 		for range staffCount {
-
 			var (
 				border             string
 				currentTemperature int
