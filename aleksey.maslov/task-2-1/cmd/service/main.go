@@ -37,5 +37,23 @@ func processDepartment(employeesCount int) {
 			fmt.Println("ERROR: input temperature")
 			continue
 		}
+		switch operation {
+		case ">=":
+			if temperature > minTemperature {
+				minTemperature = temperature
+			}
+		case "<=":
+			if temperature < maxTemperature {
+				maxTemperature = temperature
+			}
+		default:
+			fmt.Println("ERROR: invalid operation")
+			continue
+		}
+		if minTemperature > maxTemperature {
+			fmt.Println("-1")
+		} else {
+			fmt.Println(minTemperature)
+		}
 	}
 }
