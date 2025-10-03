@@ -3,20 +3,39 @@ package main
 import "fmt"
 
 func main() {
-	var (
-		departmentCount int
-		employeesCount  int
-	)
+	var departmentCount, employeesCount int
 	_, err := fmt.Scan(&departmentCount)
 	if err != nil {
-		fmt.Println("Invalid department count")
+		fmt.Println("ERROR: input department count")
 		return
 	}
 	for range departmentCount {
 		_, err = fmt.Scanln(&employeesCount)
 		if err != nil {
-			fmt.Println("Invalid employees count")
-			return
+			fmt.Println("ERROR: input employees count")
+			continue
+		}
+		processDepartment(employeesCount)
+	}
+}
+
+func processDepartment(employeesCount int) {
+	var (
+		operation      string
+		temperature    int
+		minTemperature int = 15
+		maxTemperature int = 30
+	)
+	for range employeesCount {
+		_, err := fmt.Scan(&operation)
+		if err != nil {
+			fmt.Println("ERROR: input operation")
+			continue
+		}
+		_, err = fmt.Scan(&temperature)
+		if err != nil {
+			fmt.Println("ERROR: input temperature")
+			continue
 		}
 	}
 }
