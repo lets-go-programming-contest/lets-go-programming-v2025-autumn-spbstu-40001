@@ -22,18 +22,15 @@ func main() {
 			fmt.Println("Invalid empolyees count")
 			return
 		}
-		
 		minTemp = 15
 		maxTemp = 30
 		optimalTemp = 0
-		
 		for j := 0; j < k; j++ {
 			_, err = fmt.Scan(&border, &optimalTemp)
 			if err != nil {
 				fmt.Println("Invalid temperature")
 				return
 			}
-			
 			if border == ">=" {
 				minTemp = max(minTemp, optimalTemp)
 			} else if border == "<=" {
@@ -42,7 +39,6 @@ func main() {
 				fmt.Println("Wrong operator")
 			}
 		}
-		
 		if maxTemp >= minTemp {
 			fmt.Println(minTemp)
 		} else {
