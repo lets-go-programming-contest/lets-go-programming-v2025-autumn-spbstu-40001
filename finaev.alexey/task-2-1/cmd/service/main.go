@@ -11,16 +11,19 @@ func main() {
 		emploees int
 		depart   int
 	)
+
 	_, err := fmt.Scan(&depart)
 	if err != nil {
 		fmt.Println("Invalid input")
 
 		return
 	}
+
 	for range depart {
 		_, err = fmt.Scan(&emploees)
 		if err != nil {
-			fmt.Println("Invalid first operand")
+			fmt.Println("Invalid input")
+
 			return
 		}
 
@@ -30,14 +33,18 @@ func main() {
 
 	innerFor:
 		for range emploees {
+
 			_, err = fmt.Scan(&sign)
 			if err != nil {
-				fmt.Println("Invalid first operand")
+				fmt.Println("Invalid input")
+
 				return
 			}
+
 			_, err = fmt.Scan(&grade)
 			if err != nil {
-				fmt.Println("Invalid first operand")
+				fmt.Println("Invalid input")
+
 				return
 			}
 
@@ -45,6 +52,7 @@ func main() {
 			case "<=":
 				if grade < minT {
 					fmt.Println("-1")
+
 					break innerFor
 				}
 				if maxT > grade {
@@ -54,8 +62,10 @@ func main() {
 			case ">=":
 				if grade > maxT {
 					fmt.Println("-1")
+
 					break innerFor
 				}
+
 				if minT < grade {
 					minT = grade
 				}
