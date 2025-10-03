@@ -17,8 +17,12 @@ func main() {
 		fmt.Scanln(&staffCount)
 
 		for range staffCount {
-			var border string
-			var currentTemperature int
+
+			var (
+				border             string
+				currentTemperature int
+			)
+
 			fmt.Scanln(&border, &currentTemperature)
 			func(border string, currentTemperature int) {
 				if border == ">=" {
