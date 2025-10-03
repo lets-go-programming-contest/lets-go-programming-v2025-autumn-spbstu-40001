@@ -14,8 +14,8 @@ func processTemperature(limits *TemperatureLimits, border string, currentTempera
 		limits.maxTemperature = min(limits.maxTemperature, currentTemperature)
 	}
 
-	if tl.minTemperature <= tl.maxTemperature {
-		fmt.Println(tl.minTemperature)
+	if limits.minTemperature <= limits.maxTemperature {
+		fmt.Println(limits.minTemperature)
 	} else {
 		fmt.Println(-1)
 	}
