@@ -2,6 +2,25 @@ package main
 
 import "fmt"
 
+type TemperatureLimits struct {
+	minTemperature int
+	maxTemperature int
+}
+
+func processTemperature(tl *TemperatureLimits, border string, currentTemperature int) {
+	if border == ">=" {
+		tl.minTemperature = max(tl.minTemperature, currentTemperature)
+	} else {
+		tl.maxTemperature = min(tl.maxTemperature, currentTemperature)
+	}
+
+	if tl.minTemperature <= tl.maxTemperature {
+		fmt.Println(tl.minTemperature)
+	} else {
+		fmt.Println(-1)
+	}
+}
+
 func main() {
 	var departmentsCount int
 	if _, err := fmt.Scanln(&departmentsCount); err != nil {
@@ -12,9 +31,8 @@ func main() {
 
 	for range departmentsCount {
 		var (
-			minTemperature = 15
-			maxTemperature = 30
-			staffCount     int
+			limits     TemperatureLimits = TemperatureLimits{15, 30}
+			staffCount int
 		)
 
 		if _, err := fmt.Scanln(&staffCount); err != nil {
@@ -35,19 +53,7 @@ func main() {
 				return
 			}
 
-			func(border string, currentTemperature int) {
-				if border == ">=" {
-					minTemperature = max(minTemperature, currentTemperature)
-				} else {
-					maxTemperature = min(maxTemperature, currentTemperature)
-				}
-
-				if minTemperature <= maxTemperature {
-					fmt.Println(minTemperature)
-				} else {
-					fmt.Println(-1)
-				}
-			}(border, currentTemperature)
+			processTemperature(&limits, border, currentTemperature)
 		}
 	}
 }
