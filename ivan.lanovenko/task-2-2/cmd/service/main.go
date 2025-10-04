@@ -7,15 +7,16 @@ import (
 
 type IntHeap []int
 
-func (h IntHeap) Len() int           { return len(h) }
-func (h IntHeap) Less(i, j int) bool { return h[i] > h[j] }
-func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+func (h *IntHeap) Len() int           { return len(*h) }
+func (h *IntHeap) Less(i, j int) bool { return (*h)[i] > (*h)[j] }
+func (h *IntHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 
 func (h *IntHeap) Push(value any) {
 	num, ok := value.(int)
 	if !ok {
 		return
 	}
+
 	*h = append(*h, num)
 }
 
@@ -68,9 +69,7 @@ func main() {
 	}
 
 	var sequenceNumber int
-
 	_, err := fmt.Scan(&sequenceNumber)
-
 	if err != nil {
 		fmt.Println("[WRONG INPUT]")
 
