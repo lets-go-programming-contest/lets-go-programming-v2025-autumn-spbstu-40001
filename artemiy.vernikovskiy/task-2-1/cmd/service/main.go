@@ -13,14 +13,14 @@ func main() {
 	)
 	
 	_, err := fmt.Scan(&nNumberOfOlimpic)
-	if err != nil || n <= 0 {
+	if err != nil || nNumberOfOlimpic < 0 {
 		fmt.Println("Invalid departure count")
 		return
 	}
 	
 	for range nNumberOfOlimpic {
 		_, err = fmt.Scan(&kEmployeesCount)
-		if err != nil || k <= 0 {
+		if err != nil || kEmployeesCount < 0 {
 			fmt.Println("Invalid empolyees count")
 			return
 		}
