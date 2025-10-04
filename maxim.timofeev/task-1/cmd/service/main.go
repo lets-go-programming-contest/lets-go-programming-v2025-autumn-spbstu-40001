@@ -3,8 +3,10 @@ package main
 import "fmt"
 
 func main() {
-	var a, b int
-	var op string
+	var (
+		a, b int
+		op   string
+	)
 
 	if _, err := fmt.Scanln(&a); err != nil {
 		fmt.Println("Invalid first operand")
@@ -31,10 +33,11 @@ func main() {
 	case "/":
 		if b == 0 {
 			fmt.Println("Division by zero")
-		} else {
-			fmt.Println(a / b)
+			return
 		}
+		fmt.Println(a / b)
 	default:
 		fmt.Println("Invalid operation")
+		return
 	}
 }
