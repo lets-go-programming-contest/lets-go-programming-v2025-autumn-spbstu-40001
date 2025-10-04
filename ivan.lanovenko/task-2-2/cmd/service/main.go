@@ -8,7 +8,7 @@ import (
 type IntHeap []int
 
 func (IntHeap IntHeap) Len() int           { return len(IntHeap) }
-func (IntHeap IntHeap) Less(i, j int) bool { return IntHeap[i] < IntHeap[j] }
+func (IntHeap IntHeap) Less(i, j int) bool { return IntHeap[i] > IntHeap[j] }
 func (IntHeap IntHeap) Swap(i, j int)      { IntHeap[i], IntHeap[j] = IntHeap[j], IntHeap[i] }
 
 func (IntHeap *IntHeap) Push(value any) {
