@@ -6,43 +6,49 @@ import (
 
 func main() {
 	var (
-		n, k int
+		nNumberOfOlimpic, kEmployeesCount             int
 		minTemp, maxTemp int
-		optimalTemp int
-		border string
+		optimalTemp      int
+		border           string
 	)
-	_, err := fmt.Scan(&n)
+	
+	_, err := fmt.Scan(&nNumberOfOlimpic)
 	if err != nil || n <= 0 {
 		fmt.Println("Invalid departure count")
 		return
 	}
-	for i := 0; i < n; i++ {
-		_, err = fmt.Scan(&k)
+	
+	for range nNumberOfOlimpic {
+		_, err = fmt.Scan(&kEmployeesCount)
 		if err != nil || k <= 0 {
 			fmt.Println("Invalid empolyees count")
 			return
 		}
+		
 		minTemp = 15
 		maxTemp = 30
 		optimalTemp = 0
-		for j := 0; j < k; j++ {
+		
+		for range kEmployeesCount {
 			_, err = fmt.Scan(&border, &optimalTemp)
 			if err != nil {
 				fmt.Println("Invalid temperature")
 				return
 			}
-			if border == ">=" {
+			switch border {
+			case ">=":
 				minTemp = max(minTemp, optimalTemp)
-			} else if border == "<=" {
+			case "<=":
 				maxTemp = min(maxTemp, optimalTemp)
-			} else {
+			default:
 				fmt.Println("Wrong operator")
 			}
-		}
-		if maxTemp >= minTemp {
-			fmt.Println(minTemp)
-		} else {
-			fmt.Println(-1)
+		
+			if maxTemp >= minTemp {
+				fmt.Println(minTemp)
+			} else {
+				fmt.Println(-1)
+			}
 		}
 	}
 }
