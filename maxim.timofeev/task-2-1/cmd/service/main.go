@@ -1,10 +1,39 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type conditioner struct {
-	defaultTemperature [2]int
-	match              bool
+	minTemp int
+	maxTemp int
+	match   bool
+}
+
+func (c *conditioner) directionManager(direction string, degrees int) error {
+	switch direction {
+	case ">=":
+		if degrees > c.maxTemp {
+			c.match = false
+		}
+		if degrees >= c.minTemp {
+			c.minTemp = degrees
+		}
+
+	case "<=":
+		if degrees < c.minTemp {
+			c.match = false
+		}
+		if degrees <= c.maxTemp {
+			c.maxTemp = degrees
+		}
+
+	default:
+		return errors.New("invalid direction")
+	}
+
+	return nil
 }
 
 func main() {
@@ -25,7 +54,7 @@ func main() {
 			return
 		}
 
-		temperatureRange := conditioner{[2]int{15, 30}, true}
+		temperatureRange := conditioner{15, 30, true}
 
 		for range employeeCount {
 			var direction string
@@ -44,48 +73,15 @@ func main() {
 				return
 			}
 
-			temperatureRange = directionManager(temperatureRange, direction, degrees)
-
-			if temperatureRange.defaultTemperature == [2]int{0, 0} {
+			if err := temperatureRange.directionManager(direction, degrees); err != nil {
 				fmt.Println("invalid input")
-
-				return
 			}
 
 			if !temperatureRange.match {
 				fmt.Println(-1)
 			} else {
-				fmt.Println(temperatureRange.defaultTemperature[0])
+				fmt.Println(temperatureRange.minTemp)
 			}
 		}
 	}
-}
-
-func directionManager(temperatureRange conditioner, direction string, degrees int) conditioner {
-	switch direction {
-	case ">=":
-		if degrees > temperatureRange.defaultTemperature[1] {
-			temperatureRange.match = false
-		}
-
-		if degrees >= temperatureRange.defaultTemperature[0] {
-			temperatureRange.defaultTemperature[0] = degrees
-		}
-
-	case "<=":
-		if degrees < temperatureRange.defaultTemperature[0] {
-			temperatureRange.match = false
-		}
-
-		if degrees <= temperatureRange.defaultTemperature[1] {
-			temperatureRange.defaultTemperature[1] = degrees
-		}
-
-	default:
-		fmt.Println("invalid input")
-
-		return conditioner{defaultTemperature: [2]int{0, 0}, match: false}
-	}
-
-	return temperatureRange
 }
