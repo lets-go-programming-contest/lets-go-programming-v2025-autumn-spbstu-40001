@@ -31,12 +31,15 @@ func (h *IntHeap) Pop() any {
 func printRating(h IntHeap, sequenceNumber int) {
 	var value int
 	for range sequenceNumber {
+
 		num, ok := heap.Pop(&h).(int)
 		if !ok {
 			return
 		}
+
 		value = num
 	}
+
 	fmt.Println(value)
 }
 
@@ -60,6 +63,7 @@ func main() {
 
 			return
 		}
+
 		heap.Push(heapOfRatings, current)
 	}
 
@@ -80,5 +84,4 @@ func main() {
 	}
 
 	printRating(*heapOfRatings, sequenceNumber)
-
 }
