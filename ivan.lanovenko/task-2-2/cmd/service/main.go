@@ -7,39 +7,26 @@ import (
 
 type IntHeap []int
 
-func (h IntHeap) Len() int           { return len(h) }
-func (h IntHeap) Less(i, j int) bool { return h[i] > h[j] }
-func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+func (IntHeap IntHeap) Len() int           { return len(IntHeap) }
+func (IntHeap IntHeap) Less(i, j int) bool { return IntHeap[i] > IntHeap[j] }
+func (IntHeap IntHeap) Swap(i, j int)      { IntHeap[i], IntHeap[j] = IntHeap[j], IntHeap[i] }
 
-func (h *IntHeap) Push(value any) {
-	num, err := value.(int)
-	if err {
-		fmt.Println("[ERROR OF VALUE TYPE PUSH]")
-
-		return
-	}
-	*h = append(*h, num)
+func (IntHeap *IntHeap) Push(value any) {
+	*IntHeap = append(*IntHeap, value.(int))
 }
 
-func (h *IntHeap) Pop() any {
-	old := *h
+func (IntHeap *IntHeap) Pop() any {
+	old := *IntHeap
 	n := len(old)
 	x := old[n-1]
-	*h = old[0 : n-1]
-
+	*IntHeap = old[0 : n-1]
 	return x
 }
 
 func printRating(h IntHeap, sequenceNumber int) {
 	var value int
 	for range sequenceNumber {
-		num, err := heap.Pop(&h).(int)
-		if err {
-			fmt.Println("[ERROR OF VALUE TYPE PUSH]")
-
-			return
-		}
-		value = num
+		value = heap.Pop(&h).(int)
 	}
 	fmt.Println(value)
 }
