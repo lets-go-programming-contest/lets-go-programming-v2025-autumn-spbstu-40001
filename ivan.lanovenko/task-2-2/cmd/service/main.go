@@ -79,6 +79,8 @@ func main() {
 
 	if sequenceNumber > numberOfDishes {
 		fmt.Println("[THE PRIORITY SEQUENCE NUMBER SHOULD NOT BE MORE THAN THE NUMBER OF DISHES]")
+
+		return
 	}
 
 	printRating(*heapOfRatings, sequenceNumber)
