@@ -2,25 +2,6 @@ package main
 
 import "fmt"
 
-func printResult(operation string, op1, op2 int) {
-	switch operation {
-	case "+":
-		fmt.Println(op1 + op2)
-	case "*":
-		fmt.Println(op1 * op2)
-	case "-":
-		fmt.Println(op1 - op2)
-	case "/":
-		if op2 == 0 {
-			fmt.Println("Division by zero")
-			return
-		}
-		fmt.Println(op1 / op2)
-	default:
-		fmt.Println("Invalid operation")
-	}
-}
-
 func main() {
 	var (
 		op1, op2  int
@@ -42,5 +23,22 @@ func main() {
 		fmt.Println("Invalid operation")
 		return
 	}
-	printResult(operation, op1, op2)
+
+	switch operation {
+	case "+":
+		fmt.Println(op1 + op2)
+	case "*":
+		fmt.Println(op1 * op2)
+	case "-":
+		fmt.Println(op1 - op2)
+	case "/":
+		if op2 == 0 {
+			fmt.Println("Division by zero")
+			return
+		}
+		fmt.Println(op1 / op2)
+	default:
+		fmt.Println("Invalid operation")
+
+	}
 }
