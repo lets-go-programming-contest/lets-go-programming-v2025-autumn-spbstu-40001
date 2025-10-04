@@ -5,9 +5,7 @@ import (
 	"fmt"
 )
 
-var (
-	errInvalidDirection = errors.New("invalid direction")
-)
+var errInvalidDirection = errors.New("invalid direction")
 
 type conditioner struct {
 	minTemp int
