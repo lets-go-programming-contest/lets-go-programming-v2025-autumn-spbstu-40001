@@ -29,7 +29,6 @@ func main() {
 
 		maxT := 30
 		minT := 15
-		recomT := 0
 
 	innerFor:
 		for range emploees {
@@ -46,6 +45,8 @@ func main() {
 
 				return
 			}
+
+			recomT := 0
 
 			switch sign {
 			case "<=":
