@@ -68,7 +68,11 @@ func main() {
 				if minT < grade {
 					minT = grade
 				}
-				recomT = maxT
+				recomT = minT
+			default:
+				fmt.Println("Invalid input")
+
+				return
 			}
 
 			fmt.Println(recomT)
