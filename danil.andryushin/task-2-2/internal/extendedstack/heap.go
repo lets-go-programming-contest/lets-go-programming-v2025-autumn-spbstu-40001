@@ -1,4 +1,4 @@
-package extended_stack
+package extendedstack
 
 import "cmp"
 
