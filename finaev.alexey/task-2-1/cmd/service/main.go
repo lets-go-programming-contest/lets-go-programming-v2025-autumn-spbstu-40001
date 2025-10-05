@@ -30,7 +30,6 @@ func main() {
 		maxT := 30
 		minT := 15
 
-	innerFor:
 		for range emploees {
 			_, err = fmt.Scan(&sign)
 			if err != nil {
@@ -59,8 +58,6 @@ func main() {
 
 			if minT > maxT {
 				fmt.Println(-1)
-
-				break innerFor
 			} else {
 				fmt.Println(minT)
 			}
