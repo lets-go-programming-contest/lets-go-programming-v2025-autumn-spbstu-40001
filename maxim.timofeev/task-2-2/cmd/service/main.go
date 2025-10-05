@@ -7,19 +7,24 @@ import (
 
 type IntHeap []int
 
-func (h IntHeap) Len() int           { return len(h) }
-func (h IntHeap) Less(i, j int) bool { return h[i] < h[j] }
-func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+func (h *IntHeap) Len() int           { return len(*h) }
+func (h *IntHeap) Less(i, j int) bool { return (*h)[i] < (*h)[j] }
+func (h *IntHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 
 func (h *IntHeap) Push(x any) {
-	*h = append(*h, x.(int))
+	if val, check := x.(int); check {
+		*h = append(*h, val)
+	} else {
+		fmt.Println("invalid type in heap push")
+	}
 }
 
 func (h *IntHeap) Pop() any {
 	old := *h
-	lenght := len(old)
-	top := old[lenght-1]
-	*h = old[:lenght-1]
+	length := len(old)
+	top := old[length-1]
+	*h = old[:length-1]
+
 	return top
 }
 
@@ -35,7 +40,7 @@ func main() {
 
 	arrayOfPriority := make([]int, dishCount)
 
-	for i := 0; i < dishCount; i++ {
+	for i := range dishCount {
 		var currentPriority int
 
 		if _, err := fmt.Scan(&currentPriority); err != nil {
@@ -49,19 +54,18 @@ func main() {
 		fmt.Println("Invalid input")
 	}
 
-	h := &IntHeap{}
-	heap.Init(h)
+	currentHeap := &IntHeap{}
+	heap.Init(currentHeap)
 
-	for i := 0; i < dishCount; i++ {
-		if h.Len() < priority {
-			heap.Push(h, arrayOfPriority[i])
-		} else if arrayOfPriority[i] > (*h)[0] {
-			heap.Pop(h)
-			heap.Push(h, arrayOfPriority[i])
+	for i := range dishCount {
+		if currentHeap.Len() < priority {
+			heap.Push(currentHeap, arrayOfPriority[i])
+		} else if arrayOfPriority[i] > (*currentHeap)[0] {
+			heap.Pop(currentHeap)
+			heap.Push(currentHeap, arrayOfPriority[i])
 
 		}
 	}
 
-	fmt.Println((*h)[0])
-
+	fmt.Println((*currentHeap)[0])
 }
