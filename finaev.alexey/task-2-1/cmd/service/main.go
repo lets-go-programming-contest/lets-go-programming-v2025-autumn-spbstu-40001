@@ -46,37 +46,24 @@ func main() {
 				return
 			}
 
-			var recomT int
-
 			switch sign {
 			case "<=":
-				if grade < minT {
-					fmt.Println("-1")
-
-					break innerFor
-				}
-				if maxT > grade {
-					maxT = grade
-				}
-				recomT = minT
+				maxT = min(maxT, grade)
 			case ">=":
-				if grade > maxT {
-					fmt.Println("-1")
-
-					break innerFor
-				}
-
-				if minT < grade {
-					minT = grade
-				}
-				recomT = minT
+				minT = max(minT, grade)
 			default:
 				fmt.Println("Invalid input")
 
 				return
 			}
 
-			fmt.Println(recomT)
+			if minT > maxT {
+				fmt.Println(-1)
+
+				break innerFor
+			} else {
+				fmt.Println(minT)
+			}
 		}
 	}
 }
