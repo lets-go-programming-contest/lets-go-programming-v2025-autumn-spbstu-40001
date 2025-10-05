@@ -4,7 +4,7 @@ import (
 	"container/heap"
 	"fmt"
 
-	"github.com/PigoDog/task-2-2/package/container/intHeap"
+	"github.com/PigoDog/task-2-2/package/container/intheap"
 )
 
 func main() {
@@ -33,7 +33,7 @@ func main() {
 		fmt.Println("Invalid input")
 	}
 
-	currentHeap := &intHeap.IntHeap{}
+	currentHeap := &intheap.IntHeap{}
 	heap.Init(currentHeap)
 
 	for currentDish := range dishCount {
