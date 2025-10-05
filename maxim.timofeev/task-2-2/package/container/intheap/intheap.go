@@ -1,4 +1,4 @@
-package intHeap
+package intheap
 
 import "fmt"
 
@@ -12,7 +12,7 @@ func (h *IntHeap) Push(x any) {
 	if val, check := x.(int); check {
 		*h = append(*h, val)
 	} else {
-		fmt.Println("invalid type in intHeap push")
+		fmt.Println("invalid type")
 	}
 }
 
