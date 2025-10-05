@@ -31,6 +31,7 @@ func (h *IntHeap) Pop() any {
 
 func printRating(h IntHeap, sequenceNumber int) {
 	var value int
+
 	for range sequenceNumber {
 		num, ok := heap.Pop(&h).(int)
 		if !ok {
@@ -68,8 +69,8 @@ func main() {
 	}
 
 	var sequenceNumber int
-	_, err := fmt.Scan(&sequenceNumber)
 
+	_, err := fmt.Scan(&sequenceNumber)
 	if err != nil {
 		fmt.Println("[WRONG INPUT]")
 
