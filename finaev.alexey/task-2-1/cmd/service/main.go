@@ -46,7 +46,7 @@ func main() {
 				return
 			}
 
-			recomT := 0
+			var recomT int
 
 			switch sign {
 			case "<=":
