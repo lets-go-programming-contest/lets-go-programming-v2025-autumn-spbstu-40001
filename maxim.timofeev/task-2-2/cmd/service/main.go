@@ -40,14 +40,14 @@ func main() {
 
 	arrayOfPriority := make([]int, dishCount)
 
-	for i := range dishCount {
+	for currentDish := range dishCount {
 		var currentPriority int
 
 		if _, err := fmt.Scan(&currentPriority); err != nil {
 			fmt.Println("Invalid input")
 		}
 
-		arrayOfPriority[i] = currentPriority
+		arrayOfPriority[currentDish] = currentPriority
 	}
 
 	if _, err := fmt.Scan(&priority); err != nil {
@@ -57,13 +57,12 @@ func main() {
 	currentHeap := &IntHeap{}
 	heap.Init(currentHeap)
 
-	for i := range dishCount {
+	for currentDish := range dishCount {
 		if currentHeap.Len() < priority {
-			heap.Push(currentHeap, arrayOfPriority[i])
-		} else if arrayOfPriority[i] > (*currentHeap)[0] {
+			heap.Push(currentHeap, arrayOfPriority[currentDish])
+		} else if arrayOfPriority[currentDish] > (*currentHeap)[0] {
 			heap.Pop(currentHeap)
-			heap.Push(currentHeap, arrayOfPriority[i])
-
+			heap.Push(currentHeap, arrayOfPriority[currentDish])
 		}
 	}
 
