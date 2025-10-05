@@ -4,7 +4,7 @@ import (
 	"container/heap"
 	"fmt"
 
-	"github.com/atroxxxxxx/task-2-2/internal/extended_stack"
+	"github.com/atroxxxxxx/task-2-2/internal/extendedstack"
 )
 
 func Greater(a, b int) bool {
@@ -14,7 +14,7 @@ func Greater(a, b int) bool {
 func main() {
 	var (
 		nDishes int
-		dishes  = &extended_stack.Stack{Functor: Greater}
+		dishes  = &extendedstack.Stack{Functor: Greater}
 	)
 
 	heap.Init(dishes)
