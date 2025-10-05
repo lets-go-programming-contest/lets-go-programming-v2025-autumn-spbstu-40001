@@ -23,7 +23,9 @@ func main() {
 
 			return
 		}
-		minTemperature, maxTemperature := 15, 30
+
+		minTemperature := 15
+		maxTemperature := 30
 
 		for range employNum {
 			var (
