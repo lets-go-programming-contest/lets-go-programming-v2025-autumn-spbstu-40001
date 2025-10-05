@@ -1,17 +1,17 @@
-package task
+package extended_stack
 
 import "cmp"
 
-type Heap struct {
+type Stack struct {
 	Functor func(int, int) bool
 	data    []int
 }
 
-func (obj *Heap) Len() int {
+func (obj *Stack) Len() int {
 	return len(obj.data)
 }
 
-func (obj *Heap) Less(lhs, rhs int) bool {
+func (obj *Stack) Less(lhs, rhs int) bool {
 	if lhs >= obj.Len() || rhs >= obj.Len() {
 		panic("invalid index range")
 	}
@@ -21,11 +21,14 @@ func (obj *Heap) Less(lhs, rhs int) bool {
 	return obj.Functor(obj.data[lhs], obj.data[rhs])
 }
 
-func (obj *Heap) Swap(lhs, rhs int) {
+func (obj *Stack) Swap(lhs, rhs int) {
+	if lhs >= obj.Len() || rhs >= obj.Len() {
+		panic("invalid index range")
+	}
 	obj.data[lhs], obj.data[rhs] = obj.data[rhs], obj.data[lhs]
 }
 
-func (obj *Heap) Push(data any) {
+func (obj *Stack) Push(data any) {
 	iData, casted := data.(int)
 	if !casted {
 		panic("unexpected data type (expected: int)")
@@ -33,7 +36,7 @@ func (obj *Heap) Push(data any) {
 	obj.data = append(obj.data, iData)
 }
 
-func (obj *Heap) Pop() any {
+func (obj *Stack) Pop() any {
 	size := obj.Len()
 	if size == 0 {
 		panic("heap underflow")
