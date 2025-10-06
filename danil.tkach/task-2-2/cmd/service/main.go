@@ -7,16 +7,16 @@ import (
 
 type MinHeap []int
 
-func (heap MinHeap) Len() int {
-	return len(heap)
+func (heap *MinHeap) Len() int {
+	return len(*heap)
 }
 
-func (heap MinHeap) Less(index1, index2 int) bool {
-	return heap[index1] < heap[index2]
+func (heap *MinHeap) Less(index1, index2 int) bool {
+	return (*heap)[index1] < (*heap)[index2]
 }
 
-func (heap MinHeap) Swap(index1, index2 int) {
-	heap[index1], heap[index2] = heap[index2], heap[index1]
+func (heap *MinHeap) Swap(index1, index2 int) {
+	(*heap)[index1], (*heap)[index2] = (*heap)[index2], (*heap)[index1]
 }
 
 func (heap *MinHeap) Push(elem any) {
@@ -45,7 +45,7 @@ func RemoveMinElements(myHeap *MinHeap, countElemInHeap int) {
 func main() {
 	var dishesCount int
 
-	_, err := fmt.Scanln(&dishesCount)
+	_, err := fmt.Scan(&dishesCount)
 	if err != nil || dishesCount < 1 || dishesCount > 10000 {
 		return
 	}
@@ -56,7 +56,7 @@ func main() {
 	for range dishesCount {
 		var dishRating int
 
-		_, err = fmt.Scanln(&dishRating)
+		_, err = fmt.Scan(&dishRating)
 		if err != nil || dishRating < -10000 || dishRating > 10000 {
 			return
 		}
@@ -66,11 +66,10 @@ func main() {
 
 	var index int
 
-	_, err = fmt.Scanln(&index)
+	_, err = fmt.Scan(&index)
 	if err != nil || index > dishesCount || index < 1 {
 		return
 	}
-
 	RemoveMinElements(myHeap, index)
 	if myHeap.Len() != index {
 		return
