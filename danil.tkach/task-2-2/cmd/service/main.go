@@ -36,22 +36,45 @@ func (heap *MinHeap) Pop() any {
 	return lastVal
 }
 
+func RemoveMinElements(myHeap *MinHeap, countElemInHeap int) {
+	for myHeap.Len() > countElemInHeap {
+		heap.Pop(myHeap)
+	}
+}
+
 func main() {
 	var dishesCount int
 
 	_, err := fmt.Scanln(&dishesCount)
-	if err != nil {
+	if err != nil || dishesCount < 1 || dishesCount > 10000 {
 		return
 	}
 
 	myHeap := &MinHeap{}
 	heap.Init(myHeap)
 
+	for range dishesCount {
+		var dishRating int
+
+		_, err = fmt.Scanln(&dishRating)
+		if err != nil || dishRating < -10000 || dishRating > 10000 {
+			return
+		}
+
+		heap.Push(myHeap, dishRating)
+	}
+
 	var index int
 
 	_, err = fmt.Scanln(&index)
-	if err != nil {
+	if err != nil || index > dishesCount || index < 1 {
 		return
 	}
 
+	RemoveMinElements(myHeap, index)
+	if myHeap.Len() != index {
+		return
+	}
+	needDish := heap.Pop(myHeap)
+	fmt.Println(needDish)
 }
