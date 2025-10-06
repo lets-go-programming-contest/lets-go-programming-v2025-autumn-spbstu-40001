@@ -12,12 +12,11 @@ func greater[T cmp.Ordered](lhs, rhs T) bool {
 }
 
 func main() {
-	var nDishes int
+	var nDishes uint
 
 	_, err := fmt.Scan(&nDishes)
 	if err != nil {
-		fmt.Println("Failed to read dishes count")
-		fmt.Println(err)
+		fmt.Println("Failed to read dishes count:", err)
 
 		return
 	}
@@ -29,8 +28,7 @@ func main() {
 
 		_, err = fmt.Scan(&dishValue)
 		if err != nil {
-			fmt.Println("Failed to read dish value")
-			fmt.Println(err)
+			fmt.Println("Failed to read dish value:", err)
 
 			return
 		}
@@ -42,8 +40,7 @@ func main() {
 
 	_, err = fmt.Scan(&dishID)
 	if err != nil {
-		fmt.Println("Failed to read priority number")
-		fmt.Println(err)
+		fmt.Println("Failed to read priority number:", err)
 
 		return
 	}
