@@ -5,7 +5,6 @@ import (
 	"fmt"
 )
 
-// Calculate выполняет математическую операцию и возвращает результат или ошибку
 func Calculate(operation string, op1, op2 int) (int, error) {
 	switch operation {
 	case "+":
@@ -50,7 +49,7 @@ func main() {
 
 	result, err := Calculate(operation, op1, op2)
 	if err != nil {
-		fmt.Printf("Error: %s\n", err)
+		fmt.Println(err)
 		return
 	}
 
