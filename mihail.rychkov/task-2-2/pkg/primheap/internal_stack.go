@@ -2,12 +2,12 @@ package primheap
 
 import "cmp"
 
-type unwrappedPrimHeap[T cmp.Ordered] struct {
+type extendedStack[T cmp.Ordered] struct {
 	data       []T
 	comparator func(T, T) bool
 }
 
-func (objHeap *unwrappedPrimHeap[T]) Less(i, j int) bool {
+func (objHeap *extendedStack[T]) Less(i, j int) bool {
 	if objHeap.comparator != nil {
 		return objHeap.comparator(objHeap.data[i], objHeap.data[j])
 	}
@@ -15,15 +15,15 @@ func (objHeap *unwrappedPrimHeap[T]) Less(i, j int) bool {
 	return cmp.Less(objHeap.data[i], objHeap.data[j])
 }
 
-func (objHeap *unwrappedPrimHeap[T]) Len() int {
+func (objHeap *extendedStack[T]) Len() int {
 	return len(objHeap.data)
 }
 
-func (objHeap *unwrappedPrimHeap[T]) Swap(i, j int) {
+func (objHeap *extendedStack[T]) Swap(i, j int) {
 	objHeap.data[i], objHeap.data[j] = objHeap.data[j], objHeap.data[i]
 }
 
-func (objHeap *unwrappedPrimHeap[T]) Push(value any) {
+func (objHeap *extendedStack[T]) Push(value any) {
 	intValue, ok := value.(T)
 	if !ok {
 		panic("failed to cast heap.push value to stored type")
@@ -32,7 +32,7 @@ func (objHeap *unwrappedPrimHeap[T]) Push(value any) {
 	objHeap.data = append(objHeap.data, intValue)
 }
 
-func (objHeap *unwrappedPrimHeap[T]) Pop() any {
+func (objHeap *extendedStack[T]) Pop() any {
 	if objHeap.Len() == 0 {
 		return nil
 	}
