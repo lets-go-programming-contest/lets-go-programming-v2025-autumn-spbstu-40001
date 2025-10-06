@@ -32,9 +32,8 @@ func main() {
 		if b == 0 {
 			fmt.Println("Division by zero")
 			return
-		} else {
-			fmt.Println(a / b)
 		}
+		fmt.Println(a / b)
 	default:
 		fmt.Println("Invalid operation")
 	}
