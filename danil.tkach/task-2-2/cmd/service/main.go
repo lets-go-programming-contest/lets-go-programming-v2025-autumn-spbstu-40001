@@ -24,6 +24,7 @@ func (heap *MinHeap) Push(elem any) {
 	if !ok {
 		return
 	}
+
 	*heap = append(*heap, val)
 }
 
@@ -70,10 +71,13 @@ func main() {
 	if err != nil || index > dishesCount || index < 1 {
 		return
 	}
+
 	RemoveMinElements(myHeap, index)
+
 	if myHeap.Len() != index {
 		return
 	}
+
 	needDish := heap.Pop(myHeap)
 	fmt.Println(needDish)
 }
