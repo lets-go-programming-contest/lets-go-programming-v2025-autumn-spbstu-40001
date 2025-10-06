@@ -32,15 +32,16 @@ func main() {
 				fmt.Println("Invalid input")
 				return
 			}
-			if operator == ">=" {
+			switch operator {
+			case ">=":
 				if num > minLevel {
 					minLevel = num
 				}
-			} else if operator == "<=" {
+			case "<=":
 				if num < maxLevel {
 					maxLevel = num
 				}
-			} else {
+			default:
 				fmt.Printf("Invalid input")
 				return
 			}
