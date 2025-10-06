@@ -5,7 +5,12 @@ import (
 )
 
 func main() {
-	var department int
+	var (
+		department int
+		workers    int
+		num        int
+		operator   string
+	)
 
 	_, err := fmt.Scan(&department)
 	if err != nil {
@@ -15,8 +20,6 @@ func main() {
 	}
 
 	for range department {
-		var workers int
-
 		_, err = fmt.Scan(&workers)
 		if err != nil {
 			fmt.Println("Invalid input")
@@ -28,8 +31,6 @@ func main() {
 		maxLevel := 30
 
 		for range workers {
-			var operator string
-
 			_, err = fmt.Scan(&operator)
 			if err != nil {
 				fmt.Println("Invalid input")
@@ -37,10 +38,7 @@ func main() {
 				return
 			}
 
-			var num int
-
 			_, err = fmt.Scan(&num)
-
 			if err != nil {
 				fmt.Println("Invalid input")
 
