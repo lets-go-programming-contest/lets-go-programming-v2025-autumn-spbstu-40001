@@ -5,22 +5,26 @@ import (
 	"fmt"
 )
 
-func Calculate(operation string, op1, op2 int) (int, error) {
+var (
+	ErrZeroDivision     = errors.New("Division by zero")
+	ErrInvalidOperation = errors.New("Invalid operation")
+)
+
+func calculate(op1 int, operation string, op2 int) (int, error) {
 	switch operation {
 	case "+":
 		return op1 + op2, nil
-	case "*":
-		return op1 * op2, nil
 	case "-":
 		return op1 - op2, nil
+	case "*":
+		return op1 * op2, nil
 	case "/":
 		if op2 == 0 {
-			return 0, errors.New("division by zero")
+			return 0, ErrZeroDivision
 		}
 		return op1 / op2, nil
-	default:
-		return 0, errors.New("invalid operation")
 	}
+	return 0, ErrInvalidOperation
 }
 
 func main() {
@@ -29,29 +33,24 @@ func main() {
 		operation string
 	)
 
-	_, err := fmt.Scan(&op1)
-	if err != nil {
+	scanned, err := fmt.Scan(&op1, &op2, &operation)
+	switch {
+	case err == nil:
+	case scanned == 0:
 		fmt.Println("Invalid first operand")
 		return
-	}
-
-	_, err = fmt.Scan(&op2)
-	if err != nil {
+	case scanned == 1:
 		fmt.Println("Invalid second operand")
 		return
-	}
-
-	_, err = fmt.Scan(&operation)
-	if err != nil {
+	case scanned == 2:
 		fmt.Println("Invalid operation")
 		return
 	}
 
-	result, err := Calculate(operation, op1, op2)
+	res, err := calculate(op1, operation, op2)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-
-	fmt.Println(result)
+	fmt.Println(res)
 }
