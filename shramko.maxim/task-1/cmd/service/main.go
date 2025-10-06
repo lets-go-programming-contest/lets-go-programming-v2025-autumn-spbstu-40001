@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	ErrDivisionByZero = errors.New("Division by zero")
+	ErrDivisionByZero   = errors.New("Division by zero")
 	ErrInvalidOperation = errors.New("Invalid operation")
 )
 
@@ -30,7 +30,7 @@ func compute(firstOperand int, operator string, secondOperand int) (int, error) 
 func main() {
 	var (
 		firstNum, secondNum int
-		operator string
+		operator            string
 	)
 
 	scannedCount, scanErr := fmt.Scan(&firstNum, &secondNum, &operator)
