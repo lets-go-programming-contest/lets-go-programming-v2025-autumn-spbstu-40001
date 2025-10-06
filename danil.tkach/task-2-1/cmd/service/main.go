@@ -6,33 +6,38 @@ import (
 )
 
 const (
-	MinTemp  = 15
-	MaxTemp  = 30
-	ErrorMin = 31
-	ErrorMax = 14
+	MinTemp = 15
+	MaxTemp = 30
 )
 
-func processEmployee(currentMin, currentMax int) (int, int) {
-	var (
-		operation string
-		needTemp  int
-	)
+type TemperatureRange struct {
+	minT int
+	maxT int
+}
 
-	_, err := fmt.Scanf("%s %d\n", &operation, &needTemp)
-	if err != nil {
-		return ErrorMin, ErrorMax
+func NewTemperatureRange(minTemp, maxTemp int) *TemperatureRange {
+	return &TemperatureRange{
+		minT: minTemp,
+		maxT: maxTemp,
 	}
+}
 
+func (tr *TemperatureRange) Update(operation string, temp int) {
 	switch operation {
 	case "<=":
-		currentMax = int(math.Min(float64(currentMax), float64(needTemp)))
+		tr.maxT = int(math.Min(float64(tr.maxT), float64(temp)))
 	case ">=":
-		currentMin = int(math.Max(float64(currentMin), float64(needTemp)))
+		tr.minT = int(math.Max(float64(tr.minT), float64(temp)))
 	default:
-		return ErrorMin, ErrorMax
+		tr.minT = tr.maxT + 1
 	}
+}
 
-	return currentMin, currentMax
+func (tr *TemperatureRange) GetOptimalTemp() int {
+	if tr.minT > tr.maxT {
+		return -1
+	}
+	return tr.minT
 }
 
 func main() {
@@ -44,9 +49,6 @@ func main() {
 	}
 
 	for range departCount {
-		currentMin := MinTemp
-		currentMax := MaxTemp
-
 		var peopleCount int
 
 		_, err := fmt.Scanln(&peopleCount)
@@ -54,14 +56,21 @@ func main() {
 			return
 		}
 
-		for range peopleCount {
-			currentMin, currentMax = processEmployee(currentMin, currentMax)
+		tempRange := NewTemperatureRange(MinTemp, MaxTemp)
 
-			if currentMin <= currentMax && currentMax <= 30 && currentMin >= 15 {
-				fmt.Println(currentMin)
-			} else {
-				fmt.Println(-1)
+		for range peopleCount {
+			var (
+				operation string
+				needTemp  int
+			)
+
+			_, err := fmt.Scanf("%s %d\n", &operation, &needTemp)
+			if err != nil {
+				return
 			}
+
+			tempRange.Update(operation, needTemp)
+			fmt.Println(tempRange.GetOptimalTemp())
 		}
 	}
 }
