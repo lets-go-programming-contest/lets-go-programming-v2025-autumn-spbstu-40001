@@ -4,22 +4,20 @@ import (
 	"fmt"
 )
 
-func Min(a, b int) int {
-	if a < b {
-
-		return a
+func Min(first, second int) int {
+	if first < second {
+		return first
 	}
 
-	return b
+	return second
 }
 
-func Max(a, b int) int {
-	if a > b {
-
-		return a
+func Max(first, second int) int {
+	if first > second {
+		return first
 	}
 
-	return b
+	return second
 }
 
 func main() {
