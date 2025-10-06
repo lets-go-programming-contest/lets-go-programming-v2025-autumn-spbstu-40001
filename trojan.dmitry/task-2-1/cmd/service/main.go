@@ -4,6 +4,20 @@ import (
 	"fmt"
 )
 
+func Min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func Max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
 func main() {
 	var (
 		department int
@@ -47,13 +61,9 @@ func main() {
 
 			switch operator {
 			case ">=":
-				if num > minLevel {
-					minLevel = num
-				}
+				minLevel = Max(minLevel, num)
 			case "<=":
-				if num < maxLevel {
-					maxLevel = num
-				}
+				maxLevel = Min(maxLevel, num)
 			default:
 				fmt.Printf("Invalid input")
 
