@@ -20,21 +20,21 @@ func readOperation() (string, bool) {
 	return op, true
 }
 
-func calculate(a, b int, operation string) (string, bool) {
+func calculate(a, b int, operation string) string {
 	switch operation {
 	case "+":
-		return fmt.Sprintf("%d", a+b), true
+		return fmt.Sprintf("%d", a+b)
 	case "-":
-		return fmt.Sprintf("%d", a-b), true
+		return fmt.Sprintf("%d", a-b)
 	case "*":
-		return fmt.Sprintf("%d", a*b), true
+		return fmt.Sprintf("%d", a*b)
 	case "/":
 		if b == 0 {
-			return "Division by zero", false
+			return "Division by zero"
 		}
-		return fmt.Sprintf("%d", a/b), true
+		return fmt.Sprintf("%d", a/b)
 	default:
-		return "Invalid operation", false
+		return "Invalid operation"
 	}
 }
 
@@ -57,9 +57,6 @@ func main() {
 		return
 	}
 
-	result, success := calculate(first, second, operation)
+	result := calculate(first, second, operation)
 	fmt.Println(result)
-	if !success {
-		return
-	}
 }
