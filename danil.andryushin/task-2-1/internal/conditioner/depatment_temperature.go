@@ -8,7 +8,8 @@ import (
 
 var (
 	ErrInvalidEmployeesCount = errors.New("invalid employees count")
-	ErrReadWish              = errors.New("read employee wish")
+	ErrReadWish              = errors.New("invalid wish format")
+	ErrUnknownOperator       = errors.New("unknown operator")
 )
 
 const minTemp, maxTemp, wrongTemp int = 15, 30, -1
@@ -35,9 +36,13 @@ func CalcDepartmentTemperature(reader io.Reader, writer io.Writer) (*Wish, error
 			return nil, ErrReadWish
 		}
 
-		err = fulfilWish(&wish, operator, currentTemp)
-		if err != nil {
-			return nil, err
+		switch operator {
+		case ">=":
+			wish.UpdateMinTemp(currentTemp)
+		case "<=":
+			wish.UpdateMaxTemp(currentTemp)
+		default:
+			return nil, ErrUnknownOperator
 		}
 
 		if writer != nil {
@@ -55,19 +60,4 @@ func CalcDepartmentTemperature(reader io.Reader, writer io.Writer) (*Wish, error
 	}
 
 	return &wish, nil
-}
-
-var ErrUnknownOperator = errors.New("unknown operator")
-
-func fulfilWish(wish *Wish, operator string, currentTemp int) error {
-	switch operator {
-	case ">=":
-		wish.UpdateMinTemp(currentTemp)
-	case "<=":
-		wish.UpdateMaxTemp(currentTemp)
-	default:
-		return ErrUnknownOperator
-	}
-
-	return nil
 }
