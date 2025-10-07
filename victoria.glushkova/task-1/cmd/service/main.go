@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 )
 
 func readInt() (int, bool) {
@@ -43,24 +42,24 @@ func main() {
 	first, ok := readInt()
 	if !ok {
 		fmt.Println("Invalid first operand")
-		os.Exit(1)
+		return
 	}
 
 	second, ok := readInt()
 	if !ok {
 		fmt.Println("Invalid second operand")
-		os.Exit(1)
+		return
 	}
 
 	operation, ok := readOperation()
 	if !ok {
 		fmt.Println("Invalid operation")
-		os.Exit(1)
+		return
 	}
 
 	result, success := calculate(first, second, operation)
 	fmt.Println(result)
 	if !success {
-		os.Exit(1)
+		return
 	}
 }
