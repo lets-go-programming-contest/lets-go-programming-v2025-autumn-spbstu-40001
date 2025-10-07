@@ -26,6 +26,7 @@ func (iHeap *IntHeap) Push(x any) {
 
 		return
 	}
+
 	*iHeap = append(*iHeap, value)
 }
 
@@ -36,6 +37,14 @@ func (iHeap *IntHeap) Pop() any {
 	*iHeap = olhH[:length-1]
 
 	return last
+}
+
+func isValidRating(rating int) bool {
+	if rating < -10000 || rating > 10000 {
+		return false
+	}
+
+	return true
 }
 
 func removeMinUntil(dishHeap *IntHeap, numOfPreference int) {
@@ -59,12 +68,14 @@ func main() {
 
 	for range countOfDishes {
 		var rating int
+
 		_, err = fmt.Scan(&rating)
-		if err != nil || rating < -10000 || rating > 10000 {
+		if err != nil || !isValidRating(rating) {
 			fmt.Println("Invalid input")
 
 			return
 		}
+
 		heap.Push(dishHeap, rating)
 	}
 
@@ -84,5 +95,4 @@ func main() {
 	} else {
 		fmt.Println("Invalid input")
 	}
-
 }
