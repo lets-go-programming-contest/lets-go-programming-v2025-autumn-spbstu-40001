@@ -6,66 +6,68 @@ import (
 	"io"
 )
 
-var ErrInvalidEmployeesCount = errors.New("invalid employees count")
+var (
+	ErrInvalidEmployeesCount = errors.New("invalid employees count")
+	ErrReadWish              = errors.New("read employee wish")
+)
 
-func CalcDepartmentTemperature(reader io.Reader, writer io.Writer) (int, error) {
+const minTemp, maxTemp, wrongTemp int = 15, 30, -1
+
+func CalcDepartmentTemperature(reader io.Reader, writer io.Writer) (*Wish, error) {
 	var (
-		nEmployees  uint
-		wish        = Wish{15, 30}
-		temperature int
+		nEmployees uint
+		wish       = Wish{minTemp, maxTemp}
 	)
 
 	_, err := fmt.Fscan(reader, &nEmployees)
 	if err != nil {
-		return 0, ErrInvalidEmployeesCount
+		return nil, ErrInvalidEmployeesCount
 	}
 
 	for range nEmployees {
-		temperature, err = fulfilWish(&wish, reader)
+		var (
+			currentTemp int
+			operator    string
+		)
+
+		_, err := fmt.Fscan(reader, &operator, &currentTemp)
 		if err != nil {
-			return 0, err
+			return nil, ErrReadWish
+		}
+
+		err = fulfilWish(&wish, operator, currentTemp)
+		if err != nil {
+			return nil, err
 		}
 
 		if writer != nil {
-			_, err = fmt.Fprintln(writer, temperature)
+			temperature, err := wish.GetTemp()
 			if err != nil {
-				return 0, fmt.Errorf("invalid output stream: %w", err)
+				_, err = fmt.Fprintln(writer, wrongTemp)
+			} else {
+				_, err = fmt.Fprintln(writer, temperature)
+			}
+
+			if err != nil {
+				return nil, fmt.Errorf("invalid output stream: %w", err)
 			}
 		}
 	}
 
-	return temperature, nil
+	return &wish, nil
 }
 
-var (
-	ErrReadWish        = errors.New("failed to read employee wish")
-	ErrUnknownOperator = errors.New("unknown operator")
-)
+var ErrUnknownOperator = errors.New("unknown operator")
 
-func fulfilWish(wish *Wish, reader io.Reader) (int, error) {
-	var (
-		currentTemp int
-		operator    string
-	)
-
-	_, err := fmt.Fscan(reader, &operator, &currentTemp)
-	if err != nil {
-		return 0, ErrReadWish
-	}
-
+func fulfilWish(wish *Wish, operator string, currentTemp int) error {
 	switch operator {
 	case ">=":
 		wish.UpdateMinTemp(currentTemp)
 	case "<=":
 		wish.UpdateMaxTemp(currentTemp)
 	default:
-		return 0, ErrUnknownOperator
+		return ErrUnknownOperator
 	}
 
-	temp, err := wish.GetTemp()
-	if err != nil {
-		temp = -1
-	}
-
-	return temp, nil
+	return nil
 }

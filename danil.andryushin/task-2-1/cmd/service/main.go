@@ -11,8 +11,8 @@ func main() {
 	var nDepartments uint
 
 	_, err := fmt.Scan(&nDepartments)
-	if err != nil || nDepartments == 0 {
-		fmt.Println("invalid departments count")
+	if err != nil {
+		fmt.Println("invalid departments count:", err)
 
 		return
 	}
@@ -20,7 +20,7 @@ func main() {
 	for range nDepartments {
 		_, err = conditioner.CalcDepartmentTemperature(os.Stdin, os.Stdout)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("failed calculate department temperature:", err)
 
 			return
 		}
