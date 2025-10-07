@@ -27,45 +27,43 @@ func (comf *ComfortZone) changeTemperature(operation string, temp int) {
 }
 
 const (
-	minTemperature = 15
-	maxTemperature = 30
+	lowerTempLimit = 15
+	upperTempLimit = 30
 )
 
 func main() {
 	var departmentCount, employeesCount int
 
-	_, err := fmt.Scan(&departmentCount)
+	_, err := fmt.Scanln(&departmentCount)
 	if err != nil {
 		fmt.Println("Invalid input", err)
 
 		return
 	}
+
 	for range departmentCount {
-		_, err := fmt.Scanln(&employeesCount)
+		_, err = fmt.Scanln(&employeesCount)
 		if err != nil {
 			fmt.Println("Invalid input", err)
 
 			continue
 		}
-		comfortZone := ComfortZone{minTemperature, maxTemperature}
+
+		comfortZone := ComfortZone{lowerTempLimit, upperTempLimit}
+
 		for range employeesCount {
 			var (
 				operation string
 				temp      int
 			)
 
-			_, err := fmt.Scan(&operation)
+			_, err = fmt.Scanln(&operation, &temp)
 			if err != nil {
 				fmt.Println("Invalid input", err)
 
 				continue
 			}
-			_, err = fmt.Scan(&temp)
-			if err != nil {
-				fmt.Println("Invalid input", err)
 
-				continue
-			}
 			comfortZone.changeTemperature(operation, temp)
 		}
 	}
