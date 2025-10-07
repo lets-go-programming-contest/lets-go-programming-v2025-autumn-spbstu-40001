@@ -38,6 +38,5 @@ func main() {
 		fmt.Println(a / b)
 	default:
 		fmt.Println("Invalid operation")
-		return
 	}
 }
