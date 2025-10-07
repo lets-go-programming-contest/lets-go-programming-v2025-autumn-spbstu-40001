@@ -3,6 +3,8 @@ package main;
 import "fmt";
 import "os";
 
+import "github.com/Rychmick/task-3/internal/config";
+
 func main() {
 	args := os.Args;
 
@@ -11,11 +13,11 @@ func main() {
 		return;
 	}
 
-	yamlFileData, err := os.ReadFile(args[2]);
+	settings, err := config.Parse(args[2]);
 	if (err != nil) {
-		fmt.Println("failed to read config file:", err);
+		fmt.Println(err);
 		return;
 	}
 
-	fmt.Println(string(yamlFileData));
+	fmt.Println(settings.InputFilePath, settings.OutputFilePath);
 }
