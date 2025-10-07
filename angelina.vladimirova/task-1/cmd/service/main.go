@@ -1,56 +1,43 @@
 package main
 
-import (
-	"bufio"
-	"fmt"
-	"os"
-	"strconv"
-	"strings"
-)
+import "fmt"
 
 func main() {
-	r := bufio.NewReader(os.Stdin)
+	var a, b int
+	var op string
 
-	aStr, _ := r.ReadString('\n')
-	aStr = strings.TrimSpace(aStr)
-
-	a, err := strconv.Atoi(aStr)
+	_, err := fmt.Scan(&a)
 	if err != nil {
 		fmt.Println("Invalid first operand")
 		return
 	}
 
-	bStr, _ := r.ReadString('\n')
-	bStr = strings.TrimSpace(bStr)
-
-	b, err := strconv.Atoi(bStr)
+	_, err = fmt.Scan(&b)
 	if err != nil {
 		fmt.Println("Invalid second operand")
 		return
 	}
 
-	op, _ := r.ReadString('\n')
-	op = strings.TrimSpace(op)
-
-	var res int
+	_, err = fmt.Scan(&op)
+	if err != nil {
+		fmt.Println("Invalid operation")
+		return
+	}
 
 	switch op {
 	case "+":
-		res = a + b
+		fmt.Println(a + b)
 	case "-":
-		res = a - b
+		fmt.Println(a - b)
 	case "*":
-		res = a * b
+		fmt.Println(a * b)
 	case "/":
 		if b == 0 {
 			fmt.Println("Division by zero")
 			return
 		}
-		res = a / b
+		fmt.Println(a / b)
 	default:
 		fmt.Println("Invalid operation")
-		return
 	}
-
-	fmt.Println(res)
 }
