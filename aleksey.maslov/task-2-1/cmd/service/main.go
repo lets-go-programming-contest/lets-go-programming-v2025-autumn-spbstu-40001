@@ -2,10 +2,38 @@ package main
 
 import "fmt"
 
-type 
+type ComfortZone struct {
+	minTemp, maxTemp int
+}
+
+func (comf *ComfortZone) changeTemperature(operation string, temp int) {
+	switch operation {
+	case ">=":
+		if temp > comf.minTemp {
+			comf.minTemp = temp
+		}
+	case "<=":
+		if temp < comf.maxTemp {
+			comf.maxTemp = temp
+		}
+	default:
+		fmt.Println("Invalid operation")
+	}
+	if comf.minTemp > comf.maxTemp {
+		fmt.Println("-1")
+	} else {
+		fmt.Println(comf.minTemp)
+	}
+}
+
+const (
+	minTemperature = 15
+	maxTemperature = 30
+)
 
 func main() {
 	var departmentCount, employeesCount int
+
 	_, err := fmt.Scan(&departmentCount)
 	if err != nil {
 		fmt.Println("Invalid input", err)
@@ -19,48 +47,26 @@ func main() {
 
 			continue
 		}
-		processDepartment(employeesCount)
-	}
-}
+		comfortZone := ComfortZone{minTemperature, maxTemperature}
+		for range employeesCount {
+			var (
+				operation string
+				temp      int
+			)
 
-func processDepartment(employeesCount int) {
-	minTemperature := 15
-	maxTemperature := 30
-	var (
-		operation   string
-		temperature int
-	)
-	for range employeesCount {
-		_, err := fmt.Scan(&operation)
-		if err != nil {
-			fmt.Println("Invalid input", err)
+			_, err := fmt.Scan(&operation)
+			if err != nil {
+				fmt.Println("Invalid input", err)
 
-			continue
-		}
-		_, err = fmt.Scan(&temperature)
-		if err != nil {
-			fmt.Println("Invalid input", err)
-
-			continue
-		}
-		switch operation {
-		case ">=":
-			if temperature > minTemperature {
-				minTemperature = temperature
+				continue
 			}
-		case "<=":
-			if temperature < maxTemperature {
-				maxTemperature = temperature
-			}
-		default:
-			fmt.Println("Invalid operation", err)
+			_, err = fmt.Scan(&temp)
+			if err != nil {
+				fmt.Println("Invalid input", err)
 
-			continue
-		}
-		if minTemperature > maxTemperature {
-			fmt.Println("-1")
-		} else {
-			fmt.Println(minTemperature)
+				continue
+			}
+			comfortZone.changeTemperature(operation, temp)
 		}
 	}
 }
