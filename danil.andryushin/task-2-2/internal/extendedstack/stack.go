@@ -3,8 +3,8 @@ package extendedstack
 import "cmp"
 
 type Stack struct {
-	Functor func(int, int) bool
-	data    []int
+	Comparator func(int, int) bool
+	data       []int
 }
 
 func (obj *Stack) Len() int {
@@ -16,11 +16,11 @@ func (obj *Stack) Less(lhs, rhs int) bool {
 		panic("invalid index range")
 	}
 
-	if obj.Functor == nil {
+	if obj.Comparator == nil {
 		return cmp.Less(obj.data[lhs], obj.data[rhs])
 	}
 
-	return obj.Functor(obj.data[lhs], obj.data[rhs])
+	return obj.Comparator(obj.data[lhs], obj.data[rhs])
 }
 
 func (obj *Stack) Swap(lhs, rhs int) {

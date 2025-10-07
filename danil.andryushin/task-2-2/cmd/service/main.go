@@ -14,7 +14,7 @@ func Greater(a, b int) bool {
 func main() {
 	var (
 		nDishes int
-		dishes  = &extendedstack.Stack{Functor: Greater}
+		dishes  = &extendedstack.Stack{Comparator: Greater}
 	)
 
 	heap.Init(dishes)
