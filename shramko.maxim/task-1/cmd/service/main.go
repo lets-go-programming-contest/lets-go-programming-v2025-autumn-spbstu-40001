@@ -31,11 +31,13 @@ func main() {
 	var (
 		firstNum, secondNum int
 		operator            string
+		err                 error
 	)
 
-	scannedCount, scanErr := fmt.Scan(&firstNum, &secondNum, &operator)
+	var scannedCount int
+	scannedCount, err = fmt.Scan(&firstNum, &secondNum, &operator)
 	switch {
-	case scanErr == nil:
+	case err == nil:
 	case scannedCount == 0:
 		fmt.Println("Invalid first operand")
 		return
@@ -47,9 +49,10 @@ func main() {
 		return
 	}
 
-	result, calcErr := compute(firstNum, operator, secondNum)
-	if calcErr != nil {
-		fmt.Println(calcErr)
+	var result int
+	result, err = compute(firstNum, operator, secondNum)
+	if err != nil {
+		fmt.Println(err)
 		return
 	}
 	fmt.Println(result)
