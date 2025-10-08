@@ -8,15 +8,25 @@ import "encoding/xml";
 import "golang.org/x/net/html/charset";
 
 type Currency struct {
-	XMLName xml.Name `xml:"Valute"`;
+	XMLName xml.Name `xml:"Valute" json:"-"`;
 	NumCode uint `json:"num_code"`;
 	CharCode string `json:"char_code"`;
 	ValueStr string `xml:"Value" json:"-"`;
 	Value float32 `xml:"-" json:"value"`;
 }
 type CurrencyRates struct {
-	XMLName xml.Name `xml:"ValCurs"`;
+	XMLName xml.Name `xml:"ValCurs" json:"-"`;
 	Rates []Currency `xml:"Valute"`;
+}
+
+func (rates *CurrencyRates) Len() int {
+	return len(rates.Rates);
+}
+func (rates *CurrencyRates) Less(i, j int) bool {
+	return rates.Rates[i].Value < rates.Rates[j].Value;
+}
+func (rates *CurrencyRates) Swap(i, j int) {
+	rates.Rates[i], rates.Rates[j] = rates.Rates[j], rates.Rates[i];
 }
 
 func Prepare(rates *CurrencyRates) error {
