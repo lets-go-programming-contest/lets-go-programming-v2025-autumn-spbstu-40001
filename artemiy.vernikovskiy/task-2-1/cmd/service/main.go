@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
+	"io"
+
+	"github.com/Aapng-cmd/task-2-1/internal/freezer"
 )
 
 func main() {
 	var (
-		nNumberOfOlimpic, kEmployeesCount int
-		minTemp, maxTemp                  int
-		optimalTemp                       int
-		border                            string
+		nNumberOfOlimpic int
+		reader           io.Reader
 	)
 
 	_, err := fmt.Scan(&nNumberOfOlimpic)
@@ -19,40 +20,8 @@ func main() {
 		return
 	}
 
-	for range nNumberOfOlimpic {
-		_, err = fmt.Scan(&kEmployeesCount)
-		if err != nil || kEmployeesCount < 0 {
-			fmt.Println("Invalid employees count")
-
-			return
-		}
-
-		minTemp = 15
-		maxTemp = 30
-		optimalTemp = 0
-
-		for range kEmployeesCount {
-			_, err = fmt.Scan(&border, &optimalTemp)
-			if err != nil {
-				fmt.Println("Invalid temperature")
-
-				return
-			}
-
-			switch border {
-			case ">=":
-				minTemp = max(minTemp, optimalTemp)
-			case "<=":
-				maxTemp = min(maxTemp, optimalTemp)
-			default:
-				fmt.Println("Wrong operator")
-			}
-
-			if maxTemp >= minTemp {
-				fmt.Println(minTemp)
-			} else {
-				fmt.Println(-1)
-			}
-		}
+	err = freezer.CalcForDepartment(reader, nNumberOfOlimpic)
+	if err != nil {
+		fmt.Println(err)
 	}
 }
