@@ -37,7 +37,7 @@ func Calc(reader io.Reader) (int, error) {
 		return errTemp, nil
 	}
 
-	return minTemp, nil
+	return maxTemp, nil
 }
 
 func CalcForEmployee(reader io.Reader, kEmployeesCount int) error {
