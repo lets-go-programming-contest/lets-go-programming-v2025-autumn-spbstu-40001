@@ -2,6 +2,12 @@ package main
 
 import "fmt"
 
+const (
+	defaultLowerBound = 15
+	defaultUpperBound = 30
+	invalidTemp       = -1
+)
+
 type ClimateController struct {
 	lowerBound int
 	upperBound int
@@ -10,8 +16,8 @@ type ClimateController struct {
 
 func NewClimateController() *ClimateController {
 	return &ClimateController{
-		lowerBound: 15,
-		upperBound: 30,
+		lowerBound: defaultLowerBound,
+		upperBound: defaultUpperBound,
 		valid:      true,
 	}
 }
@@ -39,8 +45,9 @@ func (cc *ClimateController) ApplyConstraint(operator string, value int) {
 
 func (cc *ClimateController) FindComfortableTemperature() int {
 	if !cc.valid {
-		return -1
+		return invalidTemp
 	}
+
 	return cc.lowerBound
 }
 
