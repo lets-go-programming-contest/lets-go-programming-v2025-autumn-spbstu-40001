@@ -13,9 +13,14 @@ func Calc(reader io.Reader) (int, error) {
 		minTemp, maxTemp, errTemp = 15, 30, -1
 	)
 
+	var (
+		ErrInvalidTemperature = errors.New("Invalid temperature")
+		ErrWrongOperator      = errors.New("Wrong operator")
+	)
+
 	_, err := fmt.Fscan(reader, &border, &optimalTemp)
 	if err != nil {
-		return errTemp, errors.New("Invalid temperature")
+		return errTemp, ErrInvalidTemperature
 	}
 
 	switch border {
@@ -24,7 +29,7 @@ func Calc(reader io.Reader) (int, error) {
 	case "<=":
 		maxTemp = min(maxTemp, optimalTemp)
 	default:
-		return errTemp, errors.New("Wrong operator")
+		return errTemp, ErrWrongOperator
 	}
 
 	if maxTemp < minTemp {
@@ -48,11 +53,15 @@ func CalcForEmployee(reader io.Reader, kEmployeesCount int) error {
 }
 
 func CalcForDepartment(reader io.Reader, nNumberOfOlimpic int) error {
-	var kEmployeesCount int
+	var (
+		kEmployeesCount          int
+		ErrInvalidEmployeesCount = errors.New("Invalid employees count")
+	)
+
 	for range nNumberOfOlimpic {
 		_, err := fmt.Fscan(reader, &kEmployeesCount)
 		if err != nil || kEmployeesCount < 0 {
-			return errors.New("Invalid employees count")
+			return ErrInvalidEmployeesCount
 		}
 
 		err = CalcForEmployee(reader, kEmployeesCount)
