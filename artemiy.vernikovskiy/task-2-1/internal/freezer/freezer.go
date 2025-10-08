@@ -12,11 +12,13 @@ var (
 	ErrInvalidEmployeesCount = errors.New("invalid employees count")
 )
 
+var minTemp, maxTemp int
+
 func Calc(reader io.Reader) (int, error) {
 	var (
-		optimalTemp               int
-		border                    string
-		minTemp, maxTemp, errTemp = 15, 30, -1
+		optimalTemp int
+		border      string
+		errTemp     = -1
 	)
 
 	_, err := fmt.Fscan(reader, &border, &optimalTemp)
@@ -37,10 +39,12 @@ func Calc(reader io.Reader) (int, error) {
 		return errTemp, nil
 	}
 
-	return maxTemp, nil
+	return minTemp, nil
 }
 
 func CalcForEmployee(reader io.Reader, kEmployeesCount int) error {
+	minTemp, maxTemp = 15, 30
+
 	for range kEmployeesCount {
 		resultOfCalc, err := Calc(reader)
 		if err != nil {
