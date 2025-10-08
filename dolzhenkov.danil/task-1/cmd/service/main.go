@@ -6,34 +6,46 @@ import (
 
 func main() {
 	var (
-		a, b int
-		op   string
+		op1, op2  int
+		operation string
 	)
 
-	_, err := fmt.Scan(&a, &b, &op)
+	// Читаем первый операнд
+	_, err := fmt.Scan(&op1)
 	if err != nil {
-		fmt.Println("Input error")
+		fmt.Println("Invalid first operand")
 		return
 	}
 
-	result := 0
-	switch op {
+	// Читаем второй операнд
+	_, err = fmt.Scan(&op2)
+	if err != nil {
+		fmt.Println("Invalid second operand")
+		return
+	}
+
+	// Читаем операцию
+	_, err = fmt.Scan(&operation)
+	if err != nil {
+		fmt.Println("Invalid operation")
+		return
+	}
+
+	// Выполняем операцию
+	switch operation {
 	case "+":
-		result = a + b
+		fmt.Printf("%d\n", op1+op2)
 	case "-":
-		result = a - b
+		fmt.Printf("%d\n", op1-op2)
 	case "*":
-		result = a * b
+		fmt.Printf("%d\n", op1*op2)
 	case "/":
-		if b == 0 {
+		if op2 == 0 {
 			fmt.Println("Division by zero")
 			return
 		}
-		result = a / b
+		fmt.Printf("%d\n", op1/op2)
 	default:
-		fmt.Println("Unknown operation")
-		return
+		fmt.Println("Invalid operation")
 	}
-
-	fmt.Print(result)
 }
