@@ -12,46 +12,33 @@ var (
 	ErrInvalidEmployeesCount = errors.New("invalid employees count")
 )
 
-var minTemp, maxTemp int
-
-func Calc(reader io.Reader) (int, error) {
+func CalcForEmployee(reader io.Reader, kEmployeesCount int) error {
 	var (
-		optimalTemp int
-		border      string
-		errTemp     = -1
+		optimalTemp               int
+		border                    string
+		minTemp, maxTemp, errTemp = 15, 30, -1
 	)
 
-	_, err := fmt.Fscan(reader, &border, &optimalTemp)
-	if err != nil {
-		return errTemp, ErrInvalidTemperature
-	}
-
-	switch border {
-	case ">=":
-		minTemp = max(minTemp, optimalTemp)
-	case "<=":
-		maxTemp = min(maxTemp, optimalTemp)
-	default:
-		return errTemp, ErrWrongOperator
-	}
-
-	if maxTemp < minTemp {
-		return errTemp, nil
-	}
-
-	return minTemp, nil
-}
-
-func CalcForEmployee(reader io.Reader, kEmployeesCount int) error {
-	minTemp, maxTemp = 15, 30
-
 	for range kEmployeesCount {
-		resultOfCalc, err := Calc(reader)
+		_, err := fmt.Fscan(reader, &border, &optimalTemp)
 		if err != nil {
-			return err
+			return ErrInvalidTemperature
 		}
 
-		fmt.Println(resultOfCalc)
+		switch border {
+		case ">=":
+			minTemp = max(minTemp, optimalTemp)
+		case "<=":
+			maxTemp = min(maxTemp, optimalTemp)
+		default:
+			return ErrWrongOperator
+		}
+
+		if maxTemp < minTemp {
+			fmt.Println(errTemp)
+		} else {
+			fmt.Println(minTemp)
+		}
 	}
 
 	return nil
