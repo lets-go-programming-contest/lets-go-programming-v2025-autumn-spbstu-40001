@@ -6,14 +6,13 @@ import (
 	"io"
 )
 
-var minTemp, maxTemp, errTemp = 15, 30, -1
-
-var (
-	optimalTemp int
-	border      string
-)
-
 func Calc(reader io.Reader) (int, error) {
+	var (
+		optimalTemp               int
+		border                    string
+		minTemp, maxTemp, errTemp = 15, 30, -1
+	)
+
 	_, err := fmt.Fscan(reader, &border, &optimalTemp)
 	if err != nil {
 		return errTemp, errors.New("Invalid temperature")
@@ -36,7 +35,6 @@ func Calc(reader io.Reader) (int, error) {
 }
 
 func CalcForEmployee(reader io.Reader, kEmployeesCount int) error {
-	// var resultOfCalc int
 	for range kEmployeesCount {
 		resultOfCalc, err := Calc(reader)
 		if err != nil {
