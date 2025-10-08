@@ -7,9 +7,9 @@ import (
 )
 
 var (
-	ErrInvalidTemperature    = errors.New("Invalid temperature")
-	ErrWrongOperator         = errors.New("Wrong operator")
-	ErrInvalidEmployeesCount = errors.New("Invalid employees count")
+	ErrInvalidTemperature    = errors.New("invalid temperature")
+	ErrWrongOperator         = errors.New("wrong operator")
+	ErrInvalidEmployeesCount = errors.New("invalid employees count")
 )
 
 func Calc(reader io.Reader) (int, error) {
