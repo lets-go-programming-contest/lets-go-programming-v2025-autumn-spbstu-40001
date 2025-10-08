@@ -6,16 +6,17 @@ import (
 	"io"
 )
 
+var (
+	ErrInvalidTemperature    = errors.New("Invalid temperature")
+	ErrWrongOperator         = errors.New("Wrong operator")
+	ErrInvalidEmployeesCount = errors.New("Invalid employees count")
+)
+
 func Calc(reader io.Reader) (int, error) {
 	var (
 		optimalTemp               int
 		border                    string
 		minTemp, maxTemp, errTemp = 15, 30, -1
-	)
-
-	var (
-		ErrInvalidTemperature = errors.New("Invalid temperature")
-		ErrWrongOperator      = errors.New("Wrong operator")
 	)
 
 	_, err := fmt.Fscan(reader, &border, &optimalTemp)
@@ -53,10 +54,7 @@ func CalcForEmployee(reader io.Reader, kEmployeesCount int) error {
 }
 
 func CalcForDepartment(reader io.Reader, nNumberOfOlimpic int) error {
-	var (
-		kEmployeesCount          int
-		ErrInvalidEmployeesCount = errors.New("Invalid employees count")
-	)
+	var kEmployeesCount int
 
 	for range nNumberOfOlimpic {
 		_, err := fmt.Fscan(reader, &kEmployeesCount)
