@@ -2,6 +2,8 @@ package main;
 
 import "fmt";
 import "os";
+import "sort";
+import "encoding/json"
 
 import "github.com/Rychmick/task-3/internal/config";
 import "github.com/Rychmick/task-3/internal/currency";
@@ -31,5 +33,17 @@ func main() {
 		return;
 	}
 
-	fmt.Println(currencyList);
+	sort.Sort(&currencyList);
+
+	serialized, err := json.MarshalIndent(currencyList.Rates, "", "\t");
+	if (err != nil) {
+		fmt.Println("failed to serialize data to json:", err);
+		return;
+	}
+
+	err = os.WriteFile(settings.OutputFilePath, append(serialized, '\n'), os.FileMode(os.O_RDWR << 6));
+	if (err != nil) {
+		fmt.Println("failed to write output file:", err);
+		return;
+	}
 }
