@@ -4,6 +4,7 @@ import "fmt";
 import "os";
 
 import "github.com/Rychmick/task-3/internal/config";
+import "github.com/Rychmick/task-3/internal/currency";
 
 func main() {
 	args := os.Args;
@@ -19,5 +20,16 @@ func main() {
 		return;
 	}
 
-	fmt.Println(settings.InputFilePath, settings.OutputFilePath);
+	currencyList, err := currency.ParseXml(settings.InputFilePath);
+	if (err != nil) {
+		fmt.Println(err);
+		return;
+	}
+	err = currency.Prepare(&currencyList);
+	if (err != nil) {
+		fmt.Println(err);
+		return;
+	}
+
+	fmt.Println(currencyList);
 }
