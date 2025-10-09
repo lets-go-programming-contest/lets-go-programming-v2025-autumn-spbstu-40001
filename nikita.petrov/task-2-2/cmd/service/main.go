@@ -8,11 +8,13 @@ import (
 type IntHeap []int
 
 func (h *IntHeap) Len() int {
+
 	return len(*h)
 }
 
 func (h *IntHeap) Less(i, j int) bool {
 	myHeap := *h
+
 	return myHeap[i] > myHeap[j]
 }
 
@@ -22,12 +24,14 @@ func (h *IntHeap) Swap(i, j int) {
 }
 
 func (h *IntHeap) Push(x any) {
-	_, ok := x.(int)
+	val, ok := x.(int)
+
 	if !ok {
+		fmt.Println("Can't convert to int")
 
 		return
 	}
-	*h = append(*h, x.(int))
+	*h = append(*h, val)
 }
 
 func (h *IntHeap) Pop() any {
@@ -43,6 +47,7 @@ func main() {
 	var dishesNumber int
 
 	_, err := fmt.Scan(&dishesNumber)
+
 	if err != nil {
 		fmt.Println("Parse error")
 
@@ -54,6 +59,7 @@ func main() {
 	for range dishesNumber {
 		var dishRating int
 		_, err = fmt.Scan(&dishRating)
+
 		if err != nil {
 			fmt.Println("Parse error")
 
