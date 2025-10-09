@@ -7,7 +7,7 @@ func (heap *Heap) Len() int {
 }
 
 func (heap *Heap) Less(firstIndex, secondIndex int) bool {
-	return (heap)[firstIndex] < (heap)[secondIndex]
+	return (*heap)[firstIndex] < (*heap)[secondIndex]
 }
 
 func (heap *Heap) Swap(firstIndex, secondIndex int) {
