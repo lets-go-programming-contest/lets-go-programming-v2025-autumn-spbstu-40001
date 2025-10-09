@@ -2,9 +2,14 @@ package main
 
 import "fmt"
 
+const (
+	minComfortTemp = 15
+	maxComfortTemp = 30
+)
+
 func main() {
 	var departmentCount int
-	_, err := fmt.Scanln(&departmentCount)
+	_, err := fmt.Scan(&departmentCount)
 	if err != nil {
 		fmt.Println("Invalid input", err)
 		return
@@ -16,11 +21,13 @@ func main() {
 			fmt.Println("Invalid input", err)
 			return
 		}
-		minTemp := 15
-		maxTemp := 30
+		minTemp := minComfortTemp
+		maxTemp := maxComfortTemp
 		for range employeeCount {
-			var operation string
-			var temperature int
+			var (
+				operation   string
+				temperature int
+			)
 			_, err := fmt.Scan(&operation, &temperature)
 			if err != nil {
 				fmt.Println("Invalid input", err)
