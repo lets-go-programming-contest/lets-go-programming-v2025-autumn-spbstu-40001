@@ -1,6 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"container/heap"
+	"fmt"
+
+	"github.com/A1exMas1ov/task-2-2/internal/intheap"
+)
 
 func main() {
 	var dishesCount int
@@ -11,7 +16,9 @@ func main() {
 
 		return
 	}
-	//create heap
+
+	ratings := &intheap.IntHeap{}
+
 	for range dishesCount {
 		var rating int
 
@@ -21,7 +28,7 @@ func main() {
 
 			return
 		}
-		//push
+		heap.Push(ratings, rating)
 	}
 
 	var selectedDish int
@@ -33,6 +40,6 @@ func main() {
 		return
 	}
 
-	result := //func
-		fmt.println(result)
+	/*result := //func
+	fmt.println(result)*/
 }
