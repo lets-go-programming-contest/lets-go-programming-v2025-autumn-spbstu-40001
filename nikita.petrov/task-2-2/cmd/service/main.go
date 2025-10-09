@@ -7,19 +7,26 @@ import (
 
 type IntHeap []int
 
-func (h IntHeap) Len() int {
-	return len(h)
+func (h *IntHeap) Len() int {
+	return len(*h)
 }
 
-func (h IntHeap) Less(i, j int) bool {
-	return h[i] > h[j]
+func (h *IntHeap) Less(i, j int) bool {
+	myHeap := *h
+	return myHeap[i] > myHeap[j]
 }
 
-func (h IntHeap) Swap(i, j int) {
-	h[i], h[j] = h[j], h[i]
+func (h *IntHeap) Swap(i, j int) {
+	myHeap := *h
+	myHeap[i], myHeap[j] = myHeap[j], myHeap[i]
 }
 
 func (h *IntHeap) Push(x any) {
+	_, ok := x.(int)
+	if !ok {
+
+		return
+	}
 	*h = append(*h, x.(int))
 }
 
@@ -28,6 +35,7 @@ func (h *IntHeap) Pop() any {
 	n := len(old)
 	x := old[n-1]
 	*h = old[0 : n-1]
+
 	return x
 }
 
@@ -58,8 +66,11 @@ func main() {
 	var wishedDish int
 
 	_, err = fmt.Scan(&wishedDish)
+
 	if err != nil {
 		fmt.Println("Parse error")
+
+		return
 	}
 
 	for range wishedDish - 1 {
