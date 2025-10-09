@@ -2,6 +2,7 @@ package main
 
 import (
 	"cmp"
+	"flag"
 	"fmt"
 	"os"
 	"slices"
@@ -10,36 +11,26 @@ import (
 	"github.com/Rychmick/task-3/internal/currency"
 )
 
-const (
-	RequiredArgsCount = 3
-	RwOwnerROthers    = os.FileMode(0o644)
-)
+const DefaultFileMode = os.FileMode(0o666)
 
-func LessValue(lhs, rhs currency.Currency) int {
-	return cmp.Compare(lhs.Value, rhs.Value)
+func CompareValues(lhs, rhs currency.Currency) int {
+	return -cmp.Compare(lhs.Value, rhs.Value)
 }
 
 func main() {
-	args := os.Args
+	var settingsPath string
 
-	if (len(args) != RequiredArgsCount) || (args[1] != "--config") {
-		fmt.Println("missing --config <file> in cmd args")
+	flag.StringVar(&settingsPath, "config", "", "set YAML settings file")
+	flag.Parse()
 
-		return
-	}
-
-	settings, err := config.Parse(args[2])
+	settings, err := config.Parse(settingsPath)
 	if err != nil {
-		fmt.Println(err)
-
-		return
+		panic(err)
 	}
 
 	currencyList, err := currency.ParseXML(settings.InputFilePath)
 	if err != nil {
-		fmt.Println(err)
-
-		return
+		panic(err)
 	}
 
 	err = currency.Prepare(&currencyList)
@@ -49,9 +40,9 @@ func main() {
 		return
 	}
 
-	slices.SortStableFunc(currencyList.Rates, LessValue)
+	slices.SortStableFunc(currencyList.Rates, CompareValues)
 
-	err = currency.ForceWriteAsJson(&currencyList, settings.OutputFilePath, RwOwnerROthers)
+	err = currency.ForceWriteAsJSON(&currencyList, settings.OutputFilePath, DefaultFileMode)
 	if err != nil {
 		fmt.Println(err)
 

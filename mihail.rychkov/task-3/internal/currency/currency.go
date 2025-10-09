@@ -26,7 +26,7 @@ type CurrencyRates struct {
 
 func Prepare(rates *CurrencyRates) error {
 	for idx := range len(rates.Rates) {
-		value, err := strconv.ParseFloat(strings.ReplaceAll(rates.Rates[idx].ValueStr, ",", "."), 32)
+		value, err := strconv.ParseFloat(strings.Replace(rates.Rates[idx].ValueStr, ",", ".", 1), 32)
 		if err != nil {
 			return fmt.Errorf("failed to parse rate value: %w", err)
 		}
@@ -60,18 +60,18 @@ func ParseXML(xmlPath string) (CurrencyRates, error) {
 	return result, nil
 }
 
-func ForceWriteAsJson(rates *CurrencyRates, outPath string, defaultMode os.FileMode) error {
+func ForceWriteAsJSON(rates *CurrencyRates, outPath string, defaultMode os.FileMode) error {
 	serialized, err := json.MarshalIndent(rates.Rates, "", "\t")
 	if err != nil {
 		return fmt.Errorf("failed to serialize data to json: %w", err)
 	}
 
-	err = os.MkdirAll(filepath.Dir(outPath), os.ModeDir|defaultMode)
+	err = os.MkdirAll(filepath.Dir(outPath), defaultMode)
 	if err != nil {
 		return fmt.Errorf("failed to make required directories: %w", err)
 	}
 
-	err = os.WriteFile(outPath, append(serialized, '\n'), defaultMode)
+	err = os.WriteFile(outPath, serialized, defaultMode)
 	if err != nil {
 		return fmt.Errorf("failed to write output file: %w", err)
 	}
