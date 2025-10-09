@@ -30,17 +30,17 @@ func main() {
 
 	switch operation {
 	case "+":
-		fmt.Printf("%d\n", op1+op2)
+		fmt.Println(op1 + op2)
 	case "-":
-		fmt.Printf("%d\n", op1-op2)
+		fmt.Println(op1 - op2)
 	case "*":
-		fmt.Printf("%d\n", op1*op2)
+		fmt.Println(op1 * op2)
 	case "/":
 		if op2 == 0 {
 			fmt.Println("Division by zero")
 			return
 		}
-		fmt.Printf("%d\n", op1/op2)
+		fmt.Println(op1 / op2)
 	default:
 		fmt.Println("Invalid operation")
 	}
