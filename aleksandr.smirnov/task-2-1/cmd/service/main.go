@@ -9,5 +9,21 @@ func main() {
 		fmt.Println("Invalid input", err)
 		return
 	}
-	fmt.Printf("Прочитано отделов: %d\n", departmentCount)
+	for range departmentCount {
+		var employeeCount int
+		_, err := fmt.Scan(&employeeCount)
+		if err != nil {
+			fmt.Println("Invalid input", err)
+			return
+		}
+		for range employeeCount {
+			var operation string
+			var temperature int
+			_, err := fmt.Scan(&operation, &temperature)
+			if err != nil {
+				fmt.Println("Invalid input", err)
+				return
+			}
+		}
+	}
 }
