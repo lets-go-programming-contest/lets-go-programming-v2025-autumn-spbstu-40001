@@ -62,10 +62,10 @@ func main() {
 
 			tempRange.Update(operation, temperature)
 
-			if minComfortTemp > maxComfortTemp {
+			if tempRange.min > tempRange.max {
 				fmt.Println(-1)
 			} else {
-				fmt.Println(minComfortTemp)
+				fmt.Println(tempRange.min)
 			}
 		}
 	}
