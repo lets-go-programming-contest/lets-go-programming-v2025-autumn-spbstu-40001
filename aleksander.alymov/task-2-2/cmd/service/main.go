@@ -62,8 +62,10 @@ func (k *KthPreferenceFinder) FindKthPreference(kth int) int {
 
 	var result int
 
-	for index := 0; index < kth; index++ {
+	index := 0
+	for index < kth {
 		dish := heap.Pop(k.dishes)
+
 		dishValue, ok := dish.(int)
 		if !ok {
 			return -1
@@ -74,10 +76,13 @@ func (k *KthPreferenceFinder) FindKthPreference(kth int) int {
 		}
 
 		heap.Push(tempHeap, dishValue)
+
+		index++
 	}
 
 	for tempHeap.Len() > 0 {
 		dish := heap.Pop(tempHeap)
+
 		dishValue, ok := dish.(int)
 		if !ok {
 			return -1
@@ -90,7 +95,8 @@ func (k *KthPreferenceFinder) FindKthPreference(kth int) int {
 }
 
 func main() {
-	var dishCount, preferenceOrder int
+	var dishCount int
+	var preferenceOrder int
 
 	_, err := fmt.Scan(&dishCount)
 	if err != nil {
@@ -99,7 +105,8 @@ func main() {
 
 	finder := NewKthPreferenceFinder()
 
-	for index := 0; index < dishCount; index++ {
+	index := 0
+	for index < dishCount {
 		var rating int
 
 		_, err := fmt.Scan(&rating)
@@ -108,6 +115,8 @@ func main() {
 		}
 
 		finder.AddDish(rating)
+
+		index++
 	}
 
 	_, err = fmt.Scan(&preferenceOrder)
