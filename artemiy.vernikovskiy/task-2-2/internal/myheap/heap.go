@@ -1,4 +1,4 @@
-package my_heap
+package myheap
 
 type Heap []int
 

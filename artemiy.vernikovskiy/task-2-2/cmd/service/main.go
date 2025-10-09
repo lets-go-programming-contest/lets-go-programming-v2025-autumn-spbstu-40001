@@ -4,7 +4,7 @@ import (
 	"container/heap"
 	"fmt"
 
-	"github.com/Aapng-cmd/task-2-2/internal/my_heap"
+	"github.com/Aapng-cmd/task-2-2/internal/myheap"
 )
 
 func main() {
