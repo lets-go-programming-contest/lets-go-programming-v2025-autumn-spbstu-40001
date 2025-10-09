@@ -17,7 +17,7 @@ func Parse(configPath string) (Settings, error) {
 
 	yamlFileData, err := os.ReadFile(configPath)
 	if err != nil {
-		return result, fmt.Errorf("failed to read config file: %w", err)
+		return result, fmt.Errorf("cannot read config file: %w", err)
 	}
 
 	err = yaml.Unmarshal(yamlFileData, &result)

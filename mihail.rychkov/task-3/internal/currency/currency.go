@@ -1,6 +1,7 @@
 package currency
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
@@ -40,16 +41,12 @@ func Prepare(rates *CurrencyRates) error {
 func ParseXML(xmlPath string) (CurrencyRates, error) {
 	var result CurrencyRates
 
-	xmlFile, err := os.Open(xmlPath)
+	xmlFileData, err := os.ReadFile(xmlPath)
 	if err != nil {
-		return result, fmt.Errorf("failed to open currency list xml file: %w", err)
+		return result, fmt.Errorf("cannot read currency list xml file: %w", err)
 	}
 
-	defer func() {
-		_ = xmlFile.Close()
-	}()
-
-	decoder := xml.NewDecoder(xmlFile)
+	decoder := xml.NewDecoder(bytes.NewReader(xmlFileData))
 	decoder.CharsetReader = charset.NewReaderLabel
 
 	err = decoder.Decode(&result)
@@ -60,7 +57,7 @@ func ParseXML(xmlPath string) (CurrencyRates, error) {
 	return result, nil
 }
 
-func ForceWriteAsJSON(rates *CurrencyRates, outPath string, defaultMode os.FileMode) error {
+func ForceWriteToJSON(rates *CurrencyRates, outPath string, defaultMode os.FileMode) error {
 	serialized, err := json.MarshalIndent(rates.Rates, "", "\t")
 	if err != nil {
 		return fmt.Errorf("failed to serialize data to json: %w", err)
@@ -68,12 +65,12 @@ func ForceWriteAsJSON(rates *CurrencyRates, outPath string, defaultMode os.FileM
 
 	err = os.MkdirAll(filepath.Dir(outPath), defaultMode)
 	if err != nil {
-		return fmt.Errorf("failed to make required directories: %w", err)
+		return fmt.Errorf("cannot create required directories: %w", err)
 	}
 
 	err = os.WriteFile(outPath, serialized, defaultMode)
 	if err != nil {
-		return fmt.Errorf("failed to write output file: %w", err)
+		return fmt.Errorf("cannot write output file: %w", err)
 	}
 
 	return nil
