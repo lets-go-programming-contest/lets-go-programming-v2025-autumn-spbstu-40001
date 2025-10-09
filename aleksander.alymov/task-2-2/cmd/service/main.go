@@ -119,7 +119,9 @@ func main() {
 	}
 
 	var preferenceOrder int
+
 	_, err = fmt.Scan(&preferenceOrder)
+
 	if err != nil {
 		return
 	}
