@@ -58,6 +58,7 @@ func main() {
 	for range dishesNumber {
 		var dishRating int
 		_, err = fmt.Scan(&dishRating)
+
 		if err != nil {
 			fmt.Println("Parse error")
 
@@ -68,11 +69,11 @@ func main() {
 	}
 
 	var wishedDish int
-
 	_, err = fmt.Scan(&wishedDish)
 
 	if err != nil {
 		fmt.Println("Parse error")
+
 		return
 	}
 
