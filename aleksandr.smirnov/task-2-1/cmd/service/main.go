@@ -9,30 +9,38 @@ const (
 
 func main() {
 	var departmentCount int
+
 	_, err := fmt.Scan(&departmentCount)
 	if err != nil {
-		fmt.Println("Invalid input", err)
+		fmt.Println("Invalid input")
+
 		return
 	}
+
 	for range departmentCount {
 		var employeeCount int
+
 		_, err := fmt.Scan(&employeeCount)
 		if err != nil {
-			fmt.Println("Invalid input", err)
+			fmt.Println("Invalid input")
+
 			return
 		}
+
 		minTemp := minComfortTemp
 		maxTemp := maxComfortTemp
+
 		for range employeeCount {
-			var (
-				operation   string
-				temperature int
-			)
+			var operation string
+			var temperature int
+
 			_, err := fmt.Scan(&operation, &temperature)
 			if err != nil {
-				fmt.Println("Invalid input", err)
+				fmt.Println("Invalid input")
+
 				return
 			}
+
 			switch operation {
 			case ">=":
 				if temperature > minTemp {
@@ -43,6 +51,7 @@ func main() {
 					maxTemp = temperature
 				}
 			}
+
 			if minTemp > maxTemp {
 				fmt.Println(-1)
 			} else {
