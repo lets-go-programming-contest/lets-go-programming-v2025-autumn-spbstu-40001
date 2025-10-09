@@ -10,7 +10,7 @@ import (
 func main() {
 	var dishesCount int
 
-	_, err := fmt.Scanln(&dishesCount)
+	_, err := fmt.Scan(&dishesCount)
 	if err != nil {
 		fmt.Println("Invalid input", err)
 
@@ -18,28 +18,43 @@ func main() {
 	}
 
 	ratings := &intheap.IntHeap{}
+	heap.Init(ratings)
 
 	for range dishesCount {
 		var rating int
 
-		_, err = fmt.Scanln(&rating)
+		_, err = fmt.Scan(&rating)
 		if err != nil {
 			fmt.Println("Invalid input", err)
 
 			return
 		}
+
 		heap.Push(ratings, rating)
 	}
 
 	var selectedDish int
 
-	_, err = fmt.Scanln(&selectedDish)
+	_, err = fmt.Scan(&selectedDish)
 	if err != nil {
 		fmt.Println("Invalid input", err)
 
 		return
 	}
 
-	/*result := //func
-	fmt.println(result)*/
+	printSelectedDish(*ratings, selectedDish)
+}
+
+func printSelectedDish(ratings intheap.IntHeap, selectedDish int) {
+	if selectedDish > ratings.Len() {
+		fmt.Println("There is no such dish")
+
+		return
+	}
+
+	for range ratings.Len() - selectedDish {
+		heap.Pop(&ratings)
+	}
+
+	fmt.Println(heap.Pop(&ratings))
 }
