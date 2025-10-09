@@ -9,11 +9,11 @@ import (
 
 func main() {
 	var (
-		n, a, wanting int
+		nDishesNumber, actualDish, wanting int
 		workHeap      = &my_heap.Heap{}
 	)
 
-	_, err := fmt.Scan(&n)
+	_, err := fmt.Scan(&nDishesNumber)
 	if err != nil {
 		fmt.Println("Invalid dishes count")
 
@@ -22,15 +22,15 @@ func main() {
 
 	heap.Init(workHeap)
 
-	for range n {
-		_, err = fmt.Scan(&a)
+	for range nDishesNumber {
+		_, err = fmt.Scan(&actualDish)
 		if err != nil {
 			fmt.Println("invalid input")
 
 			return
 		}
 
-		heap.Push(workHeap, a)
+		heap.Push(workHeap, actualDish)
 	}
 
 	_, err = fmt.Scan(&wanting)
