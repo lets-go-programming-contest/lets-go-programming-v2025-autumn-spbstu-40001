@@ -1,9 +1,11 @@
 package currency
 
 import (
+	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -22,18 +24,6 @@ type CurrencyRates struct {
 	Rates   []Currency `xml:"Valute"`
 }
 
-func (rates *CurrencyRates) Len() int {
-	return len(rates.Rates)
-}
-
-func (rates *CurrencyRates) Less(i, j int) bool {
-	return rates.Rates[i].Value < rates.Rates[j].Value
-}
-
-func (rates *CurrencyRates) Swap(i, j int) {
-	rates.Rates[i], rates.Rates[j] = rates.Rates[j], rates.Rates[i]
-}
-
 func Prepare(rates *CurrencyRates) error {
 	for idx := range len(rates.Rates) {
 		value, err := strconv.ParseFloat(strings.ReplaceAll(rates.Rates[idx].ValueStr, ",", "."), 32)
@@ -47,7 +37,7 @@ func Prepare(rates *CurrencyRates) error {
 	return nil
 }
 
-func ParseXml(xmlPath string) (CurrencyRates, error) {
+func ParseXML(xmlPath string) (CurrencyRates, error) {
 	var result CurrencyRates
 
 	xmlFile, err := os.Open(xmlPath)
@@ -68,4 +58,23 @@ func ParseXml(xmlPath string) (CurrencyRates, error) {
 	}
 
 	return result, nil
+}
+
+func ForceWriteAsJson(rates *CurrencyRates, outPath string, defaultMode os.FileMode) error {
+	serialized, err := json.MarshalIndent(rates.Rates, "", "\t")
+	if err != nil {
+		return fmt.Errorf("failed to serialize data to json: %w", err)
+	}
+
+	err = os.MkdirAll(filepath.Dir(outPath), os.ModeDir|defaultMode)
+	if err != nil {
+		return fmt.Errorf("failed to make required directories: %w", err)
+	}
+
+	err = os.WriteFile(outPath, append(serialized, '\n'), defaultMode)
+	if err != nil {
+		return fmt.Errorf("failed to write output file: %w", err)
+	}
+
+	return nil
 }

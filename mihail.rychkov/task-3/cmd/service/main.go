@@ -1,19 +1,28 @@
 package main
 
 import (
-	"encoding/json"
+	"cmp"
 	"fmt"
 	"os"
-	"sort"
+	"slices"
 
 	"github.com/Rychmick/task-3/internal/config"
 	"github.com/Rychmick/task-3/internal/currency"
 )
 
+const (
+	RequiredArgsCount = 3
+	RwOwnerROthers    = os.FileMode(0o644)
+)
+
+func LessValue(lhs, rhs currency.Currency) int {
+	return cmp.Compare(lhs.Value, rhs.Value)
+}
+
 func main() {
 	args := os.Args
 
-	if (len(args) != 3) || (args[1] != "--config") {
+	if (len(args) != RequiredArgsCount) || (args[1] != "--config") {
 		fmt.Println("missing --config <file> in cmd args")
 
 		return
@@ -26,7 +35,7 @@ func main() {
 		return
 	}
 
-	currencyList, err := currency.ParseXml(settings.InputFilePath)
+	currencyList, err := currency.ParseXML(settings.InputFilePath)
 	if err != nil {
 		fmt.Println(err)
 
@@ -40,18 +49,11 @@ func main() {
 		return
 	}
 
-	sort.Sort(&currencyList)
+	slices.SortStableFunc(currencyList.Rates, LessValue)
 
-	serialized, err := json.MarshalIndent(currencyList.Rates, "", "\t")
+	err = currency.ForceWriteAsJson(&currencyList, settings.OutputFilePath, RwOwnerROthers)
 	if err != nil {
-		fmt.Println("failed to serialize data to json:", err)
-
-		return
-	}
-
-	err = os.WriteFile(settings.OutputFilePath, append(serialized, '\n'), os.FileMode(os.O_RDWR<<6))
-	if err != nil {
-		fmt.Println("failed to write output file:", err)
+		fmt.Println(err)
 
 		return
 	}
