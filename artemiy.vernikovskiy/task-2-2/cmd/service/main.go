@@ -10,7 +10,7 @@ import (
 func main() {
 	var (
 		nDishesNumber, actualDish, wanting int
-		workHeap                           = &my_heap.Heap{}
+		workHeap                           = &myheap.Heap{}
 	)
 
 	_, err := fmt.Scan(&nDishesNumber)
