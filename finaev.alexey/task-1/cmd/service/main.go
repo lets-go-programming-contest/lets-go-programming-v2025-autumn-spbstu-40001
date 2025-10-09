@@ -5,28 +5,26 @@ import (
 )
 
 func main() {
-	var a, b int
-
+	var (
+		a, b int
+		op   string
+	)
 	_, err := fmt.Scan(&a)
 	if err != nil {
 		fmt.Println("Invalid first operand")
 		return
 	}
-
 	_, err = fmt.Scan(&b)
 	if err != nil {
 		fmt.Println("Invalid second operand")
 		return
 	}
-
-	var oper string
-	_, err = fmt.Scan(&oper)
+	_, err = fmt.Scan(&op)
 	if err != nil {
 		fmt.Println("Invalid operation")
 		return
 	}
-
-	switch oper {
+	switch op {
 	case "+":
 		fmt.Println(a + b)
 	case "-":
@@ -34,11 +32,11 @@ func main() {
 	case "*":
 		fmt.Println(a * b)
 	case "/":
-		if b == 0 {
-			fmt.Println("Division by zero")
-		} else {
+		if b != 0 {
 			fmt.Println(a / b)
+			return
 		}
+		fmt.Println("Division by zero")
 	default:
 		fmt.Println("Invalid operation")
 	}
