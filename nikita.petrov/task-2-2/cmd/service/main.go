@@ -8,7 +8,6 @@ import (
 type IntHeap []int
 
 func (h *IntHeap) Len() int {
-
 	return len(*h)
 }
 
@@ -31,6 +30,7 @@ func (h *IntHeap) Push(x any) {
 
 		return
 	}
+
 	*h = append(*h, val)
 }
 
