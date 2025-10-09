@@ -20,7 +20,12 @@ func (h IntHeap) Swap(i, j int) {
 }
 
 func (h *IntHeap) Push(x interface{}) {
-	*h = append(*h, x.(int))
+	value, ok := x.(int)
+	if !ok {
+		return
+	}
+
+	*h = append(*h, value)
 }
 
 func (h *IntHeap) Pop() interface{} {
@@ -28,6 +33,7 @@ func (h *IntHeap) Pop() interface{} {
 	n := len(old)
 	x := old[n-1]
 	*h = old[0 : n-1]
+
 	return x
 }
 
@@ -38,6 +44,7 @@ type KthPreferenceFinder struct {
 func NewKthPreferenceFinder() *KthPreferenceFinder {
 	h := &IntHeap{}
 	heap.Init(h)
+
 	return &KthPreferenceFinder{dishes: h}
 }
 
@@ -55,48 +62,59 @@ func (k *KthPreferenceFinder) FindKthPreference(kth int) int {
 
 	var result int
 
-	for i := 0; i < kth; i++ {
-		dish := heap.Pop(k.dishes).(int)
-		if i == kth-1 {
-			result = dish
+	for index := 0; index < kth; index++ {
+		dish := heap.Pop(k.dishes)
+		dishValue, ok := dish.(int)
+		if !ok {
+			return -1
 		}
-		heap.Push(tempHeap, dish)
+
+		if index == kth-1 {
+			result = dishValue
+		}
+
+		heap.Push(tempHeap, dishValue)
 	}
 
 	for tempHeap.Len() > 0 {
-		heap.Push(k.dishes, heap.Pop(tempHeap))
+		dish := heap.Pop(tempHeap)
+		dishValue, ok := dish.(int)
+		if !ok {
+			return -1
+		}
+
+		heap.Push(k.dishes, dishValue)
 	}
 
 	return result
 }
 
 func main() {
-	var n, k int
+	var dishCount, preferenceOrder int
 
-	_, err := fmt.Scan(&n)
+	_, err := fmt.Scan(&dishCount)
 	if err != nil {
-		fmt.Println("Ошибка ввода количества блюд:", err)
 		return
 	}
 
 	finder := NewKthPreferenceFinder()
 
-	for i := 0; i < n; i++ {
+	for index := 0; index < dishCount; index++ {
 		var rating int
+
 		_, err := fmt.Scan(&rating)
 		if err != nil {
-			fmt.Println("Ошибка ввода рейтинга:", err)
 			return
 		}
+
 		finder.AddDish(rating)
 	}
 
-	_, err = fmt.Scan(&k)
+	_, err = fmt.Scan(&preferenceOrder)
 	if err != nil {
-		fmt.Println("Ошибка ввода k:", err)
 		return
 	}
 
-	result := finder.FindKthPreference(k)
+	result := finder.FindKthPreference(preferenceOrder)
 	fmt.Println(result)
 }
