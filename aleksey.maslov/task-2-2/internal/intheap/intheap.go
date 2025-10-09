@@ -1,7 +1,5 @@
 package intheap
 
-import "fmt"
-
 type IntHeap []int
 
 func (h *IntHeap) Len() int {
@@ -21,7 +19,7 @@ func (h *IntHeap) Push(x any) {
 	if ok {
 		*h = append(*h, value)
 	} else {
-		fmt.Println("Value is not an int")
+		panic("Value is not an int")
 	}
 }
 
