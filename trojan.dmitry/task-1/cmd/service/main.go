@@ -5,8 +5,10 @@ import (
 )
 
 func main() {
-	var num1, num2 int
-	var operator string
+	var (
+		num1, num2 int
+		operator   string
+	)
 
 	_, err := fmt.Scan(&num1)
 	if err != nil {
@@ -23,6 +25,12 @@ func main() {
 		fmt.Println("Invalid operation")
 		return
 	}
+
+	if operator == "/" && num2 == 0 {
+		fmt.Println("Division by zero")
+		return
+	}
+
 	switch operator {
 	case "+":
 		fmt.Println(num1 + num2)
@@ -31,11 +39,7 @@ func main() {
 	case "*":
 		fmt.Println(num1 * num2)
 	case "/":
-		if num2 == 0 {
-			fmt.Println("Division by zero")
-		} else {
-			fmt.Println(num1 / num2)
-		}
+		fmt.Println(num1 / num2)
 	default:
 		fmt.Println("Invalid operation")
 	}
