@@ -18,12 +18,12 @@ func CompareValues(lhs, rhs currency.Currency) int {
 }
 
 func main() {
-	var settingsPath string
+	var configPath string
 
-	flag.StringVar(&settingsPath, "config", "", "set YAML settings file")
+	flag.StringVar(&configPath, "config", "config.yaml", "set YAML settings file")
 	flag.Parse()
 
-	settings, err := config.Parse(settingsPath)
+	settings, err := config.Parse(configPath)
 	if err != nil {
 		panic(err)
 	}
@@ -42,7 +42,7 @@ func main() {
 
 	slices.SortStableFunc(currencyList.Rates, CompareValues)
 
-	err = currency.ForceWriteAsJSON(&currencyList, settings.OutputFilePath, DefaultFileMode)
+	err = currency.ForceWriteToJSON(&currencyList, settings.OutputFilePath, DefaultFileMode)
 	if err != nil {
 		fmt.Println(err)
 
