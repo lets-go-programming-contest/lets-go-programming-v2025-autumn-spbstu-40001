@@ -7,6 +7,24 @@ const (
 	maxComfortTemp = 30
 )
 
+type TemperatureRange struct {
+	min int
+	max int
+}
+
+func (tr *TemperatureRange) Update(operation string, temperature int) {
+	switch operation {
+	case ">=":
+		if temperature > tr.min {
+			tr.min = temperature
+		}
+	case "<=":
+		if temperature < tr.max {
+			tr.max = temperature
+		}
+	}
+}
+
 func main() {
 	var departmentCount int
 
@@ -27,8 +45,7 @@ func main() {
 			return
 		}
 
-		minTemp := minComfortTemp
-		maxTemp := maxComfortTemp
+		tempRange := TemperatureRange{minComfortTemp, maxComfortTemp}
 
 		for range employeeCount {
 			var (
@@ -43,21 +60,12 @@ func main() {
 				return
 			}
 
-			switch operation {
-			case ">=":
-				if temperature > minTemp {
-					minTemp = temperature
-				}
-			case "<=":
-				if temperature < maxTemp {
-					maxTemp = temperature
-				}
-			}
+			tempRange.Update(operation, temperature)
 
-			if minTemp > maxTemp {
+			if minComfortTemp > maxComfortTemp {
 				fmt.Println(-1)
 			} else {
-				fmt.Println(minTemp)
+				fmt.Println(minComfortTemp)
 			}
 		}
 	}
