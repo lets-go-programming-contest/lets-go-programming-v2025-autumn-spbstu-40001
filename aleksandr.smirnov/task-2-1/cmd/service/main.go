@@ -31,8 +31,10 @@ func main() {
 		maxTemp := maxComfortTemp
 
 		for range employeeCount {
-			var operation string
-			var temperature int
+			var (
+				operation   string
+				temperature int
+			)
 
 			_, err := fmt.Scan(&operation, &temperature)
 			if err != nil {
