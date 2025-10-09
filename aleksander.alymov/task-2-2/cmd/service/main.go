@@ -96,7 +96,6 @@ func (k *KthPreferenceFinder) FindKthPreference(kth int) int {
 
 func main() {
 	var dishCount int
-	var preferenceOrder int
 
 	_, err := fmt.Scan(&dishCount)
 	if err != nil {
@@ -119,6 +118,7 @@ func main() {
 		index++
 	}
 
+	var preferenceOrder int
 	_, err = fmt.Scan(&preferenceOrder)
 	if err != nil {
 		return
