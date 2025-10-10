@@ -56,7 +56,7 @@ func main() {
 			if err != nil {
 				fmt.Println(airConditioner.GetCurrentOptimalTemp())
 			} else {
-
+				fmt.Println(-1)
 			}
 		}
 	}
