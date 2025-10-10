@@ -26,11 +26,6 @@ func main() {
 		return
 	}
 
-	if operator == "/" && num2 == 0 {
-		fmt.Println("Division by zero")
-		return
-	}
-
 	switch operator {
 	case "+":
 		fmt.Println(num1 + num2)
@@ -39,6 +34,11 @@ func main() {
 	case "*":
 		fmt.Println(num1 * num2)
 	case "/":
+		if num2 == 0 {
+			fmt.Println("Division by zero")
+			return
+
+		}
 		fmt.Println(num1 / num2)
 	default:
 		fmt.Println("Invalid operation")
