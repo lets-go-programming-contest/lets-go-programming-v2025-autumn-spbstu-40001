@@ -59,6 +59,7 @@ func main() {
 					fmt.Println(-1)
 					staffIndex++
 				}
+				break
 			} else {
 				fmt.Println(airConditioner.GetCurrentOptimalTemp())
 			}
