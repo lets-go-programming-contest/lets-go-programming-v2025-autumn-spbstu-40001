@@ -21,11 +21,10 @@ func (heap *Heap) Swap(firstIndex, secondIndex int) {
 func (heap *Heap) Push(inter interface{}) {
 	number, ok := inter.(int)
 	if !ok {
-		return errors.New("failed to push into heap")
+		return
 	}
 
 	*heap = append(*heap, number)
-	return nil
 }
 
 func (heap *Heap) Pop() any {
