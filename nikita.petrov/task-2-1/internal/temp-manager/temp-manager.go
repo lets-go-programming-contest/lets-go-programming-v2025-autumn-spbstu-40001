@@ -22,21 +22,19 @@ func (TM *TempManager) GetCurrentOptimalTemp() int {
 
 func (TM *TempManager) SetNewOptimalTemp(condition string, newTemp int) error {
 	switch condition {
-	case "<=":
-		if newTemp >= TM.minTemp {
-			if newTemp < TM.maxTemp {
-				TM.maxTemp = newTemp
-			}
-		} else {
+	case ">=":
+		if newTemp > TM.minTemp {
+			TM.minTemp = newTemp
+		}
+		if TM.minTemp > TM.maxTemp {
 			return SetValueError
 		}
-	case ">=":
-		if newTemp <= TM.maxTemp {
-			if newTemp > TM.minTemp {
-				TM.minTemp = newTemp
-				TM.optTemp = TM.minTemp
-			}
-		} else {
+		TM.optTemp = TM.minTemp
+	case "<=":
+		if newTemp < TM.maxTemp {
+			TM.maxTemp = newTemp
+		}
+		if TM.maxTemp < TM.minTemp {
 			return SetValueError
 		}
 	}
