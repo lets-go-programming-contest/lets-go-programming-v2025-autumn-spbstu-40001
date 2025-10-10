@@ -30,6 +30,7 @@ func main() {
 		_, err := fmt.Scan(&nEmployees)
 		if err != nil {
 			fmt.Println("invalid employees count:", err)
+
 			return
 		}
 
@@ -39,14 +40,17 @@ func main() {
 			_, err := fmt.Scan(&desire.Sign, &desire.DesiredTemperature)
 			if err != nil {
 				fmt.Println("invalid desire format:", err)
+
 				return
 			}
 
 			err = temperatureController.ChangeTemperature(desire)
 			if err != nil {
 				fmt.Println(err)
+
 				return
 			}
+
 			temperature, err := temperatureController.GetTemperature()
 			if err != nil {
 				fmt.Println(wrongTemp)
