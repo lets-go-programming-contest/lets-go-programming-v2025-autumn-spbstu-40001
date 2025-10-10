@@ -4,7 +4,7 @@ import (
 	"container/heap"
 	"fmt"
 
-	"github.com/atroxxxxxx/task-2-2/internal/extendedstack"
+	"github.com/atroxxxxxx/task-2-2/internal/intheap"
 )
 
 func Greater(a, b int) bool {
@@ -12,16 +12,22 @@ func Greater(a, b int) bool {
 }
 
 func main() {
-	var (
-		nDishes int
-		dishes  = &extendedstack.Stack{Comparator: Greater}
-	)
-
-	heap.Init(dishes)
+	var nDishes uint
 
 	_, err := fmt.Scan(&nDishes)
-	if err != nil || nDishes < 0 {
-		fmt.Println("invalid dishes count:")
+
+	dishes := intheap.New(make([]int, nDishes), Greater)
+
+	heap.Init(&dishes)
+
+	if err != nil {
+		fmt.Println("failed to read dishes count:", err)
+
+		return
+	}
+
+	if nDishes == 0 {
+		fmt.Println("invalid dishes count")
 
 		return
 	}
@@ -35,19 +41,27 @@ func main() {
 			return
 		}
 
-		heap.Push(dishes, dishRating)
+		heap.Push(&dishes, dishRating)
 	}
 
-	var dishNumber int
+	var dishNumber uint
 
 	_, err = fmt.Scan(&dishNumber)
-	if err != nil || dishNumber < 0 || dishNumber > nDishes {
+	if err != nil {
+		fmt.Println("failed to read dish number:", err)
+
+		return
+	}
+
+	if dishNumber == 0 || dishNumber > nDishes {
 		fmt.Println("invalid dish number")
+
+		return
 	}
 
 	for range dishNumber - 1 {
-		heap.Pop(dishes)
+		heap.Pop(&dishes)
 	}
 
-	fmt.Println(heap.Pop(dishes))
+	fmt.Println(heap.Pop(&dishes))
 }
