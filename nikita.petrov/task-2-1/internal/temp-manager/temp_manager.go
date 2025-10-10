@@ -1,4 +1,4 @@
-package internal
+package temp_manager
 
 import "errors"
 
