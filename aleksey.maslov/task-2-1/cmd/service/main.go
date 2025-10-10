@@ -6,7 +6,7 @@ type ComfortZone struct {
 	minTemp, maxTemp int
 }
 
-func (comf *ComfortZone) printComfortTemp(operation string, temp int) {
+func (comf *ComfortZone) updateTemp(operation string, temp int) {
 	switch operation {
 	case ">=":
 		if temp > comf.minTemp {
@@ -19,11 +19,13 @@ func (comf *ComfortZone) printComfortTemp(operation string, temp int) {
 	default:
 		fmt.Println("Invalid operation")
 	}
+}
 
+func (comf *ComfortZone) getComfortTemp() int {
 	if comf.minTemp > comf.maxTemp {
-		fmt.Println("-1")
+		return -1
 	} else {
-		fmt.Println(comf.minTemp)
+		return comf.minTemp
 	}
 }
 
@@ -47,7 +49,7 @@ func main() {
 		if err != nil {
 			fmt.Println("Invalid input", err)
 
-			continue
+			return
 		}
 
 		comfortZone := ComfortZone{lowerTempLimit, upperTempLimit}
@@ -65,7 +67,8 @@ func main() {
 				continue
 			}
 
-			comfortZone.printComfortTemp(operation, temp)
+			comfortZone.updateTemp(operation, temp)
+			println(comfortZone.getComfortTemp())
 		}
 	}
 }
