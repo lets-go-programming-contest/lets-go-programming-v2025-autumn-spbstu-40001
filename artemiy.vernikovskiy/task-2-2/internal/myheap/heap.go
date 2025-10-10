@@ -1,8 +1,5 @@
 package myheap
 
-import (
-    "errors"
-)
 
 type Heap []int
 
