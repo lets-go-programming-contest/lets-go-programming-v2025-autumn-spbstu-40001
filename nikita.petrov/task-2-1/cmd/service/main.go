@@ -35,6 +35,7 @@ func main() {
 		}
 
 		var airConditioner internal.TempManager
+
 		airConditioner.Init(MaxTemp, MinTemp)
 
 		for range staffNum {

@@ -2,7 +2,7 @@ package internal
 
 import "errors"
 
-var SetValueError error = errors.New("can't set new value")
+var ErrSetValue error = errors.New("can't set new value")
 
 type TempManager struct {
 	maxTemp int
@@ -10,33 +10,36 @@ type TempManager struct {
 	optTemp int
 }
 
-func (TM *TempManager) Init(maxValue int, minValue int) {
-	TM.maxTemp = maxValue
-	TM.minTemp = minValue
-	TM.optTemp = minValue
+func (tm *TempManager) Init(maxValue int, minValue int) {
+	tm.maxTemp = maxValue
+	tm.minTemp = minValue
+	tm.optTemp = minValue
 }
 
-func (TM *TempManager) GetCurrentOptimalTemp() int {
-	return TM.optTemp
+func (tm *TempManager) GetCurrentOptimalTemp() int {
+	return tm.optTemp
 }
 
-func (TM *TempManager) SetNewOptimalTemp(condition string, newTemp int) error {
+func (tm *TempManager) SetNewOptimalTemp(condition string, newTemp int) error {
 	switch condition {
 	case ">=":
-		if newTemp > TM.minTemp {
-			TM.minTemp = newTemp
+		if newTemp > tm.minTemp {
+			tm.minTemp = newTemp
 		}
-		if TM.minTemp > TM.maxTemp {
-			return SetValueError
+
+		if tm.minTemp > tm.maxTemp {
+			return ErrSetValue
 		}
-		TM.optTemp = TM.minTemp
+		tm.optTemp = tm.minTemp
 	case "<=":
-		if newTemp < TM.maxTemp {
-			TM.maxTemp = newTemp
+		if newTemp < tm.maxTemp {
+			tm.maxTemp = newTemp
 		}
-		if TM.maxTemp < TM.minTemp {
-			return SetValueError
+
+		if tm.maxTemp < tm.minTemp {
+			return ErrSetValue
 		}
 	}
+
 	return nil
 }
