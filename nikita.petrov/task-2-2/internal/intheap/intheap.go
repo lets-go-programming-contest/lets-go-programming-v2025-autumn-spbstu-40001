@@ -29,11 +29,12 @@ func (h *IntHeap) Push(x any) {
 }
 
 func (h *IntHeap) Pop() any {
-	old := *h
-	n := len(old)
-	if n == 0 {
+	if len(*h) == 0 {
 		return nil
 	}
+
+	old := *h
+	n := len(old)
 	x := old[n-1]
 	*h = old[0 : n-1]
 
