@@ -26,8 +26,8 @@ func (heap *Heap) Push(inter interface{}) {
 func (heap *Heap) Pop() any {
 	oldHeap := *heap
 
-	n := len(oldHeap)
-	if n == 0 {
+	nLengthOfHeap := len(oldHeap)
+	if nLengthOfHeap == 0 {
 		return nil
 	}
 	// совсем забыл об этом
