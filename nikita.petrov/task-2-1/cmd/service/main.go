@@ -37,8 +37,7 @@ func main() {
 		var airConditioner internal.TempManager
 		airConditioner.Init(MaxTemp, MinTemp)
 
-		staffIndex := 0
-		for staffIndex < staffNum {
+		for range staffNum {
 			_, err = fmt.Scan(&condition)
 			if err != nil {
 				fmt.Println("scan condition error")
@@ -55,15 +54,10 @@ func main() {
 
 			err := airConditioner.SetNewOptimalTemp(condition, wishfulTemp)
 			if err != nil {
-				for staffIndex < staffNum {
-					fmt.Println(-1)
-					staffIndex++
-				}
-				break
+				fmt.Println(-1)
 			} else {
 				fmt.Println(airConditioner.GetCurrentOptimalTemp())
 			}
-			staffIndex++
 		}
 	}
 }
