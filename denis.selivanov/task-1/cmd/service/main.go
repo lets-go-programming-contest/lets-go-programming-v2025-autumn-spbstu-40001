@@ -36,14 +36,17 @@ func main() {
 	_, err := fmt.Scan(&operand1)
 	if err != nil {
 		fmt.Println("Invalid first operand")
+		return
 	}
 	_, err = fmt.Scan(&operand2)
 	if err != nil {
 		fmt.Println("Invalid second operand")
+		return
 	}
 	_, err = fmt.Scan(&op)
 	if err != nil {
 		fmt.Println("Invalid operation")
+		return
 	}
 
 	result, err := evaluate(operand1, operand2, op)
