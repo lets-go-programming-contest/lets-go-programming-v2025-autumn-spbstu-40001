@@ -56,5 +56,12 @@ func printSelectedDish(ratings intheap.IntHeap, selectedDish int) {
 		heap.Pop(&ratings)
 	}
 
-	fmt.Println(heap.Pop(&ratings))
+	result := heap.Pop(&ratings)
+	if result == nil {
+		fmt.Println("There is no such dish")
+
+		return
+	}
+
+	fmt.Println(result)
 }
