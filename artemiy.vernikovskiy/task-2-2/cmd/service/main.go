@@ -25,17 +25,20 @@ func main() {
 	for range nDishesNumber {
 		_, err = fmt.Scan(&actualDish)
 		if err != nil {
-			fmt.Println("invalid input")
+			fmt.Println("invalid input for dish number")
 
 			return
 		}
 
-		heap.Push(workHeap, actualDish)
+		err = heap.Push(workHeap, actualDish)
+		if err != nil {
+		    fmt.Println(err)
+		}
 	}
 
 	_, err = fmt.Scan(&wanting)
 	if err != nil {
-		fmt.Println("invalid input")
+		fmt.Println("invalid input for wanted dish")
 
 		return
 	}
@@ -43,7 +46,8 @@ func main() {
 	for range wanting - 1 {
 		if workHeap.Len() == 0 {
 			fmt.Println("no dish for you")
-		}
+			return
+		} // здесь надо проверять, потому что Pop может удалить слишком много
 
 		heap.Pop(workHeap)
 	}
