@@ -1,4 +1,4 @@
-package temp_manager
+package tmanager
 
 import "errors"
 
@@ -9,9 +9,8 @@ type TempManager struct {
 	minTemp int
 }
 
-func (tm *TempManager) Init(maxValue int, minValue int) {
-	tm.maxTemp = maxValue
-	tm.minTemp = minValue
+func New(maxValue int, minValue int) TempManager {
+	return TempManager{maxValue, minValue}
 }
 
 func (tm *TempManager) GetCurrentOptimalTemp() int {

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/Nekich06/task-2-1/internal/temp_manager"
+	"github.com/Nekich06/task-2-1/internal/tmanager"
 )
 
 const (
@@ -34,9 +34,7 @@ func main() {
 			return
 		}
 
-		var airConditioner temp_manager.TempManager
-
-		airConditioner.Init(MaxTemp, MinTemp)
+		airConditioner := tmanager.New(MaxTemp, MinTemp)
 
 		for range staffNum {
 			_, err = fmt.Scan(&condition)
