@@ -42,6 +42,12 @@ func (h *IntHeap) Pop() any {
 }
 
 func main() {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Panic recovered:", r)
+		}
+	}()
+
 	var dishNum uint
 
 	_, err := fmt.Scan(&dishNum)
