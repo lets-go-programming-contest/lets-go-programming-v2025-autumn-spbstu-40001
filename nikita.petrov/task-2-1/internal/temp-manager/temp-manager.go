@@ -7,17 +7,15 @@ var ErrSetValue error = errors.New("can't set new value")
 type TempManager struct {
 	maxTemp int
 	minTemp int
-	optTemp int
 }
 
 func (tm *TempManager) Init(maxValue int, minValue int) {
 	tm.maxTemp = maxValue
 	tm.minTemp = minValue
-	tm.optTemp = minValue
 }
 
 func (tm *TempManager) GetCurrentOptimalTemp() int {
-	return tm.optTemp
+	return tm.minTemp
 }
 
 func (tm *TempManager) SetNewOptimalTemp(condition string, newTemp int) error {
@@ -30,7 +28,6 @@ func (tm *TempManager) SetNewOptimalTemp(condition string, newTemp int) error {
 		if tm.minTemp > tm.maxTemp {
 			return ErrSetValue
 		}
-		tm.optTemp = tm.minTemp
 	case "<=":
 		if newTemp < tm.maxTemp {
 			tm.maxTemp = newTemp
