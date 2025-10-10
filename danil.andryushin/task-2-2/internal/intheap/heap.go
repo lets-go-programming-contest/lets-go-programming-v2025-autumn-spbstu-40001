@@ -1,29 +1,33 @@
-package extendedstack
+package intheap
 
 import "cmp"
 
-type Stack struct {
-	Comparator func(int, int) bool
-	data       []int
+func New(data []int, comparator func(int, int) bool) Heap {
+	return Heap{data, comparator}
 }
 
-func (obj *Stack) Len() int {
+type Heap struct {
+	data       []int
+	comparator func(int, int) bool
+}
+
+func (obj *Heap) Len() int {
 	return len(obj.data)
 }
 
-func (obj *Stack) Less(lhs, rhs int) bool {
+func (obj *Heap) Less(lhs, rhs int) bool {
 	if lhs >= obj.Len() || rhs >= obj.Len() {
 		panic("invalid index range")
 	}
 
-	if obj.Comparator == nil {
+	if obj.comparator == nil {
 		return cmp.Less(obj.data[lhs], obj.data[rhs])
 	}
 
-	return obj.Comparator(obj.data[lhs], obj.data[rhs])
+	return obj.comparator(obj.data[lhs], obj.data[rhs])
 }
 
-func (obj *Stack) Swap(lhs, rhs int) {
+func (obj *Heap) Swap(lhs, rhs int) {
 	if lhs >= obj.Len() || rhs >= obj.Len() {
 		panic("invalid index range")
 	}
@@ -31,19 +35,19 @@ func (obj *Stack) Swap(lhs, rhs int) {
 	obj.data[lhs], obj.data[rhs] = obj.data[rhs], obj.data[lhs]
 }
 
-func (obj *Stack) Push(data any) {
-	iData, casted := data.(int)
-	if !casted {
+func (obj *Heap) Push(data any) {
+	iData, ok := data.(int)
+	if !ok {
 		panic("unexpected data type (expected: int)")
 	}
 
 	obj.data = append(obj.data, iData)
 }
 
-func (obj *Stack) Pop() any {
+func (obj *Heap) Pop() any {
 	size := obj.Len()
 	if size == 0 {
-		panic("heap underflow")
+		return nil
 	}
 
 	data := obj.data[size-1]
