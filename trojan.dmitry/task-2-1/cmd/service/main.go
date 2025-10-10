@@ -10,7 +10,11 @@ type Dept struct {
 }
 
 func NewDept() Dept {
-	return Dept{minLevel: 15, maxLevel: 30}
+	const (
+		defaultMinLevel = 15
+		defaultMaxLevel = 30
+	)
+	return Dept{minLevel: defaultMinLevel, maxLevel: defaultMaxLevel}
 }
 
 func (department *Dept) Update(operator string, num int) {
@@ -22,10 +26,11 @@ func (department *Dept) Update(operator string, num int) {
 	}
 }
 
-func (department Dept) Result() int {
+func (department *Dept) Result() int {
 	if department.minLevel <= department.maxLevel {
 		return department.minLevel
 	}
+
 	return -1
 }
 
