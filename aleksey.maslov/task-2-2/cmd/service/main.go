@@ -8,6 +8,13 @@ import (
 )
 
 func main() {
+	defer func() {
+		r := recover()
+		if r != nil {
+			fmt.Println("Panic recovered:", r)
+		}
+	}()
+
 	var dishesCount int
 
 	_, err := fmt.Scan(&dishesCount)
