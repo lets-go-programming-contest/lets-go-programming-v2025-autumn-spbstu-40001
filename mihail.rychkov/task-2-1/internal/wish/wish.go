@@ -4,13 +4,12 @@ import "errors"
 
 var ErrNoOptimum = errors.New("optimal temperature does not exist")
 
-type Wish struct {
-	minTemperature, maxTemperature int
+func New(minTemperature, maxTemperature int) Wish {
+	return Wish{minTemperature, maxTemperature}
 }
 
-func (wish *Wish) Init(minTemperature, maxTemperature int) {
-	wish.minTemperature = minTemperature
-	wish.maxTemperature = maxTemperature
+type Wish struct {
+	minTemperature, maxTemperature int
 }
 
 func (wish *Wish) IncludeMin(temperature int) {
