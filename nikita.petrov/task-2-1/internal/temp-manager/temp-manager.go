@@ -2,6 +2,8 @@ package internal
 
 import "errors"
 
+var SetValueError error = errors.New("can't set new value")
+
 type TempManager struct {
 	maxTemp int
 	minTemp int
@@ -26,9 +28,7 @@ func (TM *TempManager) SetNewOptimalTemp(condition string, newTemp int) error {
 				TM.maxTemp = newTemp
 			}
 		} else {
-			TM.maxTemp = newTemp
-
-			return errors.New("can't set new value")
+			return SetValueError
 		}
 	case ">=":
 		if newTemp <= TM.maxTemp {
@@ -37,9 +37,7 @@ func (TM *TempManager) SetNewOptimalTemp(condition string, newTemp int) error {
 				TM.optTemp = TM.minTemp
 			}
 		} else {
-			TM.minTemp = newTemp
-
-			return errors.New("can't set new value")
+			return SetValueError
 		}
 	}
 	return nil
