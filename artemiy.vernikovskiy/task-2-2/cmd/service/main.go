@@ -30,10 +30,7 @@ func main() {
 			return
 		}
 
-		err = heap.Push(workHeap, actualDish)
-		if err != nil {
-		    fmt.Println(err)
-		}
+		heap.Push(workHeap, actualDish)
 	}
 
 	_, err = fmt.Scan(&wanting)
@@ -46,6 +43,7 @@ func main() {
 	for range wanting - 1 {
 		if workHeap.Len() == 0 {
 			fmt.Println("no dish for you")
+
 			return
 		} // здесь надо проверять, потому что Pop может удалить слишком много
 
