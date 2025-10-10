@@ -1,6 +1,5 @@
 package myheap
 
-
 type Heap []int
 
 func (heap *Heap) Len() int {
@@ -26,9 +25,10 @@ func (heap *Heap) Push(inter interface{}) {
 
 func (heap *Heap) Pop() any {
 	oldHeap := *heap
+
 	n := len(oldHeap)
-	if (n == 0) {
-	    return nil
+	if n == 0 {
+		return nil
 	}
 	// совсем забыл об этом
 	x := oldHeap[n-1]
