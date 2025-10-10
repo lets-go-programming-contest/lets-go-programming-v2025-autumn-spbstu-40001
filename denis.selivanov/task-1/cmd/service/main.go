@@ -10,19 +10,19 @@ var (
 	ErrDivideByZero = errors.New("Division by zero")
 )
 
-func evaluate(operand1, opearand2 int, op string) (int, error) {
+func evaluate(operand1, operand2 int, op string) (int, error) {
 	switch op {
 	case "+":
-		return operand1 + opearand2, nil
+		return operand1 + operand2, nil
 	case "-":
-		return operand1 - opearand2, nil
+		return operand1 - operand2, nil
 	case "*":
-		return operand1 * opearand2, nil
+		return operand1 * operand2, nil
 	case "/":
-		if opearand2 == 0 {
+		if operand2 == 0 {
 			return 0, ErrDivideByZero
 		}
-		return operand1 / opearand2, nil
+		return operand1 / operand2, nil
 	}
 	return 0, ErrInvalidOp
 }
