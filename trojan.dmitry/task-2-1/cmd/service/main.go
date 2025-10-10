@@ -4,20 +4,29 @@ import (
 	"fmt"
 )
 
-func Min(first, second int) int {
-	if first < second {
-		return first
-	}
-
-	return second
+type Dept struct {
+	minLevel int
+	maxLevel int
 }
 
-func Max(first, second int) int {
-	if first > second {
-		return first
-	}
+func NewDept() Dept {
+	return Dept{minLevel: 15, maxLevel: 30}
+}
 
-	return second
+func (department *Dept) Update(operator string, num int) {
+	switch operator {
+	case ">=":
+		department.minLevel = max(department.minLevel, num)
+	case "<=":
+		department.maxLevel = min(department.maxLevel, num)
+	}
+}
+
+func (department Dept) Result() int {
+	if department.minLevel <= department.maxLevel {
+		return department.minLevel
+	}
+	return -1
 }
 
 func main() {
@@ -30,7 +39,7 @@ func main() {
 
 	_, err := fmt.Scan(&department)
 	if err != nil {
-		fmt.Println("Invalid input")
+		fmt.Println("Invalid number of departments")
 
 		return
 	}
@@ -38,45 +47,31 @@ func main() {
 	for range department {
 		_, err = fmt.Scan(&workers)
 		if err != nil {
-			fmt.Println("Invalid input")
+			fmt.Println("Invalid number of workers")
 
 			return
 		}
 
-		minLevel := 15
-		maxLevel := 30
+		dept := NewDept()
 
 		for range workers {
 			_, err = fmt.Scan(&operator)
 			if err != nil {
-				fmt.Println("Invalid input")
+				fmt.Println("Invalid operator")
 
 				return
 			}
 
 			_, err = fmt.Scan(&num)
 			if err != nil {
-				fmt.Println("Invalid input")
+				fmt.Println("Invalid temperature value")
 
 				return
 			}
 
-			switch operator {
-			case ">=":
-				minLevel = Max(minLevel, num)
-			case "<=":
-				maxLevel = Min(maxLevel, num)
-			default:
-				fmt.Printf("Invalid input")
+			dept.Update(operator, num)
 
-				return
-			}
-
-			if minLevel <= maxLevel {
-				fmt.Println(minLevel)
-			} else {
-				fmt.Println(-1)
-			}
+			fmt.Println(dept.Result())
 		}
 	}
 }
