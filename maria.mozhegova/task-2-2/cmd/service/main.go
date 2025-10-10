@@ -1,5 +1,10 @@
 package main
 
+import (
+	"container/heap"
+	"fmt"
+)
+
 type IntHeap []int
 
 func (h *IntHeap) Len() int {
@@ -7,7 +12,7 @@ func (h *IntHeap) Len() int {
 }
 
 func (h *IntHeap) Less(i, j int) bool {
-	return (*h)[i] < (*h)[j]
+	return (*h)[i] > (*h)[j]
 }
 
 func (h *IntHeap) Swap(i, j int) {
@@ -37,5 +42,49 @@ func (h *IntHeap) Pop() any {
 }
 
 func main() {
+	var dishNum uint
 
+	_, err := fmt.Scan(&dishNum)
+	if err != nil {
+		fmt.Println("Invalid input:", err)
+
+		return
+	}
+
+	ratings := &IntHeap{}
+	heap.Init(ratings)
+
+	for range dishNum {
+		var rating int
+
+		_, err := fmt.Scan(&rating)
+		if err != nil {
+			fmt.Println("Invalid input:", err)
+
+			return
+		}
+
+		heap.Push(ratings, rating)
+	}
+
+	var dishK int
+
+	_, err = fmt.Scan(&dishK)
+	if err != nil {
+		fmt.Println("Invalid input:", err)
+
+		return
+	}
+
+	if dishK > ratings.Len() {
+		fmt.Println("There is no such dish")
+
+		return
+	}
+
+	for range dishK - 1 {
+		heap.Pop(ratings)
+	}
+
+	fmt.Println(heap.Pop(ratings))
 }
