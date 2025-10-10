@@ -48,6 +48,7 @@ func main() {
 			employNum   int
 			temperature = Temperature{minTemp, maxTemp}
 		)
+
 		_, err := fmt.Scan(&employNum)
 		if err != nil {
 			fmt.Println("Invalid input:", err)
