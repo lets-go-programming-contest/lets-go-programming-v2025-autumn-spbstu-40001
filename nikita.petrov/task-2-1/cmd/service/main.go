@@ -54,9 +54,9 @@ func main() {
 
 			err := airConditioner.SetNewOptimalTemp(condition, wishfulTemp)
 			if err != nil {
-				fmt.Println(airConditioner.GetCurrentOptimalTemp())
-			} else {
 				fmt.Println(-1)
+			} else {
+				fmt.Println(airConditioner.GetCurrentOptimalTemp())
 			}
 		}
 	}

@@ -26,6 +26,7 @@ func (TM *TempManager) SetNewOptimalTemp(condition string, newTemp int) error {
 				TM.maxTemp = newTemp
 			}
 		} else {
+
 			return errors.New("can't set new value")
 		}
 	case ">=":
@@ -35,9 +36,9 @@ func (TM *TempManager) SetNewOptimalTemp(condition string, newTemp int) error {
 				TM.optTemp = TM.minTemp
 			}
 		} else {
+
 			return errors.New("can't set new value")
 		}
 	}
-
 	return nil
 }
