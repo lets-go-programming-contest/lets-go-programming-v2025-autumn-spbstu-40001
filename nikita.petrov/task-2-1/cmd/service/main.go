@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	internal "github.com/Nekich06/task-2-1/internal/temp-manager"
+	"github.com/Nekich06/task-2-1/internal/temp_manager"
 )
 
 const (
@@ -34,7 +34,7 @@ func main() {
 			return
 		}
 
-		var airConditioner internal.TempManager
+		var airConditioner temp_manager.TempManager
 
 		airConditioner.Init(MaxTemp, MinTemp)
 
