@@ -10,14 +10,21 @@ var errInvalidDirection = errors.New("invalid direction")
 type conditioner struct {
 	minTemp int
 	maxTemp int
-	match   bool
 }
 
-func (c *conditioner) directionManager(direction string, degrees int) error {
+func NewConditioner(minTemp int, maxTemp int) *conditioner {
+	return &conditioner{
+		minTemp: minTemp,
+		maxTemp: maxTemp,
+	}
+}
+
+func (c *conditioner) calculate(direction string, degrees int) error {
+	match := true
 	switch direction {
 	case ">=":
 		if degrees > c.maxTemp {
-			c.match = false
+			match = false
 		}
 
 		if degrees >= c.minTemp {
@@ -26,7 +33,7 @@ func (c *conditioner) directionManager(direction string, degrees int) error {
 
 	case "<=":
 		if degrees < c.minTemp {
-			c.match = false
+			match = false
 		}
 
 		if degrees <= c.maxTemp {
@@ -36,7 +43,11 @@ func (c *conditioner) directionManager(direction string, degrees int) error {
 	default:
 		return errInvalidDirection
 	}
-
+	if !match {
+		fmt.Println(-1)
+	} else {
+		fmt.Println(c.minTemp)
+	}
 	return nil
 }
 
@@ -44,7 +55,7 @@ func main() {
 	var departmentCount int
 
 	if _, err := fmt.Scan(&departmentCount); err != nil {
-		fmt.Println("invalid input")
+		fmt.Println("invalid input:", err.Error())
 
 		return
 	}
@@ -53,12 +64,12 @@ func main() {
 		var employeeCount int
 
 		if _, err := fmt.Scan(&employeeCount); err != nil {
-			fmt.Println("invalid input")
+			fmt.Println("invalid input:", err.Error())
 
 			return
 		}
 
-		temperatureRange := conditioner{15, 30, true}
+		temperatureRange := NewConditioner(15, 30)
 
 		for range employeeCount {
 			var (
@@ -67,25 +78,19 @@ func main() {
 			)
 
 			if _, err := fmt.Scan(&direction); err != nil {
-				fmt.Println("invalid input")
+				fmt.Println("invalid input:", err.Error())
 
 				return
 			}
 
 			if _, err := fmt.Scan(&degrees); err != nil {
-				fmt.Println("invalid input")
+				fmt.Println("invalid input:", err.Error())
 
 				return
 			}
 
-			if err := temperatureRange.directionManager(direction, degrees); err != nil {
-				fmt.Println("invalid input")
-			}
-
-			if !temperatureRange.match {
-				fmt.Println(-1)
-			} else {
-				fmt.Println(temperatureRange.minTemp)
+			if err := temperatureRange.calculate(direction, degrees); err != nil {
+				fmt.Println("invalid input:", err.Error())
 			}
 		}
 	}
