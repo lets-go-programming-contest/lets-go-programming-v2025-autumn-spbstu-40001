@@ -25,17 +25,9 @@ func (obj *TemperatureController) ChangeTemperature(desire Desire) error {
 		obj.updateMaxTemperature(desire.DesiredTemperature)
 	default:
 		return ErrUnknownOperator
-
 	}
+
 	return nil
-}
-
-func (obj *TemperatureController) updateMaxTemperature(temp int) {
-	obj.maxTemperature = min(obj.maxTemperature, temp)
-}
-
-func (obj *TemperatureController) updateMinTemperature(temp int) {
-	obj.minTemperature = max(obj.minTemperature, temp)
 }
 
 var ErrInvalidTemp = errors.New("invalid temperature")
@@ -46,4 +38,12 @@ func (obj *TemperatureController) GetTemperature() (int, error) {
 	}
 
 	return 0, ErrInvalidTemp
+}
+
+func (obj *TemperatureController) updateMaxTemperature(temp int) {
+	obj.maxTemperature = min(obj.maxTemperature, temp)
+}
+
+func (obj *TemperatureController) updateMinTemperature(temp int) {
+	obj.minTemperature = max(obj.minTemperature, temp)
 }
