@@ -5,6 +5,11 @@ import (
 	"fmt"
 )
 
+const (
+	defaultMinTemp = 15
+	defaultMaxTemp = 30
+)
+
 var errInvalidDirection = errors.New("invalid direction")
 
 type conditioner struct {
@@ -21,6 +26,7 @@ func NewConditioner(minTemp int, maxTemp int) *conditioner {
 
 func (c *conditioner) calculate(direction string, degrees int) error {
 	match := true
+
 	switch direction {
 	case ">=":
 		if degrees > c.maxTemp {
@@ -43,11 +49,13 @@ func (c *conditioner) calculate(direction string, degrees int) error {
 	default:
 		return errInvalidDirection
 	}
+
 	if !match {
 		fmt.Println(-1)
 	} else {
 		fmt.Println(c.minTemp)
 	}
+
 	return nil
 }
 
@@ -69,7 +77,7 @@ func main() {
 			return
 		}
 
-		temperatureRange := NewConditioner(15, 30)
+		temperatureRange := NewConditioner(defaultMinTemp, defaultMaxTemp)
 
 		for range employeeCount {
 			var (
