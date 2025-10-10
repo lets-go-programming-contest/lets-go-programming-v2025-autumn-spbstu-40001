@@ -14,6 +14,7 @@ func NewDept() Dept {
 		defaultMinLevel = 15
 		defaultMaxLevel = 30
 	)
+
 	return Dept{minLevel: defaultMinLevel, maxLevel: defaultMaxLevel}
 }
 
