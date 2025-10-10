@@ -47,6 +47,7 @@ func main() {
 		}
 	} else {
 		fmt.Println("invalid wished dish value")
+
 		return
 	}
 
