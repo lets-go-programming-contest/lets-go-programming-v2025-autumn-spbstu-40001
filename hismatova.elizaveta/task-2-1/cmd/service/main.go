@@ -37,7 +37,7 @@ func main() {
 		return
 	}
 
-	for i := range departCount {
+	for range departCount {
 		var peopleCount int
 
 		if _, err := fmt.Scanln(&peopleCount); err != nil {
