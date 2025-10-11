@@ -24,22 +24,14 @@ func NewConditioner(minTemp int, maxTemp int) *conditioner {
 	}
 }
 
-func (c *conditioner) calculate(direction string, degrees int, match *bool) error {
+func (c *conditioner) calculate(direction string, degrees int) error {
 	switch direction {
 	case ">=":
-		if degrees > c.maxTemp {
-			*match = false
-		}
-
 		if degrees >= c.minTemp {
 			c.minTemp = degrees
 		}
 
 	case "<=":
-		if degrees < c.minTemp {
-			*match = false
-		}
-
 		if degrees <= c.maxTemp {
 			c.maxTemp = degrees
 		}
@@ -48,7 +40,7 @@ func (c *conditioner) calculate(direction string, degrees int, match *bool) erro
 		return errInvalidDirection
 	}
 
-	if !*match {
+	if c.minTemp > c.maxTemp {
 		fmt.Println("-1")
 	} else {
 		fmt.Println(c.minTemp)
@@ -76,7 +68,6 @@ func main() {
 		}
 
 		temperatureRange := NewConditioner(defaultMinTemp, defaultMaxTemp)
-		match := true
 
 		for range employeeCount {
 			var (
@@ -96,7 +87,7 @@ func main() {
 				return
 			}
 
-			if err := temperatureRange.calculate(direction, degrees, &match); err != nil {
+			if err := temperatureRange.calculate(direction, degrees); err != nil {
 				fmt.Println("invalid input:", err.Error())
 			}
 		}
