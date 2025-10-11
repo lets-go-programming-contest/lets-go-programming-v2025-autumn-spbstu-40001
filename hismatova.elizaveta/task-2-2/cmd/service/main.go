@@ -24,7 +24,8 @@ func (h *IntHeap) Push(x interface{}) {
 	if !ok {
 		panic("IntHeap: Push received non-int value")
 	}
-	*h = append(*h, v)
+	newHeap := append(*h, v)
+	*h = newHeap
 }
 
 func (h *IntHeap) Pop() interface{} {
