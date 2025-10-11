@@ -4,6 +4,11 @@ import (
 	"fmt"
 )
 
+const (
+	defaultMinTemp = 15
+	defaultMaxTemp = 30
+)
+
 type ClimateControl struct {
 	minTemp int
 	maxTemp int
@@ -11,8 +16,8 @@ type ClimateControl struct {
 
 func NewClimateControl() *ClimateControl {
 	return &ClimateControl{
-		minTemp: 15,
-		maxTemp: 30,
+		minTemp: defaultMinTemp,
+		maxTemp: defaultMaxTemp,
 	}
 }
 
@@ -33,6 +38,7 @@ func (cc *ClimateControl) CalculateComfort() int {
 	if cc.minTemp > cc.maxTemp {
 		return -1
 	}
+
 	return cc.minTemp
 }
 
@@ -42,7 +48,7 @@ func main() {
 		return
 	}
 
-	for i := 0; i < departmentCount; i++ {
+	for range departmentCount {
 		var employeeCount int
 		if _, err := fmt.Scanln(&employeeCount); err != nil {
 			return
@@ -50,7 +56,7 @@ func main() {
 
 		control := NewClimateControl()
 
-		for j := 0; j < employeeCount; j++ {
+		for range employeeCount {
 			var (
 				operator    string
 				temperature int
