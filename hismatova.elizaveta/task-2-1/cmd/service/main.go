@@ -22,6 +22,7 @@ func UpdateRangeAndGetTemp(
 			minT = temp
 		}
 	}
+
 	if minT > maxT {
 		return -1, maxT
 	}
@@ -34,6 +35,7 @@ func main() {
 
 	if _, err := fmt.Scanln(&departCount); err != nil {
 		fmt.Println("Error reading number of departments:", err)
+
 		return
 	}
 
@@ -42,6 +44,7 @@ func main() {
 
 		if _, err := fmt.Scanln(&peopleCount); err != nil {
 			fmt.Println("Error reading number of people:", err)
+
 			return
 		}
 
@@ -55,6 +58,7 @@ func main() {
 
 			if _, err := fmt.Scanf("%s %d\n", &operation, &needTemp); err != nil {
 				fmt.Println("Error reading operation and temperature:", err)
+
 				return
 			}
 
