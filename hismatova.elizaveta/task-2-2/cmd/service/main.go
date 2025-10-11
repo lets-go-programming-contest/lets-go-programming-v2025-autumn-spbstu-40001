@@ -7,20 +7,24 @@ import (
 
 type IntHeap []int
 
-func (h IntHeap) Len() int {
-	return len(h)
+func (h *IntHeap) Len() int {
+	return len(*h)
 }
 
-func (h IntHeap) Less(i, j int) bool {
-	return h[i] < h[j]
+func (h *IntHeap) Less(i, j int) bool {
+	return (*h)[i] < (*h)[j]
 }
 
-func (h IntHeap) Swap(i, j int) {
-	h[i], h[j] = h[j], h[i]
+func (h *IntHeap) Swap(i, j int) {
+	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
 }
 
 func (h *IntHeap) Push(x interface{}) {
-	*h = append(*h, x.(int))
+	v, ok := x.(int)
+	if !ok {
+		panic("IntHeap: Push received non-int value")
+	}
+	*h = append(*h, v)
 }
 
 func (h *IntHeap) Pop() interface{} {
@@ -33,14 +37,14 @@ func (h *IntHeap) Pop() interface{} {
 }
 
 func main() {
-	var n int
-	if _, err := fmt.Scan(&n); err != nil {
+	var dishCount int
+	if _, err := fmt.Scan(&dishCount); err != nil {
 		fmt.Println("Error reading number of dishes:", err)
 
 		return
 	}
 
-	arr := make([]int, n)
+	arr := make([]int, dishCount)
 	for i := range arr {
 		if _, err := fmt.Scan(&arr[i]); err != nil {
 			fmt.Println("Error reading dish rating:", err)
@@ -49,26 +53,24 @@ func main() {
 		}
 	}
 
-	var k int
-	if _, err := fmt.Scan(&k); err != nil {
+	var topCount int
+	if _, err := fmt.Scan(&topCount); err != nil {
 		fmt.Println("Error reading k:", err)
 
 		return
 	}
 
-	h := &IntHeap{}
-	heap.Init(h)
+	heapInt := &IntHeap{}
+	heap.Init(heapInt)
 
 	for _, num := range arr {
-		if h.Len() < k {
-			heap.Push(h, num)
-		} else {
-			if num > (*h)[0] {
-				heap.Pop(h)
-				heap.Push(h, num)
-			}
+		if heapInt.Len() < topCount {
+			heap.Push(heapInt, num)
+		} else if num > (*heapInt)[0] {
+			heap.Pop(heapInt)
+			heap.Push(heapInt, num)
 		}
 	}
 
-	fmt.Println((*h)[0])
+	fmt.Println((*heapInt)[0])
 }
