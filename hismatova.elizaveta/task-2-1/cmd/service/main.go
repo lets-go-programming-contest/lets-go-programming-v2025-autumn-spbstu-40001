@@ -1,34 +1,63 @@
 package main
 
-import (
-	"fmt"
-)
+import "fmt"
 
 const (
 	MinTemp = 15
 	MaxTemp = 30
 )
 
+func UpdateRangeAndGetTemp(
+	minT, maxT int,
+	operation string,
+	temp int,
+) (int, int) {
+	switch operation {
+	case "<=":
+		if temp < maxT {
+			maxT = temp
+		}
+	case ">=":
+		if temp > minT {
+			minT = temp
+		}
+	}
+	if minT > maxT {
+		return -1, maxT
+	}
+
+	return minT, maxT
+}
+
 func main() {
 	var departCount int
+
 	if _, err := fmt.Scanln(&departCount); err != nil {
 		fmt.Println("Error reading number of departments:", err)
 		return
 	}
-	for i := 0; i < departCount; i++ {
+
+	for i := range departCount {
 		var peopleCount int
+
 		if _, err := fmt.Scanln(&peopleCount); err != nil {
 			fmt.Println("Error reading number of people:", err)
 			return
 		}
+
 		minT, maxT := MinTemp, MaxTemp
-		for j := 0; j < peopleCount; j++ {
-			var operation string
-			var needTemp int
-			if _, err := fmt.Scanf("%s %d", &operation, &needTemp); err != nil {
+
+		for range peopleCount {
+			var (
+				operation string
+				needTemp  int
+			)
+
+			if _, err := fmt.Scanf("%s %d\n", &operation, &needTemp); err != nil {
 				fmt.Println("Error reading operation and temperature:", err)
 				return
 			}
+
 			switch operation {
 			case "<=":
 				if needTemp < maxT {
@@ -39,11 +68,12 @@ func main() {
 					minT = needTemp
 				}
 			}
-		}
-		if minT > maxT {
-			fmt.Println(-1)
-		} else {
-			fmt.Println(minT)
+
+			if minT > maxT {
+				fmt.Println(-1)
+			} else {
+				fmt.Println(minT)
+			}
 		}
 	}
 }
