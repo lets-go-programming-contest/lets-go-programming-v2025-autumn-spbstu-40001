@@ -23,7 +23,7 @@ func (h *IntHeap) Push(x interface{}) {
 	v, ok := x.(int)
 	if ok {
 		*h = append(*h, v)
-	else {
+	} else {
 		panic("IntHeap: Push received non-int value")
 	}
 }
