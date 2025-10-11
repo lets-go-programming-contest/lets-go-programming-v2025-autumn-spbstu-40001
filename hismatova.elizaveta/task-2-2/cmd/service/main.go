@@ -21,11 +21,11 @@ func (h *IntHeap) Swap(i, j int) {
 
 func (h *IntHeap) Push(x interface{}) {
 	v, ok := x.(int)
-	if !ok {
+	if ok {
+		*h = append(*h, v)
+	else {
 		panic("IntHeap: Push received non-int value")
 	}
-	newHeap := append(*h, v)
-	*h = newHeap
 }
 
 func (h *IntHeap) Pop() interface{} {
