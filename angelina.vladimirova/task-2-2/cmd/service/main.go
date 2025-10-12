@@ -7,12 +7,25 @@ import (
 
 type MinHeap []int
 
-func (h MinHeap) Len() int           { return len(h) }
-func (h MinHeap) Less(i, j int) bool { return h[i] < h[j] }
-func (h MinHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+func (h MinHeap) Len() int {
+	return len(h)
+}
+
+func (h MinHeap) Less(i, j int) bool {
+	return h[i] < h[j]
+}
+
+func (h MinHeap) Swap(i, j int) {
+	h[i], h[j] = h[j], h[i]
+}
 
 func (h *MinHeap) Push(x interface{}) {
-	*h = append(*h, x.(int))
+	value, ok := x.(int)
+	if !ok {
+		panic("value is not an int")
+	}
+
+	*h = append(*h, value)
 }
 
 func (h *MinHeap) Pop() interface{} {
@@ -20,6 +33,7 @@ func (h *MinHeap) Pop() interface{} {
 	n := len(old)
 	x := old[n-1]
 	*h = old[0 : n-1]
+
 	return x
 }
 
@@ -31,21 +45,23 @@ func main() {
 	}()
 
 	var (
-		n int
-		k int
+		count int
+		k     int
 	)
 
-	_, err := fmt.Scan(&n)
+	_, err := fmt.Scan(&count)
 	if err != nil {
 		fmt.Println("Invalid input")
+
 		return
 	}
 
-	ratings := make([]int, n)
-	for i := 0; i < n; i++ {
-		_, err := fmt.Scan(&ratings[i])
+	ratings := make([]int, count)
+	for index := range ratings {
+		_, err := fmt.Scan(&ratings[index])
 		if err != nil {
 			fmt.Println("Invalid input")
+
 			return
 		}
 	}
@@ -53,24 +69,27 @@ func main() {
 	_, err = fmt.Scan(&k)
 	if err != nil {
 		fmt.Println("Invalid input")
+
 		return
 	}
 
-	if k < 1 || k > n {
+	if k < 1 || k > count {
 		fmt.Println("There is no such dish")
+
 		return
 	}
 
-	h := &MinHeap{}
-	heap.Init(h)
+	minHeap := &MinHeap{}
+	heap.Init(minHeap)
 
 	for _, rating := range ratings {
-		heap.Push(h, rating)
+		heap.Push(minHeap, rating)
 	}
 
 	var result int
-	for i := 0; i < k; i++ {
-		result = heap.Pop(h).(int)
+	for range k {
+		value := heap.Pop(minHeap)
+		result = value.(int)
 	}
 
 	fmt.Println(result)
