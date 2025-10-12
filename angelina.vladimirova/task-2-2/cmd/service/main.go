@@ -87,12 +87,15 @@ func main() {
 	}
 
 	var result int
+
 	for range positionK {
 		value := heap.Pop(maxHeap)
 		intValue, ok := value.(int)
+
 		if !ok {
 			panic("unexpected type from heap")
 		}
+
 		result = intValue
 	}
 
