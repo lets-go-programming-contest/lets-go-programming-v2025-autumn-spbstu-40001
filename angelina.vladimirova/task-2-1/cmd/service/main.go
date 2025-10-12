@@ -56,7 +56,6 @@ func main() {
 
 			if currentMin > currentMax {
 				fmt.Println(-1)
-
 			} else {
 				fmt.Println(currentMin)
 			}
