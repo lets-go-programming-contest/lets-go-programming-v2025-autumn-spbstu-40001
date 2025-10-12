@@ -5,21 +5,21 @@ import (
 	"fmt"
 )
 
-type MinHeap []int
+type MaxHeap []int
 
-func (h MinHeap) Len() int {
+func (h MaxHeap) Len() int {
 	return len(h)
 }
 
-func (h MinHeap) Less(i, j int) bool {
-	return h[i] < h[j]
+func (h MaxHeap) Less(i, j int) bool {
+	return h[i] > h[j]
 }
 
-func (h MinHeap) Swap(i, j int) {
+func (h MaxHeap) Swap(i, j int) {
 	h[i], h[j] = h[j], h[i]
 }
 
-func (h *MinHeap) Push(x interface{}) {
+func (h *MaxHeap) Push(x interface{}) {
 	value, ok := x.(int)
 	if !ok {
 		panic("value is not an int")
@@ -28,7 +28,7 @@ func (h *MinHeap) Push(x interface{}) {
 	*h = append(*h, value)
 }
 
-func (h *MinHeap) Pop() interface{} {
+func (h *MaxHeap) Pop() interface{} {
 	old := *h
 	n := len(old)
 	x := old[n-1]
@@ -79,16 +79,16 @@ func main() {
 		return
 	}
 
-	minHeap := &MinHeap{}
-	heap.Init(minHeap)
+	maxHeap := &MaxHeap{}
+	heap.Init(maxHeap)
 
 	for _, rating := range ratings {
-		heap.Push(minHeap, rating)
+		heap.Push(maxHeap, rating)
 	}
 
 	var result int
 	for range k {
-		value := heap.Pop(minHeap)
+		value := heap.Pop(maxHeap)
 		result = value.(int)
 	}
 
