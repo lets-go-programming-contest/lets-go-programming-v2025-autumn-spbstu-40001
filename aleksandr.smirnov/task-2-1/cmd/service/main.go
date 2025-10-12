@@ -22,7 +22,17 @@ func (tr *TemperatureRange) Update(operation string, temperature int) {
 		if temperature < tr.max {
 			tr.max = temperature
 		}
+	default:
+		fmt.Println("Invalid operation")
 	}
+}
+
+func (tr *TemperatureRange) GetOptimal() int {
+	if tr.min > tr.max {
+		return -1
+	}
+
+	return tr.min
 }
 
 func main() {
@@ -30,7 +40,7 @@ func main() {
 
 	_, err := fmt.Scan(&departmentCount)
 	if err != nil {
-		fmt.Println("Invalid input")
+		fmt.Println("Invalid input", err)
 
 		return
 	}
@@ -40,7 +50,7 @@ func main() {
 
 		_, err := fmt.Scan(&employeeCount)
 		if err != nil {
-			fmt.Println("Invalid input")
+			fmt.Println("Invalid input", err)
 
 			return
 		}
@@ -55,18 +65,13 @@ func main() {
 
 			_, err := fmt.Scan(&operation, &temperature)
 			if err != nil {
-				fmt.Println("Invalid input")
+				fmt.Println("Invalid input", err)
 
 				return
 			}
 
 			tempRange.Update(operation, temperature)
-
-			if tempRange.min > tempRange.max {
-				fmt.Println(-1)
-			} else {
-				fmt.Println(tempRange.min)
-			}
+			fmt.Println(tempRange.GetOptimal())
 		}
 	}
 }
