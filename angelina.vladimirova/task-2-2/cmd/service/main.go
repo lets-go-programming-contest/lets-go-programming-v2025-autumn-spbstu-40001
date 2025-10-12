@@ -7,16 +7,16 @@ import (
 
 type MaxHeap []int
 
-func (h MaxHeap) Len() int {
-	return len(h)
+func (h *MaxHeap) Len() int {
+	return len(*h)
 }
 
-func (h MaxHeap) Less(i, j int) bool {
-	return h[i] > h[j]
+func (h *MaxHeap) Less(i, j int) bool {
+	return (*h)[i] > (*h)[j]
 }
 
-func (h MaxHeap) Swap(i, j int) {
-	h[i], h[j] = h[j], h[i]
+func (h *MaxHeap) Swap(i, j int) {
+	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
 }
 
 func (h *MaxHeap) Push(x interface{}) {
@@ -45,8 +45,8 @@ func main() {
 	}()
 
 	var (
-		count int
-		k     int
+		count     int
+		positionK int
 	)
 
 	_, err := fmt.Scan(&count)
@@ -66,14 +66,14 @@ func main() {
 		}
 	}
 
-	_, err = fmt.Scan(&k)
+	_, err = fmt.Scan(&positionK)
 	if err != nil {
 		fmt.Println("Invalid input")
 
 		return
 	}
 
-	if k < 1 || k > count {
+	if positionK < 1 || positionK > count {
 		fmt.Println("There is no such dish")
 
 		return
@@ -87,9 +87,13 @@ func main() {
 	}
 
 	var result int
-	for range k {
+	for range positionK {
 		value := heap.Pop(maxHeap)
-		result = value.(int)
+		intValue, ok := value.(int)
+		if !ok {
+			panic("unexpected type from heap")
+		}
+		result = intValue
 	}
 
 	fmt.Println(result)
