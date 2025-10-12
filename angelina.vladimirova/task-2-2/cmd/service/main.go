@@ -37,48 +37,33 @@ func (h *MaxHeap) Pop() interface{} {
 	return x
 }
 
-func main() {
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println("Error:", r)
-		}
-	}()
-
-	var (
-		count     int
-		positionK int
-	)
+func readInput() (int, []int, int, error) {
+	var count int
 
 	_, err := fmt.Scan(&count)
 	if err != nil {
-		fmt.Println("Invalid input")
-
-		return
+		return 0, nil, 0, err
 	}
 
 	ratings := make([]int, count)
 	for index := range ratings {
 		_, err := fmt.Scan(&ratings[index])
 		if err != nil {
-			fmt.Println("Invalid input")
-
-			return
+			return 0, nil, 0, err
 		}
 	}
 
+	var positionK int
+
 	_, err = fmt.Scan(&positionK)
 	if err != nil {
-		fmt.Println("Invalid input")
-
-		return
+		return 0, nil, 0, err
 	}
 
-	if positionK < 1 || positionK > count {
-		fmt.Println("There is no such dish")
+	return count, ratings, positionK, nil
+}
 
-		return
-	}
-
+func findKthLargest(ratings []int, positionK int) int {
 	maxHeap := &MaxHeap{}
 	heap.Init(maxHeap)
 
@@ -99,5 +84,29 @@ func main() {
 		result = intValue
 	}
 
+	return result
+}
+
+func main() {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Error:", r)
+		}
+	}()
+
+	count, ratings, positionK, err := readInput()
+	if err != nil {
+		fmt.Println("Invalid input")
+
+		return
+	}
+
+	if positionK < 1 || positionK > count {
+		fmt.Println("There is no such dish")
+
+		return
+	}
+
+	result := findKthLargest(ratings, positionK)
 	fmt.Println(result)
 }
