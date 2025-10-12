@@ -2,57 +2,63 @@ package main
 
 import "fmt"
 
+const (
+	minTemperature = 15
+	maxTemperature = 30
+)
+
 func main() {
 	var numberOfTests int
 
 	_, err := fmt.Scan(&numberOfTests)
 	if err != nil {
-		fmt.Println("Invalid input")
+		fmt.Println("Invalid input:", err)
 
 		return
 	}
 
-	for testIndex := range numberOfTests {
-		var (
-			numberOfRequests int
-			sign             string
-			temperature      int
-		)
+	for range numberOfTests {
+		var numberOfRequests int
 
 		_, err := fmt.Scan(&numberOfRequests)
 		if err != nil {
-			fmt.Println("Invalid input")
+			fmt.Println("Invalid input:", err)
 
 			return
 		}
 
-		minTemperature := 15
-		maxTemperature := 30
+		currentMin := minTemperature
+		currentMax := maxTemperature
 
-		for requestIndex := range numberOfRequests {
+		for range numberOfRequests {
+			var (
+				sign        string
+				temperature int
+			)
+
 			_, err = fmt.Scan(&sign, &temperature)
 			if err != nil {
-				fmt.Println("Invalid input")
+				fmt.Println("Invalid input:", err)
 
 				return
 			}
 
 			switch sign {
 			case ">=":
-				if temperature > minTemperature {
-					minTemperature = temperature
+				if temperature > currentMin {
+					currentMin = temperature
 				}
 			case "<=":
-				if temperature < maxTemperature {
-					maxTemperature = temperature
+				if temperature < currentMax {
+					currentMax = temperature
 				}
 			}
 
-			if minTemperature > maxTemperature {
+			if currentMin > currentMax {
 				fmt.Println(-1)
 
 			} else {
-				fmt.Println(minTemperature)
+				fmt.Println(currentMin)
 			}
 		}
 	}
