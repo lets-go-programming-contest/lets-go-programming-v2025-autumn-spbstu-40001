@@ -42,14 +42,14 @@ func readInput() (int, []int, int, error) {
 
 	_, err := fmt.Scan(&count)
 	if err != nil {
-		return 0, nil, 0, err
+		return 0, nil, 0, fmt.Errorf("read count: %w", err)
 	}
 
 	ratings := make([]int, count)
 	for index := range ratings {
 		_, err := fmt.Scan(&ratings[index])
 		if err != nil {
-			return 0, nil, 0, err
+			return 0, nil, 0, fmt.Errorf("read rating: %w", err)
 		}
 	}
 
@@ -57,7 +57,7 @@ func readInput() (int, []int, int, error) {
 
 	_, err = fmt.Scan(&positionK)
 	if err != nil {
-		return 0, nil, 0, err
+		return 0, nil, 0, fmt.Errorf("read k: %w", err)
 	}
 
 	return count, ratings, positionK, nil
