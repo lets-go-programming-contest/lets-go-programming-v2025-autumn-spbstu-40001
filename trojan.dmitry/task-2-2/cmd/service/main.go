@@ -22,9 +22,7 @@ func (iHeap *IntHeap) Swap(firstIndex, secondIndex int) {
 func (iHeap *IntHeap) Push(x any) {
 	value, ok := x.(int)
 	if !ok {
-		fmt.Println("Invalid type")
-
-		return
+		panic("heap: Push of non-int value")
 	}
 
 	*iHeap = append(*iHeap, value)
@@ -33,18 +31,14 @@ func (iHeap *IntHeap) Push(x any) {
 func (iHeap *IntHeap) Pop() any {
 	olhH := *iHeap
 	length := len(olhH)
+	if length == 0 {
+
+		return nil
+	}
 	last := olhH[length-1]
 	*iHeap = olhH[:length-1]
 
 	return last
-}
-
-func isValidRating(rating int) bool {
-	if rating < -10000 || rating > 10000 {
-		return false
-	}
-
-	return true
 }
 
 func removeMinUntil(dishHeap *IntHeap, numOfPreference int) {
@@ -57,8 +51,14 @@ func main() {
 	var countOfDishes int
 
 	_, err := fmt.Scan(&countOfDishes)
-	if err != nil || countOfDishes < 1 || countOfDishes > 10000 {
-		fmt.Println("Invalid input")
+	if err != nil {
+		fmt.Println("Invalid input of count of dishes")
+
+		return
+	}
+
+	if countOfDishes < 1 || countOfDishes > 10000 {
+		fmt.Println("Count of dishes out of allowed range")
 
 		return
 	}
@@ -70,8 +70,8 @@ func main() {
 		var rating int
 
 		_, err = fmt.Scan(&rating)
-		if err != nil || !isValidRating(rating) {
-			fmt.Println("Invalid input")
+		if err != nil {
+			fmt.Println("Invalid input of rating of dish")
 
 			return
 		}
@@ -82,8 +82,13 @@ func main() {
 	var numOfPreference int
 
 	_, err = fmt.Scan(&numOfPreference)
-	if err != nil || numOfPreference < 1 || numOfPreference > countOfDishes {
-		fmt.Println("Invalid input")
+	if err != nil {
+		fmt.Println("Invalid input of num of preference")
+
+		return
+	}
+	if numOfPreference < 1 || numOfPreference > countOfDishes {
+		fmt.Println("Num of preference out of allowed range")
 
 		return
 	}
@@ -91,8 +96,20 @@ func main() {
 	removeMinUntil(dishHeap, numOfPreference)
 
 	if dishHeap.Len() == numOfPreference && dishHeap.Len() > 0 {
-		fmt.Println((*dishHeap)[0])
+		val := heap.Pop(dishHeap)
+		if val == nil {
+			fmt.Println("Unexpected nil from heap.Pop")
+
+			return
+		}
+		got, ok := val.(int)
+		if !ok {
+			fmt.Println("Heap returned non-int value")
+
+			return
+		}
+		fmt.Println(got)
 	} else {
-		fmt.Println("Invalid input")
+		fmt.Println("Heap size mismatch after trimming")
 	}
 }
