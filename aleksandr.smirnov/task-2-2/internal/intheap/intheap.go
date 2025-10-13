@@ -19,16 +19,20 @@ func (h *IntHeap) Push(x interface{}) {
 	if !ok {
 		panic("Expected int type")
 	}
+
 	*h = append(*h, value)
 }
 
 func (h *IntHeap) Pop() interface{} {
 	old := *h
 	n := len(old)
+
 	if n == 0 {
 		return nil
 	}
+
 	x := old[n-1]
 	*h = old[0 : n-1]
+
 	return x
 }
