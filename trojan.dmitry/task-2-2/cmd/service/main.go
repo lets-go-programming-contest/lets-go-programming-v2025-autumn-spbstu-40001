@@ -55,6 +55,8 @@ func validateCountOfDishes(count int) bool {
 	}
 	return true
 }
+func main() {
+	var countOfDishes int
 
 	_, err := fmt.Scan(&countOfDishes)
 	if err != nil {
@@ -62,7 +64,7 @@ func validateCountOfDishes(count int) bool {
 
 		return
 	}
-	if !validateCountOfDishes {
+	if !validateCountOfDishes(countOfDishes) {
 
 		return
 	}
@@ -114,7 +116,7 @@ func validateCountOfDishes(count int) bool {
 
 			return
 		}
-		
+
 		fmt.Println(got)
 	} else {
 		fmt.Println("Heap size mismatch after trimming")
