@@ -48,25 +48,41 @@ func removeMinUntil(dishHeap *IntHeap, numOfPreference int) {
 	}
 }
 
-func validateCountOfDishes(count int) bool {
-	if count < 1 || count > 10000 {
-		fmt.Println("Count of dishes out of allowed range")
-
-		return false
+func readCountOfDishes() int {
+	var count int
+	_, err := fmt.Scan(&count)
+	if err != nil {
+		fmt.Println("Invalid input of count of dishes")
+		return 0
 	}
 
-	return true
+	if count < 1 || count > 10000 {
+		fmt.Println("Count of dishes out of allowed range")
+		return 0
+	}
+
+	return count
+}
+
+func readNumOfPreference(limit int) int {
+	var pref int
+	_, err := fmt.Scan(&pref)
+	if err != nil {
+		fmt.Println("Invalid input of num of preference")
+		return 0
+	}
+
+	if pref < 1 || pref > limit {
+		fmt.Println("Num of preference out of allowed range")
+		return 0
+	}
+
+	return pref
 }
 
 func main() {
-	var countOfDishes int
-
-	_, err := fmt.Scan(&countOfDishes)
-	if err != nil {
-		fmt.Println("Invalid input of count of dishes")
-		return
-	}
-	if !validateCountOfDishes(countOfDishes) {
+	countOfDishes := readCountOfDishes()
+	if countOfDishes == 0 {
 		return
 	}
 
@@ -76,7 +92,7 @@ func main() {
 	for range countOfDishes {
 		var rating int
 
-		_, err = fmt.Scan(&rating)
+		_, err := fmt.Scan(&rating)
 		if err != nil {
 			fmt.Println("Invalid input of rating of dish")
 
@@ -86,18 +102,8 @@ func main() {
 		heap.Push(dishHeap, rating)
 	}
 
-	var numOfPreference int
-
-	_, err = fmt.Scan(&numOfPreference)
-	if err != nil {
-		fmt.Println("Invalid input of num of preference")
-
-		return
-	}
-
-	if numOfPreference < 1 || numOfPreference > countOfDishes {
-		fmt.Println("Num of preference out of allowed range")
-
+	numOfPreference := readNumOfPreference()
+	if numOfPreference == 0 {
 		return
 	}
 
