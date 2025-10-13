@@ -24,26 +24,27 @@ func (iHeap *IntHeap) Push(x any) {
 	if !ok {
 		panic("heap: Push of non-int value")
 	}
+
 	*iHeap = append(*iHeap, value)
 }
 
 func (iHeap *IntHeap) Pop() any {
-	oldH := *iHeap
-	n := len(oldH)
+	olhH := *iHeap
+	length := len(olhH)
 
-	if n == 0 {
+	if length == 0 {
 		return nil
 	}
 
-	last := oldH[n-1]
-	*iHeap = oldH[:n-1]
+	last := olhH[length-1]
+	*iHeap = olhH[:length-1]
 
 	return last
 }
 
-func removeMinUntil(dh *IntHeap, k int) {
-	for dh.Len() > k {
-		heap.Pop(dh)
+func removeMinUntil(dishHeap *IntHeap, numOfPreference int) {
+	for dishHeap.Len() > numOfPreference {
+		heap.Pop(dishHeap)
 	}
 }
 
@@ -57,91 +58,69 @@ func validateCountOfDishes(count int) bool {
 	return true
 }
 
-func readCountOfDishes() (int, error) {
-	var count int
-	_, err := fmt.Scan(&count)
-	if err != nil {
-		return 0, err
-	}
-
-	return count, nil
-}
-
-func readRatingsToHeap(count int) (*IntHeap, error) {
-	h := &IntHeap{}
-	heap.Init(h)
-
-	for i := 0; i < count; i++ {
-		var rating int
-		_, err := fmt.Scan(&rating)
-		if err != nil {
-			return nil, err
-		}
-		heap.Push(h, rating)
-	}
-
-	return h, nil
-}
-
-func readNumOfPreference(max int) (int, error) {
-	var k int
-	_, err := fmt.Scan(&k)
-	if err != nil {
-		return 0, err
-	}
-	if k < 1 || k > max {
-		return 0, fmt.Errorf("num of preference out of allowed range")
-	}
-	return k, nil
-}
-
 func main() {
-	countOfDishes, err := readCountOfDishes()
+	var countOfDishes int
+
+	_, err := fmt.Scan(&countOfDishes)
 	if err != nil {
 		fmt.Println("Invalid input of count of dishes")
-
 		return
 	}
-
 	if !validateCountOfDishes(countOfDishes) {
 		return
 	}
 
-	dishHeap, err := readRatingsToHeap(countOfDishes)
-	if err != nil {
-		fmt.Println("Invalid input of rating of dish")
+	dishHeap := &IntHeap{}
+	heap.Init(dishHeap)
 
-		return
+	for range countOfDishes {
+		var rating int
+
+		_, err = fmt.Scan(&rating)
+		if err != nil {
+			fmt.Println("Invalid input of rating of dish")
+
+			return
+		}
+
+		heap.Push(dishHeap, rating)
 	}
 
-	numOfPreference, err := readNumOfPreference(countOfDishes)
+	var numOfPreference int
+
+	_, err = fmt.Scan(&numOfPreference)
 	if err != nil {
 		fmt.Println("Invalid input of num of preference")
 
 		return
 	}
 
+	if numOfPreference < 1 || numOfPreference > countOfDishes {
+		fmt.Println("Num of preference out of allowed range")
+
+		return
+	}
+
 	removeMinUntil(dishHeap, numOfPreference)
 
-	if dishHeap.Len() != numOfPreference || dishHeap.Len() == 0 {
+	if dishHeap.Len() == numOfPreference && dishHeap.Len() > 0 {
+		val := heap.Pop(dishHeap)
+		if val == nil {
+			fmt.Println("Unexpected nil from heap.Pop")
+
+			return
+		}
+
+		got, ok := val.(int)
+
+		if !ok {
+			fmt.Println("Heap returned non-int value")
+
+			return
+		}
+
+		fmt.Println(got)
+	} else {
 		fmt.Println("Heap size mismatch after trimming")
-
-		return
 	}
-
-	val := heap.Pop(dishHeap)
-	if val == nil {
-		fmt.Println("Unexpected nil from heap.Pop")
-
-		return
-	}
-
-	got, ok := val.(int)
-	if !ok {
-		fmt.Println("Heap returned non-int value")
-
-		return
-	}
-
-	fmt.Println(got)
 }
