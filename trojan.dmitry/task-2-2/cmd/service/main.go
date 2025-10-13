@@ -102,7 +102,7 @@ func main() {
 		heap.Push(dishHeap, rating)
 	}
 
-	numOfPreference := readNumOfPreference()
+	numOfPreference := readNumOfPreference(countOfDishes)
 	if numOfPreference == 0 {
 		return
 	}
