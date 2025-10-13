@@ -43,6 +43,7 @@ func main() {
 			emploees    int
 			temperature = ComfortTemperature{15, 30}
 		)
+
 		_, err = fmt.Scan(&emploees)
 		if err != nil {
 			fmt.Println("Invalid:", err)
@@ -55,18 +56,21 @@ func main() {
 				grade int
 				sign  string
 			)
+
 			_, err = fmt.Scan(&sign)
 			if err != nil {
 				fmt.Println("Invalid:", err)
 
 				return
 			}
+
 			_, err = fmt.Scan(&grade)
 			if err != nil {
 				fmt.Println("Invalid:", err)
 
 				return
 			}
+
 			temperature.printTemperature(sign, grade)
 		}
 	}
