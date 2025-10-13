@@ -50,14 +50,17 @@ func removeMinUntil(dishHeap *IntHeap, numOfPreference int) {
 
 func readCountOfDishes() int {
 	var count int
+
 	_, err := fmt.Scan(&count)
 	if err != nil {
 		fmt.Println("Invalid input of count of dishes")
+
 		return 0
 	}
 
 	if count < 1 || count > 10000 {
 		fmt.Println("Count of dishes out of allowed range")
+
 		return 0
 	}
 
@@ -66,9 +69,11 @@ func readCountOfDishes() int {
 
 func readNumOfPreference(limit int) int {
 	var pref int
+
 	_, err := fmt.Scan(&pref)
 	if err != nil {
 		fmt.Println("Invalid input of num of preference")
+
 		return 0
 	}
 
