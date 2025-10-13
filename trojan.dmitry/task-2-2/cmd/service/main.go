@@ -79,6 +79,7 @@ func readNumOfPreference(limit int) int {
 
 	if pref < 1 || pref > limit {
 		fmt.Println("Num of preference out of allowed range")
+
 		return 0
 	}
 
