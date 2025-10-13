@@ -8,13 +8,11 @@ import (
 type MaxHeap []int
 
 func (a *MaxHeap) Len() int {
-
 	return len(*a)
 }
 
-func (a MaxHeap) Less(i, j int) bool {
-
-	return a[i] > a[j]
+func (a *MaxHeap) Less(i, j int) bool {
+	return (*a)[i] > (*a)[j]
 }
 
 func (a *MaxHeap) Swap(i, j int) {
@@ -22,7 +20,12 @@ func (a *MaxHeap) Swap(i, j int) {
 }
 
 func (a *MaxHeap) Push(x any) {
-	*a = append(*a, x.(int))
+	num, noErr := x.(int)
+	if noErr {
+		*a = append(*a, num)
+	} else {
+		panic("not correct num")
+	}
 }
 
 func (a *MaxHeap) Pop() any {
@@ -35,6 +38,13 @@ func (a *MaxHeap) Pop() any {
 }
 
 func main() {
+
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println("Panic recovered:", err)
+		}
+	}()
+
 	var numberDishes int
 
 	_, err := fmt.Scan(&numberDishes)
