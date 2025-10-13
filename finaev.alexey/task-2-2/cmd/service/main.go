@@ -38,7 +38,6 @@ func (a *MaxHeap) Pop() any {
 }
 
 func main() {
-
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println("Panic recovered:", err)
