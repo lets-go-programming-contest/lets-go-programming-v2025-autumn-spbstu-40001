@@ -8,10 +8,12 @@ import (
 type MaxHeap []int
 
 func (a *MaxHeap) Len() int {
+
 	return len(*a)
 }
 
 func (a MaxHeap) Less(i, j int) bool {
+
 	return a[i] > a[j]
 }
 
@@ -28,6 +30,7 @@ func (a *MaxHeap) Pop() any {
 	n := len(old)
 	x := old[n-1]
 	*a = old[0 : n-1]
+
 	return x
 }
 
@@ -53,6 +56,7 @@ func main() {
 
 			return
 		}
+
 		heap.Push(preferences, preference)
 	}
 
@@ -67,12 +71,12 @@ func main() {
 
 	if dishCount > preferences.Len() {
 		fmt.Println("Fewer dishes than preference number")
+
 		return
 	}
 
-	for dishCount > 1 {
+	for range dishCount - 1 {
 		heap.Pop(preferences)
-		dishCount--
 	}
 
 	fmt.Println(heap.Pop(preferences))
