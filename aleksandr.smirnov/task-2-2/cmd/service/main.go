@@ -9,8 +9,8 @@ import (
 
 func main() {
 	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println("Error:", r)
+		if rec := recover(); rec != nil {
+			fmt.Println("Error:", rec)
 		}
 	}()
 
@@ -30,12 +30,25 @@ func main() {
 
 		_, err := fmt.Scan(&rating)
 		if err != nil {
-			fmt.Println("Invalid input")
+			fmt.Println("Invalid input", err)
 			return
 		}
 
 		heap.Push(ratingsHeap, rating)
 	}
 
-	fmt.Println("Куча:", *ratingsHeap)
+	var preferredDishNumber int
+
+	_, err = fmt.Scan(&preferredDishNumber)
+	if err != nil {
+		fmt.Println("Invalid input", err)
+		return
+	}
+
+	for range preferredDishNumber - 1 {
+		heap.Pop(ratingsHeap)
+	}
+
+	result := heap.Pop(ratingsHeap)
+	fmt.Println(result)
 }
