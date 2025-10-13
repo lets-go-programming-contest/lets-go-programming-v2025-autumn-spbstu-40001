@@ -31,6 +31,7 @@ func (iHeap *IntHeap) Push(x any) {
 func (iHeap *IntHeap) Pop() any {
 	olhH := *iHeap
 	length := len(olhH)
+
 	if length == 0 {
 
 		return nil
@@ -47,8 +48,13 @@ func removeMinUntil(dishHeap *IntHeap, numOfPreference int) {
 	}
 }
 
-func main() {
-	var countOfDishes int
+func validateCountOfDishes(count int) bool {
+	if count < 1 || count > 10000 {
+		fmt.Println("Count of dishes out of allowed range")
+		return false
+	}
+	return true
+}
 
 	_, err := fmt.Scan(&countOfDishes)
 	if err != nil {
@@ -56,9 +62,7 @@ func main() {
 
 		return
 	}
-
-	if countOfDishes < 1 || countOfDishes > 10000 {
-		fmt.Println("Count of dishes out of allowed range")
+	if !validateCountOfDishes {
 
 		return
 	}
@@ -87,6 +91,7 @@ func main() {
 
 		return
 	}
+
 	if numOfPreference < 1 || numOfPreference > countOfDishes {
 		fmt.Println("Num of preference out of allowed range")
 
@@ -103,11 +108,13 @@ func main() {
 			return
 		}
 		got, ok := val.(int)
+
 		if !ok {
 			fmt.Println("Heap returned non-int value")
 
 			return
 		}
+		
 		fmt.Println(got)
 	} else {
 		fmt.Println("Heap size mismatch after trimming")
