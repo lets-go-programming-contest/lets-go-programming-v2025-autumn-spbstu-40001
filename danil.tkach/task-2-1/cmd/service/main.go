@@ -1,8 +1,11 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 )
+
+var ErrUndefinedOp = errors.New("undefined operation")
 
 const (
 	MinTemp = 15
@@ -28,7 +31,7 @@ func (tr *TemperatureRange) Update(operation string, temp int) error {
 	case ">=":
 		tr.minT = max(tr.minT, temp)
 	default:
-		return fmt.Errorf("undefined operation: %s", operation)
+		return fmt.Errorf("%w: %s", ErrUndefinedOp, operation)
 	}
 
 	return nil
@@ -47,6 +50,8 @@ func main() {
 
 	_, err := fmt.Scanln(&departCount)
 	if err != nil {
+		fmt.Println("Failed to read count of departments:", err)
+
 		return
 	}
 
@@ -81,6 +86,7 @@ func main() {
 
 				return
 			}
+
 			fmt.Println(tempRange.GetOptimalTemp())
 		}
 	}
