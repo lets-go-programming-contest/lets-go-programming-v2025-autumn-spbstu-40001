@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 )
 
 const (
@@ -22,15 +21,17 @@ func NewTemperatureRange(minTemp, maxTemp int) *TemperatureRange {
 	}
 }
 
-func (tr *TemperatureRange) Update(operation string, temp int) {
+func (tr *TemperatureRange) Update(operation string, temp int) error {
 	switch operation {
 	case "<=":
-		tr.maxT = int(math.Min(float64(tr.maxT), float64(temp)))
+		tr.maxT = min(tr.maxT, temp)
 	case ">=":
-		tr.minT = int(math.Max(float64(tr.minT), float64(temp)))
+		tr.minT = max(tr.minT, temp)
 	default:
-		tr.minT = tr.maxT + 1
+		return fmt.Errorf("undefined operation: %s", operation)
 	}
+
+	return nil
 }
 
 func (tr *TemperatureRange) GetOptimalTemp() int {
@@ -54,6 +55,8 @@ func main() {
 
 		_, err := fmt.Scanln(&peopleCount)
 		if err != nil {
+			fmt.Println("Failed to read count of people:", err)
+
 			return
 		}
 
@@ -67,10 +70,17 @@ func main() {
 
 			_, err := fmt.Scanf("%s %d\n", &operation, &needTemp)
 			if err != nil {
+				fmt.Println("Failed to read operation or needed temperature:", err)
+
 				return
 			}
 
-			tempRange.Update(operation, needTemp)
+			updateErr := tempRange.Update(operation, needTemp)
+			if updateErr != nil {
+				fmt.Println("Failed while update temperature:", updateErr)
+
+				return
+			}
 			fmt.Println(tempRange.GetOptimalTemp())
 		}
 	}
