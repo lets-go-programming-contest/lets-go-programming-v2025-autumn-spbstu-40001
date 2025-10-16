@@ -2,7 +2,13 @@ package main
 
 import (
 	"container/heap"
+	"errors"
 	"fmt"
+)
+
+var (
+	ErrInvalidRating     = errors.New("rating must be between -10000 and 10000")
+	ErrInvalidPreference = errors.New("preference order out of range")
 )
 
 type DishRatingHeap struct {
@@ -60,13 +66,57 @@ func readRatings(totalDishes int) (*DishRatingHeap, error) {
 		}
 
 		if currentRating < -10000 || currentRating > 10000 {
-			return nil, fmt.Errorf("rating must be between -10000 and 10000")
+			return nil, ErrInvalidRating
 		}
 
 		heap.Push(dishRatings, currentRating)
 	}
 
 	return dishRatings, nil
+}
+
+func readPreferenceOrder(totalDishes int) (int, error) {
+	var preferenceOrder int
+
+	_, err := fmt.Scan(&preferenceOrder)
+	if err != nil {
+		return 0, fmt.Errorf("reading preference order: %w", err)
+	}
+
+	if preferenceOrder < 1 || preferenceOrder > totalDishes {
+		return 0, fmt.Errorf("%w: must be between 1 and %d", ErrInvalidPreference, totalDishes)
+	}
+
+	return preferenceOrder, nil
+}
+
+func findKthPreference(dishRatings *DishRatingHeap, preferenceOrder int) (int, error) {
+	tempHeap := &DishRatingHeap{
+		ratings: []int{},
+	}
+	heap.Init(tempHeap)
+
+	for _, rating := range dishRatings.ratings {
+		heap.Push(tempHeap, rating)
+	}
+
+	var result int
+
+	for range preferenceOrder {
+		item := heap.Pop(tempHeap)
+		if item == nil {
+			return 0, errors.New("not enough elements in heap")
+		}
+
+		rating, ok := item.(int)
+		if !ok {
+			return 0, errors.New("unexpected type in heap")
+		}
+
+		result = rating
+	}
+
+	return result, nil
 }
 
 func main() {
@@ -92,48 +142,18 @@ func main() {
 		return
 	}
 
-	var preferenceOrder int
-
-	_, err = fmt.Scan(&preferenceOrder)
+	preferenceOrder, err := readPreferenceOrder(totalDishes)
 	if err != nil {
-		fmt.Println("Error reading preference order:", err)
+		fmt.Println("Error:", err)
 
 		return
 	}
 
-	if preferenceOrder < 1 || preferenceOrder > totalDishes {
-		fmt.Printf("Error: preference order must be between 1 and %d\n", totalDishes)
+	result, err := findKthPreference(dishRatings, preferenceOrder)
+	if err != nil {
+		fmt.Println("Error:", err)
 
 		return
-	}
-
-	tempHeap := &DishRatingHeap{
-		ratings: []int{},
-	}
-	heap.Init(tempHeap)
-
-	for _, rating := range dishRatings.ratings {
-		heap.Push(tempHeap, rating)
-	}
-
-	var result int
-
-	for range preferenceOrder {
-		item := heap.Pop(tempHeap)
-		if item == nil {
-			fmt.Println("Error: not enough elements in heap")
-
-			return
-		}
-
-		rating, ok := item.(int)
-		if !ok {
-			fmt.Println("Error: unexpected type in heap")
-
-			return
-		}
-
-		result = rating
 	}
 
 	fmt.Println(result)
