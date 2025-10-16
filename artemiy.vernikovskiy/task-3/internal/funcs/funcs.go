@@ -80,12 +80,12 @@ func WriteDataToJSON(valCurs models.ValCurs, jsonFilePath string) error {
 
 	dir := filepath.Dir(jsonFilePath)
 
-	err = os.MkdirAll(dir, 0o750)
+	err = os.MkdirAll(dir, DirPerm)
 	if err != nil {
 		return fmt.Errorf("WriteDataToJSON: %w", err)
 	}
 
-	err = os.WriteFile(jsonFilePath, jsonData, 0o600)
+	err = os.WriteFile(jsonFilePath, jsonData, FilePerm)
 	if err != nil {
 		return fmt.Errorf("WriteDataToJSON: %w", err)
 	}
