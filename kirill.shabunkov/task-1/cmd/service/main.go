@@ -10,30 +10,13 @@ var (
 	ErrInvalidOperation = errors.New("Invalid operation")
 )
 
-func calculate(op1 int, operation string, op2 int) (int, error) {
-	switch operation {
-	case "+":
-		return op1 + op2, nil
-	case "-":
-		return op1 - op2, nil
-	case "*":
-		return op1 * op2, nil
-	case "/":
-		if op2 == 0 {
-			return 0, ErrZeroDivision
-		}
-		return op1 / op2, nil
-	}
-	return 0, ErrInvalidOperation
-}
-
 func main() {
 	var (
-		op1, op2  int
+		lhs, rhs  int
 		operation string
 	)
 
-	scanned, err := fmt.Scan(&op1, &op2, &operation)
+	scanned, err := fmt.Scan(&lhs, &rhs, &operation)
 	switch {
 	case err == nil:
 	case scanned == 0:
@@ -47,10 +30,27 @@ func main() {
 		return
 	}
 
-	res, err := calculate(op1, operation, op2)
+	res, err := calc(lhs, operation, rhs)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	fmt.Println(res)
+}
+
+func calc(lhs int, operation string, rhs int) (int, error) {
+	switch operation {
+	case "+":
+		return lhs + rhs, nil
+	case "-":
+		return lhs - rhs, nil
+	case "*":
+		return lhs * rhs, nil
+	case "/":
+		if rhs == 0 {
+			return 0, ErrZeroDivision
+		}
+		return lhs / rhs, nil
+	}
+	return 0, ErrInvalidOperation
 }
