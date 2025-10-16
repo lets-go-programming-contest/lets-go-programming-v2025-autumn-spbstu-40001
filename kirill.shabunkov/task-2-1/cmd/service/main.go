@@ -10,8 +10,9 @@ type Temperature struct {
 }
 
 const (
-	minTemperature = 15
-	maxTemperature = 30
+	minTemperature     = 15
+	maxTemperature     = 30
+	expectedInputCount = 2
 )
 
 func (temp *Temperature) getSuitableTemperature(operand string, prefferedTemperature int) {
@@ -61,11 +62,12 @@ func main() {
 			)
 
 			count, err := fmt.Scan(&operand, &prefferedTemperature)
-			if count != 2 {
+			if count != expectedInputCount {
 				fmt.Println("Incorrect amount of input data!")
 
 				return
 			}
+
 			if err != nil {
 				fmt.Println("Invalid input data: ", err)
 
