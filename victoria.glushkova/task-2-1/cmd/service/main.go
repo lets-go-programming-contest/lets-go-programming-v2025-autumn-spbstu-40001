@@ -41,6 +41,7 @@ func (ot *OfficeThermostat) Process(operation string, temperature int) int {
 
 func main() {
 	var departmentCount int
+
 	_, err := fmt.Scan(&departmentCount)
 	if err != nil {
 		log.Printf("Error: %v", err)
@@ -49,6 +50,7 @@ func main() {
 
 	for range departmentCount {
 		var staffCount int
+
 		_, err := fmt.Scan(&staffCount)
 		if err != nil {
 			log.Printf("Error: %v", err)
