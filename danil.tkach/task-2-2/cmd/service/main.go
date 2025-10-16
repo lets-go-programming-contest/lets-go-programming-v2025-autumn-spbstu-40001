@@ -22,7 +22,7 @@ func (heap *MinHeap) Swap(index1, index2 int) {
 func (heap *MinHeap) Push(elem any) {
 	val, ok := elem.(int)
 	if !ok {
-		return
+		panic(fmt.Sprintf("Push: ожидался тип int, но получен %T", elem))
 	}
 
 	*heap = append(*heap, val)
@@ -30,7 +30,12 @@ func (heap *MinHeap) Push(elem any) {
 
 func (heap *MinHeap) Pop() any {
 	old := *heap
+
 	size := len(old)
+	if size == 0 {
+		return nil
+	}
+
 	lastVal := old[size-1]
 	*heap = old[0 : size-1]
 
@@ -44,10 +49,18 @@ func RemoveMinElements(myHeap *MinHeap, countElemInHeap int) {
 }
 
 func main() {
-	var dishesCount int
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("Error: %v\n", r)
+		}
+	}()
+
+	var dishesCount uint
 
 	_, err := fmt.Scan(&dishesCount)
-	if err != nil || dishesCount < 1 || dishesCount > 10000 {
+	if err != nil {
+		fmt.Println("Failed to read count of people:", err)
+
 		return
 	}
 
@@ -58,25 +71,25 @@ func main() {
 		var dishRating int
 
 		_, err = fmt.Scan(&dishRating)
-		if err != nil || dishRating < -10000 || dishRating > 10000 {
+		if err != nil {
+			fmt.Println("Failed to read rating of dishes:", err)
+
 			return
 		}
 
 		heap.Push(myHeap, dishRating)
 	}
 
-	var index int
+	var index uint
 
 	_, err = fmt.Scan(&index)
-	if err != nil || index > dishesCount || index < 1 {
+	if err != nil || index > dishesCount {
+		fmt.Println("Failed to read index of needed dish:", err)
+
 		return
 	}
 
-	RemoveMinElements(myHeap, index)
-
-	if myHeap.Len() != index {
-		return
-	}
+	RemoveMinElements(myHeap, int(index))
 
 	needDish := heap.Pop(myHeap)
 	fmt.Println(needDish)
