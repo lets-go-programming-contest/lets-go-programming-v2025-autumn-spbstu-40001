@@ -2,8 +2,8 @@ package controller
 
 import "errors"
 
-var ErrInvalidTemp = errors.New("invalid temperature")
 var ErrUnknownOperator = errors.New("unknown operator")
+var ErrInvalidTemp = errors.New("invalid temperature")
 
 type TemperatureController struct {
 	minTemperature, maxTemperature int
