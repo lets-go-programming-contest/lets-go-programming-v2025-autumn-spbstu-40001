@@ -2,10 +2,13 @@ package main
 
 import (
 	"fmt"
+
+	"github.com/GuseynovGuseynGG/task-2-1/internal/controller"
 )
 
 const (
 	minTemp, maxTemp = 15, 30
+	wrongTemp        = -1
 )
 
 func main() {
@@ -19,6 +22,41 @@ func main() {
 	}
 
 	for range nDepartments {
-		fmt.Println("Processing department...")
+		var (
+			nEmployees            uint
+			temperatureController = controller.New(minTemp, maxTemp)
+		)
+
+		_, err := fmt.Scan(&nEmployees)
+		if err != nil {
+			fmt.Println("invalid employees count:", err)
+
+			return
+		}
+
+		for range nEmployees {
+			var desire controller.Desire
+
+			_, err := fmt.Scan(&desire.Sign, &desire.DesiredTemperature)
+			if err != nil {
+				fmt.Println("invalid desire format:", err)
+
+				return
+			}
+
+			err = temperatureController.ChangeTemperature(desire)
+			if err != nil {
+				fmt.Println(err)
+
+				return
+			}
+
+			temperature, err := temperatureController.GetTemperature()
+			if err != nil {
+				fmt.Println(wrongTemp)
+			} else {
+				fmt.Println(temperature)
+			}
+		}
 	}
 }
