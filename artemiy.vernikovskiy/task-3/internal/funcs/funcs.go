@@ -8,11 +8,36 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
+	"strconv"
+	"strings"
 
 	"github.com/Aapng-cmd/task-3/internal/models"
 	"golang.org/x/net/html/charset"
 	"gopkg.in/yaml.v3"
 )
+
+func SortDataByValue(valCurs models.ValCurs) models.ValCurs {
+	sort.Slice(valCurs.Valutes, func(i, j int) bool {
+		valueI := strings.ReplaceAll(valCurs.Valutes[i].Value, ",", ".")
+		valueJ := strings.ReplaceAll(valCurs.Valutes[j].Value, ",", ".")
+
+		valI, errI := strconv.ParseFloat(valueI, 64)
+		valJ, errJ := strconv.ParseFloat(valueJ, 64)
+
+		if errI != nil {
+			valI = 0
+		}
+
+		if errJ != nil {
+			valJ = 0
+		}
+
+		return valI > valJ
+	})
+
+	return valCurs
+}
 
 func ReadYAMLConfigFile(yamlPath string) (string, string, error) {
 	var settings models.Settings
@@ -52,7 +77,9 @@ func ReadAndParseXML(xmlFilePath string) (models.ValCurs, error) {
 }
 
 func WriteDataToJSON(valCurs models.ValCurs, jsonFilePath string) error {
-	jsonData, err := json.MarshalIndent(valCurs.Valutes, "", "  ")
+	valCurs = SortDataByValue(valCurs)
+
+	jsonData, err := json.MarshalIndent(valCurs.Valutes, "", "\t")
 	if err != nil {
 		return fmt.Errorf("WriteDataToJSON: %w", err)
 	}

@@ -17,28 +17,27 @@ func main() {
 
 	if configPath == "" {
 		fmt.Println("Config file needed. Pass it with --config filename")
+		panic("AAAAAAAAAAAAAAA")
 
-		return
 	}
 
 	inputFile, outputFile, err := funcs.ReadYAMLConfigFile(configPath)
 	if err != nil {
-		fmt.Println(err)
-
-		return
+		// fmt.Println(err)
+		panic(err)
 	}
 
 	var valCurs models.ValCurs
 
 	valCurs, err = funcs.ReadAndParseXML(inputFile)
 	if err != nil {
-		fmt.Println(err)
-
-		return
+		// fmt.Println(err)
+		panic(err)
 	}
 
 	err = funcs.WriteDataToJSON(valCurs, outputFile)
 	if err != nil {
-		fmt.Println(err)
+		// fmt.Println(err)
+		panic(err)
 	}
 }
