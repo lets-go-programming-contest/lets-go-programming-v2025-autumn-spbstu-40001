@@ -22,7 +22,7 @@ func (heap *MinHeap) Swap(index1, index2 int) {
 func (heap *MinHeap) Push(elem any) {
 	val, ok := elem.(int)
 	if !ok {
-		panic(fmt.Sprintf("Push: ожидался тип int, но получен %T", elem))
+		panic(fmt.Sprintf("Push: expected int, but got %T", elem))
 	}
 
 	*heap = append(*heap, val)
@@ -55,11 +55,11 @@ func main() {
 		}
 	}()
 
-	var dishesCount uint
+	var dishesCount int
 
 	_, err := fmt.Scan(&dishesCount)
 	if err != nil {
-		fmt.Println("Failed to read count of people:", err)
+		fmt.Println("Failed to read count of dishes:", err)
 
 		return
 	}
@@ -80,7 +80,7 @@ func main() {
 		heap.Push(myHeap, dishRating)
 	}
 
-	var index uint
+	var index int
 
 	_, err = fmt.Scan(&index)
 	if err != nil || index > dishesCount {
@@ -89,7 +89,7 @@ func main() {
 		return
 	}
 
-	RemoveMinElements(myHeap, int(index))
+	RemoveMinElements(myHeap, index)
 
 	needDish := heap.Pop(myHeap)
 	fmt.Println(needDish)
