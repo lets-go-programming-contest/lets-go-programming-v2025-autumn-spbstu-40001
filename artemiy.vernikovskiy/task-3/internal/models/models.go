@@ -10,9 +10,9 @@ type Settings struct {
 }
 
 type ActualData struct {
-	NumCode  string `json:"num_code"  xml:"NumCode"`
-	CharCode string `json:"char_code" xml:"CharCode"`
-	Value    string `json:"value"     xml:"Value"`
+	NumCode  int     `json:"num_code"  xml:"NumCode"`
+	CharCode string  `json:"char_code" xml:"CharCode"`
+	Value    float64 `json:"value"     xml:"Value"`
 }
 
 type ValCurs struct {

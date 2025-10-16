@@ -18,7 +18,6 @@ func main() {
 	if configPath == "" {
 		fmt.Println("Config file needed. Pass it with --config filename")
 		panic("AAAAAAAAAAAAAAA")
-
 	}
 
 	inputFile, outputFile, err := funcs.ReadYAMLConfigFile(configPath)
