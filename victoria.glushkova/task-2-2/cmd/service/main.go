@@ -9,15 +9,15 @@ type DishRatingHeap struct {
 	ratings []int
 }
 
-func (h DishRatingHeap) Len() int {
+func (h *DishRatingHeap) Len() int {
 	return len(h.ratings)
 }
 
-func (h DishRatingHeap) Less(i, j int) bool {
+func (h *DishRatingHeap) Less(i, j int) bool {
 	return h.ratings[i] > h.ratings[j]
 }
 
-func (h DishRatingHeap) Swap(i, j int) {
+func (h *DishRatingHeap) Swap(i, j int) {
 	h.ratings[i], h.ratings[j] = h.ratings[j], h.ratings[i]
 }
 
@@ -46,6 +46,29 @@ func (h *DishRatingHeap) Pop() interface{} {
 	return item
 }
 
+func readRatings(totalDishes int) (*DishRatingHeap, error) {
+	dishRatings := &DishRatingHeap{
+		ratings: []int{},
+	}
+	heap.Init(dishRatings)
+
+	for range totalDishes {
+		var currentRating int
+		_, err := fmt.Scan(&currentRating)
+		if err != nil {
+			return nil, fmt.Errorf("reading dish rating: %w", err)
+		}
+
+		if currentRating < -10000 || currentRating > 10000 {
+			return nil, fmt.Errorf("rating must be between -10000 and 10000")
+		}
+
+		heap.Push(dishRatings, currentRating)
+	}
+
+	return dishRatings, nil
+}
+
 func main() {
 	var totalDishes int
 
@@ -62,27 +85,11 @@ func main() {
 		return
 	}
 
-	dishRatings := &DishRatingHeap{
-		ratings: []int{},
-	}
-	heap.Init(dishRatings)
+	dishRatings, err := readRatings(totalDishes)
+	if err != nil {
+		fmt.Println("Error:", err)
 
-	for range totalDishes {
-		var currentRating int
-		_, err := fmt.Scan(&currentRating)
-		if err != nil {
-			fmt.Println("Error reading dish rating:", err)
-
-			return
-		}
-
-		if currentRating < -10000 || currentRating > 10000 {
-			fmt.Println("Error: rating must be between -10000 and 10000")
-
-			return
-		}
-
-		heap.Push(dishRatings, currentRating)
+		return
 	}
 
 	var preferenceOrder int
@@ -110,6 +117,7 @@ func main() {
 	}
 
 	var result int
+
 	for range preferenceOrder {
 		item := heap.Pop(tempHeap)
 		if item == nil {
