@@ -1,6 +1,15 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+	"os"
+)
+
+const (
+	minTemp = 15
+	maxTemp = 30
+)
 
 type OfficeThermostat struct {
 	minAllowed int
@@ -9,8 +18,8 @@ type OfficeThermostat struct {
 
 func NewOfficeThermostat() *OfficeThermostat {
 	return &OfficeThermostat{
-		minAllowed: 15,
-		maxAllowed: 30,
+		minAllowed: minTemp,
+		maxAllowed: maxTemp,
 	}
 }
 
@@ -29,26 +38,38 @@ func (ot *OfficeThermostat) ProcessPreference(constraint string, degrees int) in
 	if ot.minAllowed > ot.maxAllowed {
 		return -1
 	}
+
 	return ot.minAllowed
 }
 
 func main() {
 	var numDepartments int
-	fmt.Scan(&numDepartments)
+	if _, err := fmt.Scan(&numDepartments); err != nil {
+		log.Printf("Error reading number of departments: %v", err)
+		os.Exit(1)
+	}
 
-	for d := 0; d < numDepartments; d++ {
+	for range numDepartments {
 		var staffSize int
-		fmt.Scan(&staffSize)
+		if _, err := fmt.Scan(&staffSize); err != nil {
+			log.Printf("Error reading staff size: %v", err)
+			os.Exit(1)
+		}
 
 		thermostat := NewOfficeThermostat()
 
-		for s := 0; s < staffSize; s++ {
+		for range staffSize {
 			var directive string
 			var celsius int
-			fmt.Scanf("%s %d\n", &directive, &celsius)
+
+			if _, err := fmt.Scanf("%s %d\n", &directive, &celsius); err != nil {
+				log.Printf("Error reading temperature preference: %v", err)
+				os.Exit(1)
+			}
 
 			optimalTemp := thermostat.ProcessPreference(directive, celsius)
 			fmt.Println(optimalTemp)
 		}
 	}
 }
+
