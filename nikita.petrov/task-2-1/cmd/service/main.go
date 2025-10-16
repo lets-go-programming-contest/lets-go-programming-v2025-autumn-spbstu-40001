@@ -16,7 +16,7 @@ func main() {
 
 	_, err := fmt.Scan(&deptNum)
 	if err != nil {
-		fmt.Println("scan department number error")
+		fmt.Println(err)
 
 		return
 	}
@@ -29,7 +29,7 @@ func main() {
 
 		_, err := fmt.Scan(&staffNum)
 		if err != nil {
-			fmt.Println("scan staff number error")
+			fmt.Println(err)
 
 			return
 		}
@@ -39,14 +39,14 @@ func main() {
 		for range staffNum {
 			_, err = fmt.Scan(&condition)
 			if err != nil {
-				fmt.Println("scan condition error")
+				fmt.Println(err)
 
 				return
 			}
 
 			_, err = fmt.Scan(&wishfulTemp)
 			if err != nil {
-				fmt.Println("scan wishful temp error")
+				fmt.Println(err)
 
 				return
 			}

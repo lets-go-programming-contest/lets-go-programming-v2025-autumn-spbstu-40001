@@ -35,6 +35,8 @@ func (tm *TempManager) SetNewOptimalTemp(condition string, newTemp int) error {
 		if tm.maxTemp < tm.minTemp {
 			return ErrSetValue
 		}
+	default:
+		return ErrSetValue
 	}
 
 	return nil
