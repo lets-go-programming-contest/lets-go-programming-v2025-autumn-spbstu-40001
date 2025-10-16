@@ -19,16 +19,12 @@ func ReadYAMLConfigFile(yamlPath string) (string, string, error) {
 
 	data, err := os.ReadFile(yamlPath)
 	if err != nil {
-		fmt.Println("Error reading YAML config file: %v", err)
-
-		return "", "", err
+		return "", "", fmt.Errorf("error reading YAML config file: %w", err)
 	}
 
 	err = yaml.Unmarshal(data, &settings)
 	if err != nil {
-		fmt.Println("Error unmarshaling YAML: %v", err)
-
-		return "", "", err
+		return "", "", fmt.Errorf("error unmarshaling YAML: %w", err)
 	}
 
 	return settings.InputFileSetting, settings.OutputFileSetting, nil
@@ -39,9 +35,7 @@ func ReadAndParseXML(xmlFilePath string) (models.ValCurs, error) {
 
 	xmlData, err := os.ReadFile(xmlFilePath)
 	if err != nil {
-		fmt.Println("Error reading XML file: %v", err)
-
-		return valCurs, err
+		return valCurs, fmt.Errorf("error reading XML file: %w", err)
 	}
 
 	decoder := xml.NewDecoder(bytes.NewReader(xmlData))
@@ -51,29 +45,28 @@ func ReadAndParseXML(xmlFilePath string) (models.ValCurs, error) {
 
 	err = decoder.Decode(&valCurs)
 	if err != nil {
-		fmt.Println("Error unmarshaling XML: %v", err)
-
-		return valCurs, err
+		return valCurs, fmt.Errorf("error unmarshaling XML: %w", err)
 	}
 
 	return valCurs, nil
 }
 
-func WriteDataToJSON(valCurs models.ValCurs, JSONFilePath string) error {
+func WriteDataToJSON(valCurs models.ValCurs, jsonFilePath string) error {
 	jsonData, err := json.MarshalIndent(valCurs.Valutes, "", "  ")
 	if err != nil {
-		return err
+		return fmt.Errorf("WriteDataToJSON: %w", err)
 	}
 
-	dir := filepath.Dir(JSONFilePath)
-	err = os.MkdirAll(dir, os.ModePerm)
+	dir := filepath.Dir(jsonFilePath)
+
+	err = os.MkdirAll(dir, 0o750)
 	if err != nil {
-		return err
+		return fmt.Errorf("WriteDataToJSON: %w", err)
 	}
 
-	err = os.WriteFile(JSONFilePath, jsonData, 0o644)
+	err = os.WriteFile(jsonFilePath, jsonData, 0o600)
 	if err != nil {
-		return err
+		return fmt.Errorf("WriteDataToJSON: %w", err)
 	}
 
 	return nil
