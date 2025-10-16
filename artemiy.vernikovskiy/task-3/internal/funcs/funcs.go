@@ -16,6 +16,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const (
+	DirPerm  = 0o750 // rwxr-x---
+	FilePerm = 0o600 // rw-------
+)
+
 func SortDataByValue(valCurs models.ValCurs) models.ValCurs {
 	sort.Slice(valCurs.Valutes, func(i, j int) bool {
 		return valCurs.Valutes[i].Value > valCurs.Valutes[j].Value
