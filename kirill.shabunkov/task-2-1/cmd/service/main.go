@@ -45,8 +45,10 @@ func main() {
 	}
 
 	for range departamentNum {
-		currentTemperature := Temperature{Min: minTemperature, Max: maxTemperature}
-		var workerNum int
+		var (
+			currentTemperature = Temperature{Min: minTemperature, Max: maxTemperature}
+			workerNum          int
+		)
 
 		_, err := fmt.Scan(&workerNum)
 		if err != nil {
