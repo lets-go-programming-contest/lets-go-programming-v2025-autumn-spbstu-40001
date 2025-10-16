@@ -3,7 +3,6 @@ package controller
 import "errors"
 
 var ErrUnknownOperator = errors.New("unknown operator")
-var ErrInvalidTemp = errors.New("invalid temperature")
 
 type TemperatureController struct {
 	minTemperature, maxTemperature int
@@ -30,6 +29,8 @@ func (obj *TemperatureController) ChangeTemperature(desire Desire) error {
 
 	return nil
 }
+
+var ErrInvalidTemp = errors.New("invalid temperature")
 
 func (obj *TemperatureController) GetTemperature() (int, error) {
 	if obj.maxTemperature >= obj.minTemperature {
