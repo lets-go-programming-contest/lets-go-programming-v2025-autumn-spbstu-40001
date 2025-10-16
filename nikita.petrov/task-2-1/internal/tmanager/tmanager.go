@@ -1,9 +1,5 @@
 package tmanager
 
-import "errors"
-
-var ErrSetValue error = errors.New("can't set new value")
-
 type TempManager struct {
 	maxTemp int
 	minTemp int
@@ -13,11 +9,7 @@ func New(maxValue int, minValue int) TempManager {
 	return TempManager{maxValue, minValue}
 }
 
-func (tm *TempManager) GetCurrentOptimalTemp() int {
-	return tm.minTemp
-}
-
-func (tm *TempManager) SetNewOptimalTemp(condition string, newTemp int) error {
+func (tm *TempManager) SetAndGetNewOptimalTemp(condition string, newTemp int) int {
 	switch condition {
 	case ">=":
 		if newTemp > tm.minTemp {
@@ -25,7 +17,7 @@ func (tm *TempManager) SetNewOptimalTemp(condition string, newTemp int) error {
 		}
 
 		if tm.minTemp > tm.maxTemp {
-			return ErrSetValue
+			return -1
 		}
 	case "<=":
 		if newTemp < tm.maxTemp {
@@ -33,11 +25,11 @@ func (tm *TempManager) SetNewOptimalTemp(condition string, newTemp int) error {
 		}
 
 		if tm.maxTemp < tm.minTemp {
-			return ErrSetValue
+			return -1
 		}
 	default:
-		return ErrSetValue
+		return -1
 	}
 
-	return nil
+	return tm.minTemp
 }
