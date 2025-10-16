@@ -12,32 +12,32 @@ type Dish struct {
 
 type DishHeap []Dish
 
-func (h *DishHeap) Len() int { return len(*h) }
+func (dh *DishHeap) Len() int { return len(*dh) }
 
-func (h *DishHeap) Less(i, j int) bool {
-	return (*h)[i].rating > (*h)[j].rating
+func (dh *DishHeap) Less(i, j int) bool {
+	return (*dh)[i].rating > (*dh)[j].rating
 }
 
-func (h *DishHeap) Swap(i, j int) {
-	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
+func (dh *DishHeap) Swap(i, j int) {
+	(*dh)[i], (*dh)[j] = (*dh)[j], (*dh)[i]
 }
 
-func (h *DishHeap) Push(x any) {
+func (dh *DishHeap) Push(x any) {
 	dish, ok := x.(Dish)
 	if !ok {
 		panic("invalid data type")
 	}
-	*h = append(*h, dish)
+	*dh = append(*dh, dish)
 }
 
-func (h *DishHeap) Pop() any {
-	old := *h
+func (dh *DishHeap) Pop() any {
+	old := *dh
 	n := len(old)
 	if n == 0 {
 		panic("heap is empty")
 	}
 	x := old[n-1]
-	*h = old[0 : n-1]
+	*dh = old[0 : n-1]
 	return x
 }
 
@@ -80,17 +80,22 @@ func main() {
 		return
 	}
 
-	h := &DishHeap{}
-	heap.Init(h)
+	dishHeap := &DishHeap{}
+	heap.Init(dishHeap)
 
 	for i, rating := range ratings {
-		heap.Push(h, Dish{rating: rating, index: i + 1})
+		heap.Push(dishHeap, Dish{rating: rating, index: i + 1})
 	}
 
 	for i := 0; i < dishCount-1; i++ {
-		heap.Pop(h)
+		heap.Pop(dishHeap)
 	}
 
-	dish := heap.Pop(h).(Dish)
+	dish, ok := heap.Pop(dishHeap).(Dish)
+	if !ok {
+		fmt.Println("Failed to assert type to Dish")
+		return
+	}
+
 	fmt.Println(dish.index)
 }
