@@ -46,8 +46,8 @@ func main() {
 
 	for range departamentNum {
 		var workerNum int
-
 		currentTemperature := Temperature{Min: minTemperature, Max: maxTemperature}
+
 		_, err := fmt.Scan(&workerNum)
 		if err != nil {
 			fmt.Println("Invalid input data: ", err)
