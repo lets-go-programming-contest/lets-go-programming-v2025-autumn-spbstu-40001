@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/Aapng-cmd/task-3/internal/models"
 	"golang.org/x/net/html/charset"
@@ -46,6 +47,10 @@ func ReadAndParseXML(xmlFilePath string) (models.ValCurs, error) {
 	if err != nil {
 		return valCurs, fmt.Errorf("error reading XML file: %w", err)
 	}
+
+	xmlString := string(xmlData)
+	xmlString = strings.ReplaceAll(xmlString, ",", ".") // F*cking xml with comma separation
+	xmlData = []byte(xmlString)
 
 	decoder := xml.NewDecoder(bytes.NewReader(xmlData))
 	decoder.CharsetReader = func(encoding string, input io.Reader) (io.Reader, error) {
