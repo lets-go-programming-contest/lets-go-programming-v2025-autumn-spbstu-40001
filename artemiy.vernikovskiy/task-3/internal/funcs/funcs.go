@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/Aapng-cmd/task-3/internal/models"
 	"golang.org/x/net/html/charset"
@@ -60,6 +61,12 @@ func ReadAndParseXML(xmlFilePath string) (models.ValCurs, error) {
 
 func WriteDataToJSON(valCurs models.ValCurs, JSONFilePath string) error {
 	jsonData, err := json.MarshalIndent(valCurs.Valutes, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	dir := filepath.Dir(JSONFilePath)
+	err = os.MkdirAll(dir, os.ModePerm)
 	if err != nil {
 		return err
 	}
