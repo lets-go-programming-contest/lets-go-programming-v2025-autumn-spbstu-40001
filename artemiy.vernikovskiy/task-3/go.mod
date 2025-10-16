@@ -1,12 +1,11 @@
 module github.com/Aapng-cmd/task-3
 
-go 1.24.0
+go 1.22.7
 
-toolchain go1.24.4
+toolchain go1.22.7
 
 require (
-	golang.org/x/net v0.46.0
-	gopkg.in/yaml.v3 v3.0.1
+	golang.org/x/net v0.46.0 // indirect
+	golang.org/x/text v0.30.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-require golang.org/x/text v0.30.0 // indirect
