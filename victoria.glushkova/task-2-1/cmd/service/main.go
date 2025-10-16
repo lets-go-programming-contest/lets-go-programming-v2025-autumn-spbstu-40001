@@ -6,73 +6,52 @@ import (
 	"os"
 )
 
-const (
-	minTemp = 15
-	maxTemp = 30
-)
+const minTemp = 15
+const maxTemp = 30
 
 type OfficeThermostat struct {
-	minAllowed int
-	maxAllowed int
+	min int
+	max int
 }
 
 func NewOfficeThermostat() *OfficeThermostat {
-	return &OfficeThermostat{
-		minAllowed: minTemp,
-		maxAllowed: maxTemp,
-	}
+	return &OfficeThermostat{min: minTemp, max: maxTemp}
 }
 
-func (ot *OfficeThermostat) ProcessPreference(constraint string, degrees int) int {
-	switch constraint {
-	case ">=":
-		if degrees > ot.minAllowed {
-			ot.minAllowed = degrees
-		}
-	case "<=":
-		if degrees < ot.maxAllowed {
-			ot.maxAllowed = degrees
-		}
+func (ot *OfficeThermostat) Process(op string, temp int) int {
+	if op == ">=" && temp > ot.min {
+		ot.min = temp
 	}
-
-	if ot.minAllowed > ot.maxAllowed {
+	if op == "<=" && temp < ot.max {
+		ot.max = temp
+	}
+	if ot.min > ot.max {
 		return -1
 	}
-
-	return ot.minAllowed
+	return ot.min
 }
 
 func main() {
-	var numDepartments int
-	_, err := fmt.Scan(&numDepartments)
-	if err != nil {
-		log.Printf("Error reading number of departments: %v", err)
+	var n int
+	if _, err := fmt.Scan(&n); err != nil {
+		log.Printf("Error: %v", err)
 		os.Exit(1)
 	}
-
-	for range numDepartments {
-		var staffSize int
-		_, err := fmt.Scan(&staffSize)
-		if err != nil {
-			log.Printf("Error reading staff size: %v", err)
+	for i := 0; i < n; i++ {
+		var k int
+		if _, err := fmt.Scan(&k); err != nil {
+			log.Printf("Error: %v", err)
 			os.Exit(1)
 		}
-
-		thermostat := NewOfficeThermostat()
-
-		for range staffSize {
-			var directive string
-			var celsius int
-
-			_, err := fmt.Scanf("%s %d\n", &directive, &celsius)
-			if err != nil {
-				log.Printf("Error reading temperature preference: %v", err)
+		t := NewOfficeThermostat()
+		for j := 0; j < k; j++ {
+			var op string
+			var temp int
+			if _, err := fmt.Scanf("%s %d\n", &op, &temp); err != nil {
+				log.Printf("Error: %v", err)
 				os.Exit(1)
 			}
-
-			optimalTemp := thermostat.ProcessPreference(directive, celsius)
-			fmt.Println(optimalTemp)
+			fmt.Println(t.Process(op, temp))
 		}
 	}
 }
-
