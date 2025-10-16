@@ -23,6 +23,7 @@ func (comf *ComfortZone) getComfortTemp() int {
 	if comf.minTemp > comf.maxTemp {
 		return -1
 	}
+
 	return comf.minTemp
 }
 
@@ -37,6 +38,7 @@ func main() {
 	_, err := fmt.Scan(&departmentCount)
 	if err != nil {
 		fmt.Println("Invalid input")
+
 		return
 	}
 
@@ -44,6 +46,7 @@ func main() {
 		_, err = fmt.Scan(&employeesCount)
 		if err != nil {
 			fmt.Println("Invalid input")
+
 			return
 		}
 
@@ -58,6 +61,7 @@ func main() {
 			_, err = fmt.Scan(&operation, &temp)
 			if err != nil {
 				fmt.Println("Invalid input")
+
 				return
 			}
 
