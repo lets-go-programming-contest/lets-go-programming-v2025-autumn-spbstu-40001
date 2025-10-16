@@ -7,8 +7,10 @@ import (
 )
 
 var (
-	ErrEmptyHeapTop  = errors.New("cannot get top element from empty heap")
-	ErrHeapUnderflow = errors.New("cannot pop from empty heap")
+	ErrEmptyHeapTop     = errors.New("cannot get top element from empty heap")
+	ErrHeapUnderflow    = errors.New("cannot pop from empty heap")
+	ErrPopNInvalidCount = errors.New("cannot pop less then 1 or more then Len elements")
+	ErrTypecastFailed   = errors.New("cannot convert PrimHeap::inner_stack::pop() return value")
 )
 
 type PrimHeap[T cmp.Ordered] struct {
@@ -45,9 +47,28 @@ func (obj *PrimHeap[T]) Pop() (T, error) {
 		return result, ErrHeapUnderflow
 	}
 
-	castedResult, _ := result.(T)
+	castedResult, ok := result.(T)
+	if !ok {
+		return castedResult, ErrTypecastFailed
+	}
 
 	return castedResult, nil
+}
+
+func (obj *PrimHeap[T]) PopN(count int) (T, error) {
+	var result T
+	if (count < 1) || (count > obj.Len()) {
+		return result, ErrPopNInvalidCount
+	}
+
+	for range count - 1 {
+		_, err := obj.Pop()
+		if err != nil {
+			return result, err
+		}
+	}
+
+	return obj.Pop()
 }
 
 func New[T cmp.Ordered](less func(T, T) bool, values ...T) PrimHeap[T] {

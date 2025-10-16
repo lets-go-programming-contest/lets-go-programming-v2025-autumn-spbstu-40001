@@ -45,16 +45,12 @@ func main() {
 		return
 	}
 
-	if (dishID > dishesQueue.Len()) || (dishID <= 0) {
-		fmt.Println("Entered nonexistent priority number")
+	result, err := dishesQueue.PopN(dishID)
+	if err != nil {
+		fmt.Println("Failed to get priority with entered number:", err)
 
 		return
 	}
 
-	for range dishID - 1 {
-		_, _ = dishesQueue.Pop()
-	}
-
-	result, _ := dishesQueue.Top()
 	fmt.Println(result)
 }
