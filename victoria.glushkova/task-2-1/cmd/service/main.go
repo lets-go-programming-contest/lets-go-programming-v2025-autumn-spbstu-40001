@@ -6,8 +6,10 @@ import (
 	"os"
 )
 
-const minTemp = 15
-const maxTemp = 30
+const (
+	minTemp = 15
+	maxTemp = 30
+)
 
 type OfficeThermostat struct {
 	min int
@@ -15,43 +17,58 @@ type OfficeThermostat struct {
 }
 
 func NewOfficeThermostat() *OfficeThermostat {
-	return &OfficeThermostat{min: minTemp, max: maxTemp}
+	return &OfficeThermostat{
+		min: minTemp,
+		max: maxTemp,
+	}
 }
 
-func (ot *OfficeThermostat) Process(op string, temp int) int {
-	if op == ">=" && temp > ot.min {
-		ot.min = temp
+func (ot *OfficeThermostat) Process(operation string, temperature int) int {
+	if operation == ">=" && temperature > ot.min {
+		ot.min = temperature
 	}
-	if op == "<=" && temp < ot.max {
-		ot.max = temp
+
+	if operation == "<=" && temperature < ot.max {
+		ot.max = temperature
 	}
+
 	if ot.min > ot.max {
 		return -1
 	}
+
 	return ot.min
 }
 
 func main() {
-	var n int
-	if _, err := fmt.Scan(&n); err != nil {
+	var departmentCount int
+	_, err := fmt.Scan(&departmentCount)
+	if err != nil {
 		log.Printf("Error: %v", err)
 		os.Exit(1)
 	}
-	for i := 0; i < n; i++ {
-		var k int
-		if _, err := fmt.Scan(&k); err != nil {
+
+	for range departmentCount {
+		var staffCount int
+		_, err := fmt.Scan(&staffCount)
+		if err != nil {
 			log.Printf("Error: %v", err)
 			os.Exit(1)
 		}
-		t := NewOfficeThermostat()
-		for j := 0; j < k; j++ {
-			var op string
-			var temp int
-			if _, err := fmt.Scanf("%s %d\n", &op, &temp); err != nil {
+
+		thermostat := NewOfficeThermostat()
+
+		for range staffCount {
+			var operation string
+			var temperature int
+
+			_, err := fmt.Scanf("%s %d\n", &operation, &temperature)
+			if err != nil {
 				log.Printf("Error: %v", err)
 				os.Exit(1)
 			}
-			fmt.Println(t.Process(op, temp))
+
+			result := thermostat.Process(operation, temperature)
+			fmt.Println(result)
 		}
 	}
 }
