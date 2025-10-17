@@ -68,7 +68,7 @@ func ParseXML(xmlPath string) (CurrencyRates, error) {
 	return result, nil
 }
 
-func ForceWriteToJSON(rates *CurrencyRates, outPath string, defaultMode os.FileMode) error {
+func WriteToJSON(rates *CurrencyRates, outPath string, defaultMode os.FileMode) error {
 	serialized, err := json.MarshalIndent(rates.Rates, "", "\t")
 	if err != nil {
 		return fmt.Errorf("failed to serialize data to json: %w", err)
