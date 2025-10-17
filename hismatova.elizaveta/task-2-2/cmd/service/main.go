@@ -38,14 +38,14 @@ func (h *IntHeap) Push(x interface{}) {
 
 func (h *IntHeap) Pop() interface{} {
 	old := *h
-	n := len(old)
+	length := len(old)
 
-	if n == 0 {
+	if length == 0 {
 		return nil
 	}
 
-	x := old[n-1]
-	*h = old[:n-1]
+	x := old[length-1]
+	*h = old[:length-1]
 
 	return x
 }
@@ -96,6 +96,7 @@ func main() {
 
 	popped := heap.Pop(heapInt)
 	result, ok := popped.(int)
+
 	if !ok {
 		fmt.Println(0)
 
