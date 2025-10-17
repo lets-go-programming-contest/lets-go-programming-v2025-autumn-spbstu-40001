@@ -46,7 +46,7 @@ func main() {
 
 			err = temperatureController.ChangeTemperature(desire)
 			if err != nil {
-				fmt.Println(err)
+				fmt.Println("failed to change temperature:", err)
 
 				return
 			}
