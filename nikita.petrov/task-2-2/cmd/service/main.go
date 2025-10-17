@@ -12,7 +12,7 @@ func main() {
 
 	_, err := fmt.Scan(&dishesNumber)
 	if err != nil {
-		fmt.Println("scan dishes number error")
+		fmt.Println("scan dishes number error", err)
 
 		return
 	}
@@ -24,7 +24,7 @@ func main() {
 
 		_, err = fmt.Scan(&dishRating)
 		if err != nil {
-			fmt.Println("scan dish rating error")
+			fmt.Println("scan dish rating error", err)
 
 			return
 		}
@@ -36,19 +36,19 @@ func main() {
 
 	_, err = fmt.Scan(&wishedDish)
 	if err != nil {
-		fmt.Println("scan wished dish number error")
+		fmt.Println("scan wished dish number error", err)
 
 		return
 	}
 
-	if wishedDish <= dishesNumber {
-		for range wishedDish - 1 {
-			heap.Pop(ratingList)
-		}
-	} else {
+	if wishedDish > dishesNumber {
 		fmt.Println("invalid wished dish value")
 
 		return
+	}
+
+	for range wishedDish - 1 {
+		heap.Pop(ratingList)
 	}
 
 	fmt.Println(heap.Pop(ratingList))

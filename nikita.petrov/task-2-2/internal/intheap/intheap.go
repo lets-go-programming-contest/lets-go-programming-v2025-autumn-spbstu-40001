@@ -11,10 +11,16 @@ func (h *IntHeap) Len() int {
 }
 
 func (h IntHeap) Less(i, j int) bool {
+	if i < 0 && i >= h.Len() || j < 0 && j >= h.Len() {
+		return false
+	}
 	return h[i] > h[j]
 }
 
 func (h IntHeap) Swap(i, j int) {
+	if i < 0 && i >= h.Len() || j < 0 && j >= h.Len() {
+		return
+	}
 	h[i], h[j] = h[j], h[i]
 }
 
@@ -30,7 +36,7 @@ func (h *IntHeap) Push(x any) {
 
 func (h *IntHeap) Pop() any {
 	if len(*h) == 0 {
-		return nil
+		return -1
 	}
 
 	old := *h
