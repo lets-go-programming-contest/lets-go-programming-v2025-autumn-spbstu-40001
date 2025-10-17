@@ -8,11 +8,13 @@ import (
 
 	"github.com/Rychmick/task-3/internal/config"
 	"github.com/Rychmick/task-3/internal/currency"
+	"github.com/Rychmick/task-3/internal/json"
+	"github.com/Rychmick/task-3/internal/xml"
 )
 
-const DefaultFileMode = os.FileMode(0o666)
+const defaultFileMode = os.FileMode(0o666)
 
-func CompareValues(lhs, rhs currency.Currency) int {
+func compareValues(lhs, rhs currency.Currency) int {
 	return -cmp.Compare(lhs.Value, rhs.Value)
 }
 
@@ -27,14 +29,16 @@ func main() {
 		panic(err)
 	}
 
-	currencyList, err := currency.ParseXML(settings.InputFilePath)
+	var currencyList currency.Rates
+
+	err = xml.ParseFile(settings.InputFilePath, &currencyList)
 	if err != nil {
 		panic(err)
 	}
 
-	slices.SortStableFunc(currencyList.Rates, CompareValues)
+	slices.SortStableFunc(currencyList.Data, compareValues)
 
-	err = currency.WriteToJSON(&currencyList, settings.OutputFilePath, DefaultFileMode)
+	err = json.WriteFile(settings.OutputFilePath, currencyList.Data, defaultFileMode)
 	if err != nil {
 		panic(err)
 	}
