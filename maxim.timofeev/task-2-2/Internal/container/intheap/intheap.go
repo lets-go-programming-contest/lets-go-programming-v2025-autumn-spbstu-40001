@@ -2,7 +2,6 @@ package intheap
 
 import (
 	"container/heap"
-	"fmt"
 )
 
 type IntHeap []int
@@ -36,7 +35,6 @@ func (h *IntHeap) Pop() any {
 
 	top := old[length-1]
 	*h = old[:length-1]
-	fmt.Println(old)
 
 	return top
 }
