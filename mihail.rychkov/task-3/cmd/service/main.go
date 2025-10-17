@@ -10,6 +10,8 @@ import (
 	"github.com/Rychmick/task-3/internal/currency"
 )
 
+const DefaultFileMode = os.FileMode(0o666)
+
 func CompareValues(lhs, rhs currency.Currency) int {
 	return -cmp.Compare(lhs.Value, rhs.Value)
 }
@@ -32,7 +34,7 @@ func main() {
 
 	slices.SortStableFunc(currencyList.Rates, CompareValues)
 
-	err = currency.WriteToJSON(&currencyList, settings.OutputFilePath, os.FileMode(0o666))
+	err = currency.WriteToJSON(&currencyList, settings.OutputFilePath, DefaultFileMode)
 	if err != nil {
 		panic(err)
 	}
