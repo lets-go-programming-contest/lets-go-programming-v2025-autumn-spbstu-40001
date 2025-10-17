@@ -7,16 +7,20 @@ import (
 
 type MinHeap []int
 
-func (h MinHeap) Len() int           { return len(h) }
-func (h MinHeap) Less(i, j int) bool { return h[i] < h[j] }
-func (h MinHeap) Swap(i, j int) {
-	if i >= 0 && i < len(h) && j >= 0 && j < len(h) {
-		h[i], h[j] = h[j], h[i]
+func (h *MinHeap) Len() int           { return len(*h) }
+func (h *MinHeap) Less(i, j int) bool { return (*h)[i] < (*h)[j] }
+func (h *MinHeap) Swap(i, j int) {
+	if i >= 0 && i < len(*h) && j >= 0 && j < len(*h) {
+		(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
 	}
 }
 
 func (h *MinHeap) Push(x any) {
-	*h = append(*h, x.(int))
+	num, ok := x.(int)
+	if !ok {
+		panic("type assertion to int failed")
+	}
+	*h = append(*h, num)
 }
 
 func (h *MinHeap) Pop() any {
@@ -27,6 +31,7 @@ func (h *MinHeap) Pop() any {
 	n := len(old)
 	x := old[n-1]
 	*h = old[0 : n-1]
+
 	return x
 }
 
@@ -35,21 +40,21 @@ func findKLargest(foodRatings []int, prefferedDihes int) int {
 		panic("Going beyond the boundaries of the array")
 	}
 
-	h := &MinHeap{}
-	heap.Init(h)
+	minHeap := &MinHeap{}
+	heap.Init(minHeap)
 
-	for i := 0; i < prefferedDihes; i++ {
-		heap.Push(h, foodRatings[i])
+	for _, rating := range foodRatings[:prefferedDihes] {
+		heap.Push(minHeap, rating)
 	}
 
-	for i := prefferedDihes; i < len(foodRatings); i++ {
-		if foodRatings[i] > (*h)[0] {
-			heap.Pop(h)
-			heap.Push(h, foodRatings[i])
+	for _, rating := range foodRatings[prefferedDihes:] {
+		if rating > (*minHeap)[0] {
+			heap.Pop(minHeap)
+			heap.Push(minHeap, rating)
 		}
 	}
 
-	return (*h)[0]
+	return (*minHeap)[0]
 }
 
 func main() {
@@ -63,7 +68,7 @@ func main() {
 	}
 
 	foodRatings := make([]int, dishesNumber)
-	for i := 0; i < dishesNumber; i++ {
+	for i := range dishesNumber {
 		_, err := fmt.Scan(&foodRatings[i])
 		if err != nil {
 			fmt.Printf("Error reading dish %d: %v\n", i+1, err)
