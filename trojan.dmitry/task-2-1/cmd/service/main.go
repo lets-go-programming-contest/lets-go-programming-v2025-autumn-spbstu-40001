@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -10,7 +11,6 @@ type Dept struct {
 }
 
 func NewDept(defaultMinLevel, defaultMaxLevel int) Dept {
-
 	return Dept{minLevel: defaultMinLevel, maxLevel: defaultMaxLevel}
 }
 
@@ -18,12 +18,16 @@ func (department *Dept) Update(operator string, num int) error {
 	switch operator {
 	case ">=":
 		department.minLevel = max(department.minLevel, num)
+
 		return nil
 	case "<=":
 		department.maxLevel = min(department.maxLevel, num)
+
 		return nil
 	default:
-		return fmt.Errorf("Unknown operator")
+		var ErrUnknownOperator = errors.New("unknown operator")
+
+		return ErrUnknownOperator
 	}
 
 }
