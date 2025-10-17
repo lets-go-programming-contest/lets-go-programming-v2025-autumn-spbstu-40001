@@ -1,9 +1,5 @@
 package intheap
 
-import "errors"
-
-var ErrEmptyHeap error = errors.New("can't pop - heap is empty")
-
 type IntHeap []int //nolint:recvcheck
 
 func (h *IntHeap) Len() int {
@@ -12,7 +8,7 @@ func (h *IntHeap) Len() int {
 
 func (h IntHeap) Less(i, j int) bool {
 	if i < 0 && i >= h.Len() || j < 0 && j >= h.Len() {
-		return false
+		panic("index out of bounds in less")
 	}
 
 	return h[i] > h[j]
@@ -20,7 +16,7 @@ func (h IntHeap) Less(i, j int) bool {
 
 func (h IntHeap) Swap(i, j int) {
 	if i < 0 && i >= h.Len() || j < 0 && j >= h.Len() {
-		return
+		panic("index out of bounds in swap")
 	}
 
 	h[i], h[j] = h[j], h[i]
@@ -38,7 +34,7 @@ func (h *IntHeap) Push(x any) {
 
 func (h *IntHeap) Pop() any {
 	if len(*h) == 0 {
-		return -1
+		return nil
 	}
 
 	old := *h

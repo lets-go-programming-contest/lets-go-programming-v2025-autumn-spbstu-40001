@@ -51,5 +51,13 @@ func main() {
 		heap.Pop(ratingList)
 	}
 
-	fmt.Println(heap.Pop(ratingList))
+	retVal, ok := heap.Pop(ratingList).(int)
+
+	if !ok {
+		fmt.Println("cannot convert to int (heap is empty)")
+
+		return
+	}
+
+	fmt.Println(retVal)
 }
