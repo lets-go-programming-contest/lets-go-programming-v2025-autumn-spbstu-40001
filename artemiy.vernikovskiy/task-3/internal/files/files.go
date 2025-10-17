@@ -1,4 +1,4 @@
-package funcs
+package files
 
 import (
 	"bytes"
@@ -8,10 +8,10 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/Aapng-cmd/task-3/internal/models"
+	"github.com/Aapng-cmd/task-3/internal/sorts"
 	"golang.org/x/net/html/charset"
 	"gopkg.in/yaml.v3"
 )
@@ -20,14 +20,6 @@ const (
 	DirPerm  = 0o750 // rwxr-x---
 	FilePerm = 0o600 // rw-------
 )
-
-func SortDataByValue(valCurs models.ValCurs) models.ValCurs {
-	sort.Slice(valCurs.Valutes, func(i, j int) bool {
-		return valCurs.Valutes[i].Value > valCurs.Valutes[j].Value
-	})
-
-	return valCurs
-}
 
 func ReadYAMLConfigFile(yamlPath string) (string, string, error) {
 	var settings models.Settings
@@ -53,9 +45,7 @@ func ReadAndParseXML(xmlFilePath string) (models.ValCurs, error) {
 		return valCurs, fmt.Errorf("error reading XML file: %w", err)
 	}
 
-	xmlString := string(xmlData)
-	xmlString = strings.ReplaceAll(xmlString, ",", ".") // F*cking xml with comma separation
-	xmlData = []byte(xmlString)
+	xmlData = []byte(strings.ReplaceAll(string(xmlData), ",", ".")) // i think this is less ram
 
 	decoder := xml.NewDecoder(bytes.NewReader(xmlData))
 	decoder.CharsetReader = func(encoding string, input io.Reader) (io.Reader, error) {
@@ -71,16 +61,14 @@ func ReadAndParseXML(xmlFilePath string) (models.ValCurs, error) {
 }
 
 func WriteDataToJSON(valCurs models.ValCurs, jsonFilePath string) error {
-	valCurs = SortDataByValue(valCurs)
+	valCurs = sorts.SortDataByValue(valCurs)
 
 	jsonData, err := json.MarshalIndent(valCurs.Valutes, "", "\t")
 	if err != nil {
 		return fmt.Errorf("WriteDataToJSON: %w", err)
 	}
 
-	dir := filepath.Dir(jsonFilePath)
-
-	err = os.MkdirAll(dir, DirPerm)
+	err = os.MkdirAll(filepath.Dir(jsonFilePath), DirPerm)
 	if err != nil {
 		return fmt.Errorf("WriteDataToJSON: %w", err)
 	}

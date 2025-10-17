@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/Aapng-cmd/task-3/internal/funcs"
+	"github.com/Aapng-cmd/task-3/internal/files"
 	"github.com/Aapng-cmd/task-3/internal/models"
 )
 
@@ -20,23 +20,20 @@ func main() {
 		panic("AAAAAAAAAAAAAAA")
 	}
 
-	inputFile, outputFile, err := funcs.ReadYAMLConfigFile(configPath)
+	inputFile, outputFile, err := files.ReadYAMLConfigFile(configPath)
 	if err != nil {
-		// fmt.Println(err)
 		panic(err)
 	}
 
 	var valCurs models.ValCurs
 
-	valCurs, err = funcs.ReadAndParseXML(inputFile)
+	valCurs, err = files.ReadAndParseXML(inputFile)
 	if err != nil {
-		// fmt.Println(err)
 		panic(err)
 	}
 
-	err = funcs.WriteDataToJSON(valCurs, outputFile)
+	err = files.WriteDataToJSON(valCurs, outputFile)
 	if err != nil {
-		// fmt.Println(err)
 		panic(err)
 	}
 }

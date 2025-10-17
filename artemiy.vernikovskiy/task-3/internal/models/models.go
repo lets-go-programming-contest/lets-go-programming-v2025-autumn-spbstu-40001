@@ -1,8 +1,6 @@
 package models
 
-import (
-	"encoding/xml"
-)
+// "encoding/xml"
 
 type Settings struct {
 	InputFileSetting  string `yaml:"input-file"`
@@ -16,8 +14,8 @@ type ActualData struct {
 }
 
 type ValCurs struct {
-	XMLName xml.Name     `xml:"ValCurs"`
-	Date    string       `xml:"Date,attr"`
-	Name    string       `xml:"name,attr"`
+	//	XMLName xml.Name     `xml:"ValCurs"`
+	//	Date    string       `xml:"Date,attr"`
+	//	Name    string       `xml:"name,attr"`
 	Valutes []ActualData `xml:"Valute"`
 }
