@@ -2,20 +2,39 @@ package main
 
 import (
 	"container/heap"
+	"errors"
 	"fmt"
 )
 
+var (
+	errIndexNotPos     = errors.New("index must be positive")
+	errIndexOutOfRange = errors.New("index out of range")
+)
+
 type MinHeap []int
+
+func (heap *MinHeap) checkIndexBounds(index int) {
+	length := heap.Len()
+
+	if index < 0 || index >= length {
+		panic(fmt.Sprintf("heap index out of range [%d] with length %d", index, length))
+	}
+}
 
 func (heap *MinHeap) Len() int {
 	return len(*heap)
 }
 
 func (heap *MinHeap) Less(index1, index2 int) bool {
+	heap.checkIndexBounds(index1)
+	heap.checkIndexBounds(index2)
+
 	return (*heap)[index1] < (*heap)[index2]
 }
 
 func (heap *MinHeap) Swap(index1, index2 int) {
+	heap.checkIndexBounds(index1)
+	heap.checkIndexBounds(index2)
 	(*heap)[index1], (*heap)[index2] = (*heap)[index2], (*heap)[index1]
 }
 
@@ -33,7 +52,7 @@ func (heap *MinHeap) Pop() any {
 
 	size := len(old)
 	if size == 0 {
-		return nil
+		panic("Pop called on empty MinHeap")
 	}
 
 	lastVal := old[size-1]
@@ -42,10 +61,23 @@ func (heap *MinHeap) Pop() any {
 	return lastVal
 }
 
-func RemoveMinElements(myHeap *MinHeap, countElemInHeap int) {
-	for myHeap.Len() > countElemInHeap {
-		heap.Pop(myHeap)
+func readAndValidateIndex(dishesCount int) (int, error) {
+	var index int
+
+	_, err := fmt.Scan(&index)
+	if err != nil {
+		return 0, fmt.Errorf("failed to read index of needed dish: %w", err)
 	}
+
+	if index <= 0 {
+		return 0, fmt.Errorf("%w: got %d", errIndexNotPos, index)
+	}
+
+	if index > dishesCount {
+		return 0, fmt.Errorf("%w: index %d, dish count %d", errIndexOutOfRange, index, dishesCount)
+	}
+
+	return index, nil
 }
 
 func main() {
@@ -80,16 +112,16 @@ func main() {
 		heap.Push(myHeap, dishRating)
 	}
 
-	var index int
-
-	_, err = fmt.Scan(&index)
-	if err != nil || index > dishesCount {
-		fmt.Println("Failed to read index of needed dish:", err)
+	index, err := readAndValidateIndex(dishesCount)
+	if err != nil {
+		fmt.Println("Error:", err)
 
 		return
 	}
 
-	RemoveMinElements(myHeap, index)
+	for myHeap.Len() > index {
+		heap.Pop(myHeap)
+	}
 
 	needDish := heap.Pop(myHeap)
 	fmt.Println(needDish)
