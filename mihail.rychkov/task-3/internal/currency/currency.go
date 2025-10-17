@@ -14,26 +14,37 @@ import (
 )
 
 type Currency struct {
-	XMLName  xml.Name `json:"-"         xml:"Valute"`
-	NumCode  uint     `json:"num_code"  xml:"NumCode"`
-	CharCode string   `json:"char_code" xml:"CharCode"`
-	ValueStr string   `json:"-"         xml:"Value"`
-	Value    float32  `json:"value"     xml:"-"`
+	NumCode  uint    `json:"num_code"  xml:"NumCode"`
+	CharCode string  `json:"char_code" xml:"CharCode"`
+	Value    float32 `json:"value"     xml:"-"`
 }
 type CurrencyRates struct {
 	XMLName xml.Name   `xml:"ValCurs"`
 	Rates   []Currency `xml:"Valute"`
 }
 
-func Prepare(rates *CurrencyRates) error {
-	for idx := range len(rates.Rates) {
-		value, err := strconv.ParseFloat(strings.Replace(rates.Rates[idx].ValueStr, ",", ".", 1), 32)
-		if err != nil {
-			return fmt.Errorf("failed to parse rate value: %w", err)
-		}
+func (currency *Currency) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
+	type Datatype Currency
 
-		rates.Rates[idx].Value = float32(value)
+	type Wrapper struct {
+		*Datatype
+
+		ValueStr string `xml:"Value"`
 	}
+
+	wrapper := Wrapper{Datatype: (*Datatype)(currency), ValueStr: ""}
+
+	err := decoder.DecodeElement(&wrapper, &start)
+	if err != nil {
+		return fmt.Errorf("failed to parse raw Valute: %w", err)
+	}
+
+	value, err := strconv.ParseFloat(strings.Replace(wrapper.ValueStr, ",", ".", 1), 32)
+	if err != nil {
+		return fmt.Errorf("failed to parse rate value: %w", err)
+	}
+
+	currency.Value = float32(value)
 
 	return nil
 }

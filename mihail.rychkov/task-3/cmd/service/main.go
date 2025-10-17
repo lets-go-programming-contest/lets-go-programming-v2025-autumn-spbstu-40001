@@ -3,7 +3,6 @@ package main
 import (
 	"cmp"
 	"flag"
-	"fmt"
 	"os"
 	"slices"
 
@@ -33,19 +32,10 @@ func main() {
 		panic(err)
 	}
 
-	err = currency.Prepare(&currencyList)
-	if err != nil {
-		fmt.Println(err)
-
-		return
-	}
-
 	slices.SortStableFunc(currencyList.Rates, CompareValues)
 
 	err = currency.ForceWriteToJSON(&currencyList, settings.OutputFilePath, DefaultFileMode)
 	if err != nil {
-		fmt.Println(err)
-
-		return
+		panic(err)
 	}
 }
