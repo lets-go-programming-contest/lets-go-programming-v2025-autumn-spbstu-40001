@@ -9,20 +9,21 @@ type Dept struct {
 	maxLevel int
 }
 
-func NewDept(defaultMinLevel, defaultMaxLevel int) Dept {
+func NewDept() Dept {
+	const (
+		defaultMinLevel = 15
+		defaultMaxLevel = 30
+	)
+
 	return Dept{minLevel: defaultMinLevel, maxLevel: defaultMaxLevel}
 }
 
-func (department *Dept) Update(operator string, num int) error {
+func (department *Dept) Update(operator string, num int) {
 	switch operator {
 	case ">=":
 		department.minLevel = max(department.minLevel, num)
-		return nil
 	case "<=":
 		department.maxLevel = min(department.maxLevel, num)
-		return nil
-	default:
-		return fmt.Errorf("Unknowm operator")
 	}
 }
 
@@ -35,57 +36,46 @@ func (department *Dept) Result() int {
 }
 
 func main() {
-	var department int
+	var (
+		department int
+		workers    int
+		num        int
+		operator   string
+	)
 
 	_, err := fmt.Scan(&department)
 	if err != nil {
-		fmt.Println("Invalid number of departments", err)
+		fmt.Println("Invalid number of departments")
 
 		return
 	}
 
 	for range department {
-		var workers int
-
 		_, err = fmt.Scan(&workers)
 		if err != nil {
-			fmt.Println("Invalid number of workers", err)
+			fmt.Println("Invalid number of workers")
 
 			return
 		}
 
-		const (
-			defaultMinLevel = 15
-			defaultMaxLevel = 15
-		)
-
-		dept := NewDept(defaultMinLevel, defaultMaxLevel)
+		dept := NewDept()
 
 		for range workers {
-			var operator string
-
 			_, err = fmt.Scan(&operator)
 			if err != nil {
-				fmt.Println("Invalid operator", err)
+				fmt.Println("Invalid operator")
 
 				return
 			}
-
-			var num int
 
 			_, err = fmt.Scan(&num)
 			if err != nil {
-				fmt.Println("Invalid temperature value", err)
+				fmt.Println("Invalid temperature value")
 
 				return
 			}
 
-			err := dept.Update(operator, num)
-			if err != nil {
-				fmt.Println("Error updating department", err)
-
-				return
-			}
+			dept.Update(operator, num)
 
 			fmt.Println(dept.Result())
 		}
