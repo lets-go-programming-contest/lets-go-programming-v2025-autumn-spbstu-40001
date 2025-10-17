@@ -66,7 +66,7 @@ func main() {
 	for i := 0; i < dishesNumber; i++ {
 		_, err := fmt.Scan(&foodRatings[i])
 		if err != nil {
-			fmt.Println("Error reading dish %d: %v\n", i+1, err)
+			fmt.Printf("Error reading dish %d: %v\n", i+1, err)
 
 			return
 		}
