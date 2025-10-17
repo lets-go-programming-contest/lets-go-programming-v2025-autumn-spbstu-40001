@@ -12,10 +12,18 @@ func (iHeap *IntHeap) Len() int {
 }
 
 func (iHeap *IntHeap) Less(firstIndex, secondIndex int) bool {
+	if firstIndex < 0 || secondIndex < 0 || firstIndex >= len(*iHeap) || secondIndex >= len(*iHeap) {
+		panic("index out of range in less")
+	}
+
 	return (*iHeap)[firstIndex] < (*iHeap)[secondIndex]
 }
 
 func (iHeap *IntHeap) Swap(firstIndex, secondIndex int) {
+	if firstIndex < 0 || secondIndex < 0 || firstIndex >= len(*iHeap) || secondIndex >= len(*iHeap) {
+		panic("index out of range in less")
+	}
+
 	(*iHeap)[firstIndex], (*iHeap)[secondIndex] = (*iHeap)[secondIndex], (*iHeap)[firstIndex]
 }
 
@@ -100,7 +108,7 @@ func main() {
 
 		_, err := fmt.Scan(&rating)
 		if err != nil {
-			fmt.Println("Invalid input of rating of dish")
+			fmt.Println("Invalid input of rating of dish", err)
 
 			return
 		}
@@ -115,24 +123,19 @@ func main() {
 
 	removeMinUntil(dishHeap, numOfPreference)
 
-	if dishHeap.Len() == numOfPreference && dishHeap.Len() > 0 {
-		val := heap.Pop(dishHeap)
-		if val == nil {
-			fmt.Println("Unexpected nil from heap.Pop")
-
-			return
-		}
-
-		got, ok := val.(int)
-
-		if !ok {
-			fmt.Println("Heap returned non-int value")
-
-			return
-		}
-
-		fmt.Println(got)
-	} else {
+	if dishHeap.Len() != numOfPreference || dishHeap.Len() == 0 {
 		fmt.Println("Heap size mismatch after trimming")
+
+		return
 	}
+	val := heap.Pop(dishHeap)
+	got, ok := val.(int)
+
+	if !ok {
+		fmt.Println("Heap returned non-int value")
+
+		return
+	}
+
+	fmt.Println(got)
 }
