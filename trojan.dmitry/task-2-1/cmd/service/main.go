@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+var ErrUnknownOperator = errors.New("unknown operator")
+
 type Dept struct {
 	minLevel int
 	maxLevel int
@@ -25,11 +27,8 @@ func (department *Dept) Update(operator string, num int) error {
 
 		return nil
 	default:
-		var ErrUnknownOperator = errors.New("unknown operator")
-
 		return ErrUnknownOperator
 	}
-
 }
 
 func (department *Dept) Result() int {
