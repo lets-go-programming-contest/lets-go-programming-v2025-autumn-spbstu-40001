@@ -7,27 +7,35 @@ const (
 	MaxTemp = 30
 )
 
-func UpdateRangeAndGetTemp(
-	minT, maxT int,
-	operation string,
-	temp int,
-) (int, int) {
+type TemperatureRange struct {
+	min int
+	max int
+}
+
+func NewTemperatureRange() *TemperatureRange {
+	return &TemperatureRange{
+		min: MinTemp,
+		max: MaxTemp,
+	}
+}
+
+func (t *TemperatureRange) UpdateAndGet(operation string, temp int) int {
 	switch operation {
 	case "<=":
-		if temp < maxT {
-			maxT = temp
+		if temp < t.max {
+			t.max = temp
 		}
 	case ">=":
-		if temp > minT {
-			minT = temp
+		if temp > t.min {
+			t.min = temp
 		}
 	}
 
-	if minT > maxT {
-		return -1, maxT
+	if t.min > t.max {
+		return -1
 	}
 
-	return minT, maxT
+	return t.min
 }
 
 func main() {
@@ -48,7 +56,7 @@ func main() {
 			return
 		}
 
-		minT, maxT := MinTemp, MaxTemp
+		tempRange := NewTemperatureRange()
 
 		for range peopleCount {
 			var (
@@ -62,22 +70,8 @@ func main() {
 				return
 			}
 
-			switch operation {
-			case "<=":
-				if needTemp < maxT {
-					maxT = needTemp
-				}
-			case ">=":
-				if needTemp > minT {
-					minT = needTemp
-				}
-			}
-
-			if minT > maxT {
-				fmt.Println(-1)
-			} else {
-				fmt.Println(minT)
-			}
+			result := tempRange.UpdateAndGet(operation, needTemp)
+			fmt.Println(result)
 		}
 	}
 }
