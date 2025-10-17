@@ -32,26 +32,26 @@ func main() {
 		heap.Push(ratingList, dishRating)
 	}
 
-	var wishedDish int
+	var wishedDishNumber int
 
-	_, err = fmt.Scan(&wishedDish)
+	_, err = fmt.Scan(&wishedDishNumber)
 	if err != nil {
 		fmt.Println("scan wished dish number error", err)
 
 		return
 	}
 
-	if wishedDish > dishesNumber {
-		fmt.Println("invalid wished dish value")
+	if wishedDishNumber > dishesNumber {
+		fmt.Println("invalid wished dish number value")
 
 		return
 	}
 
-	for range wishedDish - 1 {
+	for range wishedDishNumber - 1 {
 		heap.Pop(ratingList)
 	}
 
-	retVal, ok := heap.Pop(ratingList).(int)
+	wishedDish, ok := heap.Pop(ratingList).(int)
 
 	if !ok {
 		fmt.Println("cannot convert to int (heap is empty)")
@@ -59,5 +59,5 @@ func main() {
 		return
 	}
 
-	fmt.Println(retVal)
+	fmt.Println(wishedDish)
 }
