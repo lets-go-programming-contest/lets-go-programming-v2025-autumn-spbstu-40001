@@ -23,6 +23,7 @@ func (h *IntHeap) Swap(i, j int) {
 	if i < 0 || i >= len(*h) || j < 0 || j >= len(*h) {
 		return
 	}
+
 	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
 }
 
@@ -38,9 +39,11 @@ func (h *IntHeap) Push(x interface{}) {
 func (h *IntHeap) Pop() interface{} {
 	old := *h
 	n := len(old)
+
 	if n == 0 {
 		return nil
 	}
+
 	x := old[n-1]
 	*h = old[:n-1]
 
@@ -91,6 +94,13 @@ func main() {
 		}
 	}
 
-	result := heap.Pop(heapInt).(int)
+	popped := heap.Pop(heapInt)
+	result, ok := popped.(int)
+	if !ok {
+		fmt.Println(0)
+
+		return
+	}
+
 	fmt.Println(result)
 }
