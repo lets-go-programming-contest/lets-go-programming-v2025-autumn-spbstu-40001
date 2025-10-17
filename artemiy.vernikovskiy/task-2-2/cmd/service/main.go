@@ -25,7 +25,7 @@ func main() {
 	for range nDishesNumber {
 		_, err = fmt.Scan(&actualDish)
 		if err != nil {
-			fmt.Println("invalid input for dish number")
+			fmt.Println("invalid input for dish number: ", err)
 
 			return
 		}
@@ -35,7 +35,7 @@ func main() {
 
 	_, err = fmt.Scan(&wanting)
 	if err != nil {
-		fmt.Println("invalid input for wanted dish")
+		fmt.Println("invalid input for wanted dish: ", err)
 
 		return
 	}
