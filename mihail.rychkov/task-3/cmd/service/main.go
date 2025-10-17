@@ -10,8 +10,6 @@ import (
 	"github.com/Rychmick/task-3/internal/currency"
 )
 
-const DefaultFileMode = os.FileMode(0o666)
-
 func CompareValues(lhs, rhs currency.Currency) int {
 	return -cmp.Compare(lhs.Value, rhs.Value)
 }
@@ -19,7 +17,7 @@ func CompareValues(lhs, rhs currency.Currency) int {
 func main() {
 	var configPath string
 
-	flag.StringVar(&configPath, "config", "config.yaml", "set YAML settings file")
+	flag.StringVar(&configPath, "config", "config.yaml", "path to config file")
 	flag.Parse()
 
 	settings, err := config.Parse(configPath)
@@ -34,7 +32,7 @@ func main() {
 
 	slices.SortStableFunc(currencyList.Rates, CompareValues)
 
-	err = currency.ForceWriteToJSON(&currencyList, settings.OutputFilePath, DefaultFileMode)
+	err = currency.WriteToJSON(&currencyList, settings.OutputFilePath, os.FileMode(0o666))
 	if err != nil {
 		panic(err)
 	}
