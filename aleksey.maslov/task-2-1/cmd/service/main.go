@@ -64,7 +64,7 @@ func main() {
 		for range employeesCount {
 			var operation string
 
-			_, err = fmt.Scanln(&operation)
+			_, err = fmt.Scan(&operation)
 			if err != nil {
 				fmt.Println("Failed to read operation", err)
 
@@ -73,7 +73,7 @@ func main() {
 
 			var temp int
 
-			_, err = fmt.Scanln(&temp)
+			_, err = fmt.Scan(&temp)
 			if err != nil {
 				fmt.Println("Failed to read temperature", err)
 
