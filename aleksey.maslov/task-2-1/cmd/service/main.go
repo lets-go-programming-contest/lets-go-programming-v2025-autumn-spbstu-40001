@@ -1,12 +1,17 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+var errInvalidOperation = errors.New("invalid operation")
 
 type ComfortZone struct {
 	minTemp, maxTemp int
 }
 
-func (comf *ComfortZone) updateTemp(operation string, temp int) {
+func (comf *ComfortZone) updateTemp(operation string, temp int) error {
 	switch operation {
 	case ">=":
 		if temp > comf.minTemp {
@@ -17,8 +22,10 @@ func (comf *ComfortZone) updateTemp(operation string, temp int) {
 			comf.maxTemp = temp
 		}
 	default:
-		fmt.Println("Invalid operation")
+		return errInvalidOperation
 	}
+
+	return nil
 }
 
 func (comf *ComfortZone) getComfortTemp() int {
@@ -39,7 +46,7 @@ func main() {
 
 	_, err := fmt.Scanln(&departmentCount)
 	if err != nil {
-		fmt.Println("Invalid input", err)
+		fmt.Println("Failed to read department count", err)
 
 		return
 	}
@@ -47,7 +54,7 @@ func main() {
 	for range departmentCount {
 		_, err = fmt.Scanln(&employeesCount)
 		if err != nil {
-			fmt.Println("Invalid input", err)
+			fmt.Println("Failed to read employees count", err)
 
 			return
 		}
@@ -55,19 +62,31 @@ func main() {
 		comfortZone := ComfortZone{lowerTempLimit, upperTempLimit}
 
 		for range employeesCount {
-			var (
-				operation string
-				temp      int
-			)
+			var operation string
 
-			_, err = fmt.Scanln(&operation, &temp)
+			_, err = fmt.Scanln(&operation)
 			if err != nil {
-				fmt.Println("Invalid input", err)
+				fmt.Println("Failed to read operation", err)
 
-				continue
+				return
 			}
 
-			comfortZone.updateTemp(operation, temp)
+			var temp int
+
+			_, err = fmt.Scanln(&temp)
+			if err != nil {
+				fmt.Println("Failed to read temperature", err)
+
+				return
+			}
+
+			err := comfortZone.updateTemp(operation, temp)
+			if err != nil {
+				fmt.Println("Failed to update temperature", err)
+
+				return
+			}
+
 			println(comfortZone.getComfortTemp())
 		}
 	}
