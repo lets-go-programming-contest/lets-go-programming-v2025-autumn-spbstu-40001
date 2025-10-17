@@ -12,25 +12,35 @@ func (h *IntHeap) Len() int {
 }
 
 func (h *IntHeap) Less(i, j int) bool {
+	if i < 0 || i >= len(*h) || j < 0 || j >= len(*h) {
+		return false
+	}
+
 	return (*h)[i] < (*h)[j]
 }
 
 func (h *IntHeap) Swap(i, j int) {
+	if i < 0 || i >= len(*h) || j < 0 || j >= len(*h) {
+		return
+	}
 	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
 }
 
 func (h *IntHeap) Push(x interface{}) {
 	v, ok := x.(int)
-	if ok {
-		*h = append(*h, v)
-	} else {
+	if !ok {
 		panic("IntHeap: Push received non-int value")
 	}
+
+	*h = append(*h, v)
 }
 
 func (h *IntHeap) Pop() interface{} {
 	old := *h
 	n := len(old)
+	if n == 0 {
+		return nil
+	}
 	x := old[n-1]
 	*h = old[:n-1]
 
@@ -61,17 +71,26 @@ func main() {
 		return
 	}
 
+	if topCount == 0 {
+		fmt.Println(0)
+
+		return
+	}
+
 	heapInt := &IntHeap{}
 	heap.Init(heapInt)
 
-	for _, num := range arr {
-		if heapInt.Len() < topCount {
-			heap.Push(heapInt, num)
-		} else if num > (*heapInt)[0] {
+	for i := 0; i < topCount && i < len(arr); i++ {
+		heap.Push(heapInt, arr[i])
+	}
+
+	for i := topCount; i < len(arr); i++ {
+		if arr[i] > (*heapInt)[0] {
 			heap.Pop(heapInt)
-			heap.Push(heapInt, num)
+			heap.Push(heapInt, arr[i])
 		}
 	}
 
-	fmt.Println((*heapInt)[0])
+	result := heap.Pop(heapInt).(int)
+	fmt.Println(result)
 }
