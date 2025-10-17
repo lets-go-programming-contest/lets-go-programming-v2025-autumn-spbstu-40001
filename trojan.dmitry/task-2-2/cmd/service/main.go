@@ -128,6 +128,7 @@ func main() {
 
 		return
 	}
+
 	val := heap.Pop(dishHeap)
 	got, ok := val.(int)
 
