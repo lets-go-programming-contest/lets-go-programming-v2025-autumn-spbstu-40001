@@ -20,6 +20,7 @@ func (h *MinHeap) Push(x any) {
 	if !ok {
 		panic("type assertion to int failed")
 	}
+
 	*h = append(*h, num)
 }
 
@@ -27,6 +28,7 @@ func (h *MinHeap) Pop() any {
 	if len(*h) == 0 {
 		return nil
 	}
+
 	old := *h
 	n := len(old)
 	x := old[n-1]
