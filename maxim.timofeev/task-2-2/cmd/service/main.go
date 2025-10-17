@@ -4,7 +4,7 @@ import (
 	"container/heap"
 	"fmt"
 
-	"github.com/PigoDog/task-2-2/package/container/intheap"
+	"github.com/PigoDog/task-2-2/Internal/container/intheap"
 )
 
 func main() {
@@ -14,36 +14,25 @@ func main() {
 	)
 
 	if _, err := fmt.Scan(&dishCount); err != nil {
-		fmt.Println("Invalid input")
-	}
-
-	arrayOfPriority := make([]int, dishCount)
-
-	for currentDish := range dishCount {
-		var currentPriority int
-
-		if _, err := fmt.Scan(&currentPriority); err != nil {
-			fmt.Println("Invalid input")
-		}
-
-		arrayOfPriority[currentDish] = currentPriority
-	}
-
-	if _, err := fmt.Scan(&priority); err != nil {
-		fmt.Println("Invalid input")
+		fmt.Println("failed to read dishCount: ", err.Error())
 	}
 
 	currentHeap := &intheap.IntHeap{}
 	heap.Init(currentHeap)
 
-	for currentDish := range dishCount {
-		if currentHeap.Len() < priority {
-			heap.Push(currentHeap, arrayOfPriority[currentDish])
-		} else if arrayOfPriority[currentDish] > (*currentHeap)[0] {
-			heap.Pop(currentHeap)
-			heap.Push(currentHeap, arrayOfPriority[currentDish])
+	for range dishCount {
+		var currentPriority int
+
+		if _, err := fmt.Scan(&currentPriority); err != nil {
+			fmt.Println("failed to read currentPriority: ", err.Error())
 		}
+
+		heap.Push(currentHeap, currentPriority)
 	}
 
-	fmt.Println((*currentHeap)[0])
+	if _, err := fmt.Scan(&priority); err != nil {
+		fmt.Println("failed to read priority: ", err.Error())
+	}
+
+	fmt.Println(currentHeap.CalculatePriority(priority))
 }
