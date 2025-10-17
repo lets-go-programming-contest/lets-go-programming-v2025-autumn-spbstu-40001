@@ -2,8 +2,10 @@ package controller
 
 import "errors"
 
-var ErrUnknownOperator = errors.New("unknown operator")
-var ErrInvalidTemp = errors.New("invalid temperature")
+var (
+	ErrUnknownOperator = errors.New("unknown operator")
+	ErrInvalidTemp     = errors.New("invalid temperature")
+)
 
 func New(minTemperature, maxTemperature int) TemperatureController {
 	return TemperatureController{minTemperature, maxTemperature}
