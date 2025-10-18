@@ -24,12 +24,12 @@ func (heap *IntHeap) Push(value any) {
 }
 
 func (heap *IntHeap) Pop() any {
-	old := *heap
-	length := len(old)
+	length := len(*heap)
 	if length == 0 {
 		return nil
 	}
 
+	old := *heap
 	lastElement := old[length-1]
 	*heap = old[0 : length-1]
 
