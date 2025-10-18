@@ -7,11 +7,16 @@ type TemperatureLimits struct {
 	maxTemperature int
 }
 
-func processTemperature(limits *TemperatureLimits, border string, currentTemperature int) {
-	if border == ">=" {
+func (limits *TemperatureLimits) processTemperature(border string, currentTemperature int) {
+	switch border {
+	case ">=":
 		limits.minTemperature = max(limits.minTemperature, currentTemperature)
-	} else {
+	case "<=":
 		limits.maxTemperature = min(limits.maxTemperature, currentTemperature)
+	default:
+		fmt.Println("Invalid symbol")
+
+		return
 	}
 
 	if limits.minTemperature <= limits.maxTemperature {
@@ -24,7 +29,7 @@ func processTemperature(limits *TemperatureLimits, border string, currentTempera
 func main() {
 	var departmentsCount int
 	if _, err := fmt.Scanln(&departmentsCount); err != nil {
-		fmt.Println("Invalid input")
+		fmt.Println("Invalid input: ", err)
 
 		return
 	}
@@ -36,7 +41,7 @@ func main() {
 		)
 
 		if _, err := fmt.Scanln(&staffCount); err != nil {
-			fmt.Println("Invalid input")
+			fmt.Println("Invalid input: ", err)
 
 			return
 		}
@@ -48,12 +53,12 @@ func main() {
 			)
 
 			if _, err := fmt.Scanln(&border, &currentTemperature); err != nil {
-				fmt.Println("Invalid input")
+				fmt.Println("Invalid input: ", err)
 
 				return
 			}
 
-			processTemperature(&limits, border, currentTemperature)
+			limits.processTemperature(border, currentTemperature)
 		}
 	}
 }
