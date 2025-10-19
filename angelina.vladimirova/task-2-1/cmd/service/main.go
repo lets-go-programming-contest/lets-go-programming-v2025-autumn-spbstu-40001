@@ -23,26 +23,28 @@ func NewComfortZone(minTemp, maxTemp int) *ComfortZone {
 	}
 }
 
-func max(a, b int) int {
+func maximum(a, b int) int {
 	if a > b {
 		return a
 	}
+
 	return b
 }
 
-func min(a, b int) int {
+func minimum(a, b int) int {
 	if a < b {
 		return a
 	}
+
 	return b
 }
 
 func (comf *ComfortZone) updateTemp(operation string, temp int) error {
 	switch operation {
 	case ">=":
-		comf.minTemp = max(comf.minTemp, temp)
+		comf.minTemp = maximum(comf.minTemp, temp)
 	case "<=":
-		comf.maxTemp = min(comf.maxTemp, temp)
+		comf.maxTemp = minimum(comf.maxTemp, temp)
 	default:
 		return fmt.Errorf("%w: %s", ErrUndefinedOperation, operation)
 	}
