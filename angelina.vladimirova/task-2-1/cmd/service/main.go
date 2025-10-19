@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	lowerTempLimit = 15
-	upperTempLimit = 30
+	minTemperature = 15
+	maxTemperature = 30
 )
 
 var ErrUndefinedOperation = errors.New("undefined operation")
@@ -23,16 +23,26 @@ func NewComfortZone(minTemp, maxTemp int) *ComfortZone {
 	}
 }
 
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 func (comf *ComfortZone) updateTemp(operation string, temp int) error {
 	switch operation {
 	case ">=":
-		if temp > comf.minTemp {
-			comf.minTemp = temp
-		}
+		comf.minTemp = max(comf.minTemp, temp)
 	case "<=":
-		if temp < comf.maxTemp {
-			comf.maxTemp = temp
-		}
+		comf.maxTemp = min(comf.maxTemp, temp)
 	default:
 		return fmt.Errorf("%w: %s", ErrUndefinedOperation, operation)
 	}
@@ -66,7 +76,7 @@ func main() {
 			return
 		}
 
-		comfortZone := NewComfortZone(lowerTempLimit, upperTempLimit)
+		comfortZone := NewComfortZone(minTemperature, maxTemperature)
 
 		for range employeesCount {
 			var (
