@@ -1,12 +1,29 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+const (
+	lowerTempLimit = 15
+	upperTempLimit = 30
+)
+
+var ErrUndefinedOperation = errors.New("undefined operation")
 
 type ComfortZone struct {
 	minTemp, maxTemp int
 }
 
-func (comf *ComfortZone) updateTemp(operation string, temp int) {
+func NewComfortZone(minTemp, maxTemp int) *ComfortZone {
+	return &ComfortZone{
+		minTemp: minTemp,
+		maxTemp: maxTemp,
+	}
+}
+
+func (comf *ComfortZone) updateTemp(operation string, temp int) error {
 	switch operation {
 	case ">=":
 		if temp > comf.minTemp {
@@ -16,7 +33,11 @@ func (comf *ComfortZone) updateTemp(operation string, temp int) {
 		if temp < comf.maxTemp {
 			comf.maxTemp = temp
 		}
+	default:
+		return fmt.Errorf("%w: %s", ErrUndefinedOperation, operation)
 	}
+
+	return nil
 }
 
 func (comf *ComfortZone) getComfortTemp() int {
@@ -27,17 +48,12 @@ func (comf *ComfortZone) getComfortTemp() int {
 	return comf.minTemp
 }
 
-const (
-	lowerTempLimit = 15
-	upperTempLimit = 30
-)
-
 func main() {
 	var departmentCount, employeesCount int
 
 	_, err := fmt.Scan(&departmentCount)
 	if err != nil {
-		fmt.Println("Invalid input")
+		fmt.Println("Failed to read department count:", err)
 
 		return
 	}
@@ -45,12 +61,12 @@ func main() {
 	for range departmentCount {
 		_, err = fmt.Scan(&employeesCount)
 		if err != nil {
-			fmt.Println("Invalid input")
+			fmt.Println("Failed to read employees count:", err)
 
 			return
 		}
 
-		comfortZone := ComfortZone{lowerTempLimit, upperTempLimit}
+		comfortZone := NewComfortZone(lowerTempLimit, upperTempLimit)
 
 		for range employeesCount {
 			var (
@@ -60,12 +76,18 @@ func main() {
 
 			_, err = fmt.Scan(&operation, &temp)
 			if err != nil {
-				fmt.Println("Invalid input")
+				fmt.Println("Failed to read operation or temperature:", err)
 
 				return
 			}
 
-			comfortZone.updateTemp(operation, temp)
+			err = comfortZone.updateTemp(operation, temp)
+			if err != nil {
+				fmt.Println("Failed to update temperature:", err)
+
+				return
+			}
+
 			fmt.Println(comfortZone.getComfortTemp())
 		}
 	}
