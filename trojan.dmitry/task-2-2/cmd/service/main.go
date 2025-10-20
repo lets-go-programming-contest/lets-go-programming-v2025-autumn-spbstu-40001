@@ -83,7 +83,6 @@ func main() {
 
 	for range countOfDishes {
 		rating, err := readInt()
-
 		if err != nil {
 			fmt.Println("Invalid input of rating of dish", err)
 
