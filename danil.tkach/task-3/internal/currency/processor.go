@@ -1,14 +1,18 @@
 package currency
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
+
+	"golang.org/x/text/encoding/ianaindex"
 )
 
 const (
@@ -45,17 +49,31 @@ type CurrencyOutput struct {
 }
 
 func readValCurs(inputFile string) (*ValCurs, error) {
-	xmlFile, err := os.ReadFile(inputFile)
+	xmlData, err := os.ReadFile(inputFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read XML-file %s: %w", inputFile, err)
 	}
 
-	var valCurs ValCurs
-	if err := xml.Unmarshal(xmlFile, &valCurs); err != nil {
-		return nil, fmt.Errorf("failed to parse XML-file: %w", err)
+	dataRdr := bytes.NewReader(xmlData)
+	decoder := xml.NewDecoder(dataRdr)
+
+	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
+		encoding, err := ianaindex.IANA.Encoding(charset)
+		if err != nil {
+			return nil, fmt.Errorf("unsupported encoding: %s, %w", charset, err)
+		}
+
+		if encoding == nil {
+			return input, nil
+		}
+
+		return encoding.NewDecoder().Reader(input), nil
 	}
 
-	fmt.Printf("Successful read %d currencies.\n", len(valCurs.Valutes))
+	var valCurs ValCurs
+	if err := decoder.Decode(&valCurs); err != nil {
+		return nil, fmt.Errorf("failed to parse XML-file: %w", err)
+	}
 
 	return &valCurs, nil
 }
