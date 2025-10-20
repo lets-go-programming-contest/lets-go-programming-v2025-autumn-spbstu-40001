@@ -40,13 +40,15 @@ func (c *conditioner) calculate(direction string, degrees int) error {
 		return errInvalidDirection
 	}
 
-	if c.minTemp > c.maxTemp {
-		fmt.Println("-1")
-	} else {
-		fmt.Println(c.minTemp)
-	}
-
 	return nil
+}
+
+func (c *conditioner) getOptimalTemperature() int {
+	if c.minTemp > c.maxTemp {
+		return -1
+	} else {
+		return c.minTemp
+	}
 }
 
 func main() {
@@ -90,6 +92,8 @@ func main() {
 			if err := temperatureRange.calculate(direction, degrees); err != nil {
 				fmt.Println("failed to calculate optimal temperature:", err.Error())
 			}
+
+			fmt.Println(temperatureRange.getOptimalTemperature())
 		}
 	}
 }
