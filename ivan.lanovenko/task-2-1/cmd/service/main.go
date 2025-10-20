@@ -1,22 +1,23 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type TemperatureLimits struct {
 	minTemperature int
 	maxTemperature int
 }
 
-func (limits *TemperatureLimits) processTemperature(border string, currentTemperature int) {
+func (limits *TemperatureLimits) processTemperature(border string, currentTemperature int) error {
 	switch border {
 	case ">=":
 		limits.minTemperature = max(limits.minTemperature, currentTemperature)
 	case "<=":
 		limits.maxTemperature = min(limits.maxTemperature, currentTemperature)
 	default:
-		fmt.Println("Invalid symbol")
-
-		return
+		return errors.New("invalid symbol of set temperature limit")
 	}
 
 	if limits.minTemperature <= limits.maxTemperature {
@@ -24,12 +25,14 @@ func (limits *TemperatureLimits) processTemperature(border string, currentTemper
 	} else {
 		fmt.Println(-1)
 	}
+
+	return nil
 }
 
 func main() {
 	var departmentsCount int
 	if _, err := fmt.Scanln(&departmentsCount); err != nil {
-		fmt.Println("Invalid input: ", err)
+		fmt.Println("failed to read departments count: ", err)
 
 		return
 	}
@@ -41,7 +44,7 @@ func main() {
 		)
 
 		if _, err := fmt.Scanln(&staffCount); err != nil {
-			fmt.Println("Invalid input: ", err)
+			fmt.Println("failed to read staff count: ", err)
 
 			return
 		}
@@ -53,12 +56,16 @@ func main() {
 			)
 
 			if _, err := fmt.Scanln(&border, &currentTemperature); err != nil {
-				fmt.Println("Invalid input: ", err)
+				fmt.Println("failed to read current temperature limit: ", err)
 
 				return
 			}
 
-			limits.processTemperature(border, currentTemperature)
+			if err := limits.processTemperature(border, currentTemperature); err != nil {
+				fmt.Println(err)
+
+				return
+			}
 		}
 	}
 }
