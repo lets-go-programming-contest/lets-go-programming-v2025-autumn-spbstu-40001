@@ -25,6 +25,7 @@ func (limits *TemperatureLimits) processTemperature(border string, currentTemper
 	if limits.minTemperature <= limits.maxTemperature {
 		return limits.minTemperature, nil
 	}
+
 	return -1, nil
 }
 
