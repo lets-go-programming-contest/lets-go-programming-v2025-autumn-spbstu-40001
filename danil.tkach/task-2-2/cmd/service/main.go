@@ -123,6 +123,13 @@ func main() {
 		heap.Pop(myHeap)
 	}
 
-	needDish := heap.Pop(myHeap)
+	needDish, ok := heap.Pop(myHeap).(int)
+
+	if !ok {
+		fmt.Println("Cannot convert to int")
+
+		return
+	}
+
 	fmt.Println(needDish)
 }
