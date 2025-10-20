@@ -10,6 +10,8 @@ type TemperatureLimits struct {
 	maxTemperature int
 }
 
+var ErrInvalidSymbol = errors.New("invalid symbol of set temperature limit")
+
 func (limits *TemperatureLimits) processTemperature(border string, currentTemperature int) error {
 	switch border {
 	case ">=":
@@ -17,7 +19,7 @@ func (limits *TemperatureLimits) processTemperature(border string, currentTemper
 	case "<=":
 		limits.maxTemperature = min(limits.maxTemperature, currentTemperature)
 	default:
-		return errors.New("invalid symbol of set temperature limit")
+		return ErrInvalidSymbol
 	}
 
 	if limits.minTemperature <= limits.maxTemperature {
