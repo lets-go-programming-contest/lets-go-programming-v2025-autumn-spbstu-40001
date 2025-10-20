@@ -1,9 +1,5 @@
 package intheap
 
-import (
-	"container/heap"
-)
-
 type IntHeap []int
 
 func (h *IntHeap) Len() int {
@@ -11,10 +7,18 @@ func (h *IntHeap) Len() int {
 }
 
 func (h *IntHeap) Less(i, j int) bool {
-	return (*h)[i] < (*h)[j]
+	if i < 0 && i >= h.Len() || j < 0 && j >= h.Len() {
+		panic("index out of range(Less)")
+	}
+
+	return (*h)[i] > (*h)[j]
 }
 
 func (h *IntHeap) Swap(i, j int) {
+	if i < 0 && i >= h.Len() || j < 0 && j >= h.Len() {
+		panic("index out of range(Swap)")
+	}
+
 	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
 }
 
@@ -39,20 +43,4 @@ func (h *IntHeap) Pop() any {
 	*h = old[:length-1]
 
 	return top
-}
-
-func (h *IntHeap) Top() any {
-	if len(*h) == 0 {
-		panic("top heap is empty")
-	}
-
-	return (*h)[0]
-}
-
-func (h *IntHeap) CalculatePriority(priority int) any {
-	for h.Len() > priority {
-		heap.Pop(h)
-	}
-
-	return h.Top()
 }
