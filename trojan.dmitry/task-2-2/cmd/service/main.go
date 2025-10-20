@@ -21,7 +21,7 @@ func (iHeap *IntHeap) Less(firstIndex, secondIndex int) bool {
 
 func (iHeap *IntHeap) Swap(firstIndex, secondIndex int) {
 	if firstIndex < 0 || secondIndex < 0 || firstIndex >= len(*iHeap) || secondIndex >= len(*iHeap) {
-		panic("index out of range in less")
+		panic("index out of range in swap")
 	}
 
 	(*iHeap)[firstIndex], (*iHeap)[secondIndex] = (*iHeap)[secondIndex], (*iHeap)[firstIndex]
@@ -56,47 +56,22 @@ func removeMinUntil(dishHeap *IntHeap, numOfPreference int) {
 	}
 }
 
-func readCountOfDishes() int {
-	var count int
+func readInt() (int, error) {
+	var x int
 
-	_, err := fmt.Scan(&count)
+	_, err := fmt.Scan(&x)
 	if err != nil {
-		fmt.Println("Invalid input of count of dishes")
-
-		return 0
+		return x, err
 	}
-
-	if count < 1 || count > 10000 {
-		fmt.Println("Count of dishes out of allowed range")
-
-		return 0
-	}
-
-	return count
-}
-
-func readNumOfPreference(limit int) int {
-	var pref int
-
-	_, err := fmt.Scan(&pref)
-	if err != nil {
-		fmt.Println("Invalid input of num of preference")
-
-		return 0
-	}
-
-	if pref < 1 || pref > limit {
-		fmt.Println("Num of preference out of allowed range")
-
-		return 0
-	}
-
-	return pref
+	return x, nil
 }
 
 func main() {
-	countOfDishes := readCountOfDishes()
-	if countOfDishes == 0 {
+	countOfDishes, err := readInt()
+
+	if err != nil {
+		fmt.Println("Invalid input of count of dishes", err)
+
 		return
 	}
 
@@ -104,9 +79,8 @@ func main() {
 	heap.Init(dishHeap)
 
 	for range countOfDishes {
-		var rating int
+		rating, err := readInt()
 
-		_, err := fmt.Scan(&rating)
 		if err != nil {
 			fmt.Println("Invalid input of rating of dish", err)
 
@@ -116,8 +90,16 @@ func main() {
 		heap.Push(dishHeap, rating)
 	}
 
-	numOfPreference := readNumOfPreference(countOfDishes)
-	if numOfPreference == 0 {
+	numOfPreference, err := readInt()
+	if err != nil {
+		fmt.Println("Invalid input of num of preference", err)
+
+		return
+	}
+
+	if numOfPreference < 1 || numOfPreference > countOfDishes {
+		fmt.Println("Num of preference out of allowed range")
+
 		return
 	}
 
