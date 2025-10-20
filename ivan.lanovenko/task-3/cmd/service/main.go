@@ -25,13 +25,13 @@ func main() {
 	flag.Parse()
 
 	if _, err := os.Stat(*configPath); os.IsNotExist(err) {
-		panic("Config file does not exist: " + err.Error())
+		panic(err)
 	}
 
 	configFile, err := os.ReadFile(*configPath)
 
 	if err != nil {
-		panic("Error of reading this file: " + *configPath)
+		panic(err)
 	}
 
 	lines := strings.Split(string(configFile), "\n")
@@ -40,19 +40,19 @@ func main() {
 	outputFilePath := lines[1][strings.Index((lines[1]), "\"")+1 : strings.LastIndex((lines[1]), "\"")]
 
 	if _, err := os.Stat(inputFilePath); os.IsNotExist(err) {
-		panic("Input file does not exists: " + inputFilePath)
+		panic(err)
 	}
 
 	inputFile, err := os.ReadFile(inputFilePath)
 
 	if err != nil {
-		panic("Error of reading this file: " + *configPath)
+		panic(err)
 	}
 
 	valCurs := new(ValCurs)
 	err = xml.Unmarshal(inputFile, valCurs)
 	if err != nil {
-		fmt.Println("Unmarshal error: ", err)
+		fmt.Println(err)
 
 		return
 	}
