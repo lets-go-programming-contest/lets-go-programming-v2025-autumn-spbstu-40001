@@ -15,6 +15,7 @@ func SaveToJSON(data any, filePath string) {
 	if err != nil {
 		panic(err)
 	}
+
 	defer func() {
 		if err := outputFile.Close(); err != nil {
 			panic(err)
