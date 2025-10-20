@@ -7,6 +7,11 @@ import (
 
 var ErrUnknownOperator = errors.New("unknown operator")
 
+const (
+	defaultMinLevel = 15
+	defaultMaxLevel = 30
+)
+
 type Dept struct {
 	minLevel int
 	maxLevel int
@@ -44,7 +49,7 @@ func main() {
 
 	_, err := fmt.Scan(&department)
 	if err != nil {
-		fmt.Println("Invalid number of departments")
+		fmt.Println("Invalid number of departments", err)
 
 		return
 	}
@@ -54,15 +59,10 @@ func main() {
 
 		_, err = fmt.Scan(&workers)
 		if err != nil {
-			fmt.Println("Invalid number of workers")
+			fmt.Println("Invalid number of workers", err)
 
 			return
 		}
-
-		const (
-			defaultMinLevel = 15
-			defaultMaxLevel = 30
-		)
 
 		dept := NewDept(defaultMinLevel, defaultMaxLevel)
 
@@ -71,7 +71,7 @@ func main() {
 
 			_, err = fmt.Scan(&operator)
 			if err != nil {
-				fmt.Println("Invalid operator")
+				fmt.Println("Invalid operator", err)
 
 				return
 			}
@@ -80,14 +80,14 @@ func main() {
 
 			_, err = fmt.Scan(&num)
 			if err != nil {
-				fmt.Println("Invalid temperature value")
+				fmt.Println("Invalid temperature value", err)
 
 				return
 			}
 
 			err = dept.Update(operator, num)
 			if err != nil {
-				fmt.Println("Error updating department")
+				fmt.Println("Error updating department", err)
 			}
 
 			fmt.Println(dept.Result())
