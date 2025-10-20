@@ -1,18 +1,23 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 const (
 	minComfortTemp = 15
 	maxComfortTemp = 30
 )
 
+var ErrInvalidOperation = errors.New("invalid temperature operation")
+
 type TemperatureRange struct {
 	min int
 	max int
 }
 
-func (tr *TemperatureRange) Update(operation string, temperature int) {
+func (tr *TemperatureRange) Update(operation string, temperature int) error {
 	switch operation {
 	case ">=":
 		if temperature > tr.min {
@@ -23,8 +28,10 @@ func (tr *TemperatureRange) Update(operation string, temperature int) {
 			tr.max = temperature
 		}
 	default:
-		fmt.Println("Invalid operation")
+		return fmt.Errorf("operation '%s': %w", operation, ErrInvalidOperation)
 	}
+
+	return nil
 }
 
 func (tr *TemperatureRange) GetOptimal() int {
@@ -40,7 +47,7 @@ func main() {
 
 	_, err := fmt.Scan(&departmentCount)
 	if err != nil {
-		fmt.Println("Invalid input", err)
+		fmt.Println("Failed to read department count:", err)
 
 		return
 	}
@@ -50,7 +57,7 @@ func main() {
 
 		_, err := fmt.Scan(&employeeCount)
 		if err != nil {
-			fmt.Println("Invalid input", err)
+			fmt.Println("Failed to read employee count:", err)
 
 			return
 		}
@@ -65,12 +72,17 @@ func main() {
 
 			_, err := fmt.Scan(&operation, &temperature)
 			if err != nil {
-				fmt.Println("Invalid input", err)
+				fmt.Println("Failed to read temperature data:", err)
 
 				return
 			}
 
-			tempRange.Update(operation, temperature)
+			err = tempRange.Update(operation, temperature)
+			if err != nil {
+				fmt.Println("Invalid temperature operation:", err)
+
+				return
+			}
 			fmt.Println(tempRange.GetOptimal())
 		}
 	}
