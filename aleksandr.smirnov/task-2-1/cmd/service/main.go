@@ -83,6 +83,7 @@ func main() {
 
 				return
 			}
+
 			fmt.Println(tempRange.GetOptimal())
 		}
 	}
