@@ -2,8 +2,11 @@ package main
 
 import (
 	"container/heap"
+	"errors"
 	"fmt"
 )
+
+var ErrOfScan = errors.New("scan failed")
 
 type IntHeap []int
 
@@ -57,18 +60,18 @@ func removeMinUntil(dishHeap *IntHeap, numOfPreference int) {
 }
 
 func readInt() (int, error) {
-	var x int
+	var val int
 
-	_, err := fmt.Scan(&x)
+	_, err := fmt.Scan(&val)
 	if err != nil {
-		return x, err
+		return 0, ErrOfScan
 	}
-	return x, nil
+
+	return val, nil
 }
 
 func main() {
 	countOfDishes, err := readInt()
-
 	if err != nil {
 		fmt.Println("Invalid input of count of dishes", err)
 
