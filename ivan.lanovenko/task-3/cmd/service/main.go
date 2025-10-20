@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"flag"
-	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -52,9 +51,7 @@ func main() {
 	valCurs := new(ValCurs)
 	err = xml.Unmarshal(inputFile, valCurs)
 	if err != nil {
-		fmt.Println(err)
-
-		return
+		panic(err)
 	}
 
 	for i := range valCurs.Valutes {
