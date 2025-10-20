@@ -21,13 +21,11 @@ const (
 )
 
 type ValCurs struct {
-	XMLName xml.Name `xml:"ValCurs"`
 	Valutes []Valute `xml:"Valute"`
 }
 type Valute struct {
 	NumCode  int    `xml:"NumCode"`
 	CharCode string `xml:"CharCode"`
-	Nominal  int    `xml:"Nominal"`
 	Value    string `xml:"Value"`
 }
 
@@ -80,12 +78,10 @@ func transformAndSort(valCurs *ValCurs) ([]Currency, error) {
 			return nil, fmt.Errorf("failed convert '%s' to number: %w", valute.Value, err)
 		}
 
-		realValue := value / float64(valute.Nominal)
-
 		currencies = append(currencies, Currency{
 			NumCode:  valute.NumCode,
 			CharCode: valute.CharCode,
-			Value:    realValue,
+			Value:    value,
 		})
 	}
 
