@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"flag"
@@ -29,16 +30,10 @@ func New(outputFile string) OutputFileInfo {
 }
 
 type ValCurs struct {
-	XMLName xml.Name `xml:"ValCurs"`
-	Text    xml.CharData
-	Valute  []struct {
-		Text      xml.CharData
-		NumCode   string `xml:"NumCode"`
-		CharCode  string `xml:"CharCode"`
-		Nominal   string `xml:"Nominal"`
-		Name      string `xml:"Name"`
-		Value     string `xml:"Value"`
-		VunitRate string `xml:"VunitRate"`
+	Valute []struct {
+		NumCode  string `xml:"NumCode" json:"num_code"`
+		CharCode string `xml:"CharCode" json:"char_code"`
+		Value    string `xml:"Value" json:"value"`
 	}
 }
 
@@ -67,12 +62,12 @@ func main() {
 
 	_, err = os.Stat(files.OutputFile)
 	if errors.Is(err, os.ErrNotExist) {
-		errMkDir := os.Mkdir(outputFileInfo.Dir, 0777)
-		if errMkDir != nil {
+		errCreate := os.Mkdir(outputFileInfo.Dir, 0777)
+		if errCreate != nil {
 			panic("cannot make directory")
 		}
-		_, errMkFile := os.OpenFile(path.Join(outputFileInfo.Dir, outputFileInfo.Filename), os.O_APPEND|os.O_CREATE|os.O_RDWR, 0777)
-		if errMkFile != nil {
+		_, errCreate = os.OpenFile(path.Join(outputFileInfo.Dir, outputFileInfo.Filename), os.O_APPEND|os.O_CREATE|os.O_RDWR, 0777)
+		if errCreate != nil {
 			panic("cannot create file")
 		}
 	}
@@ -82,12 +77,22 @@ func main() {
 		panic("input file does not exist")
 	}
 
-	decoder := xml.NewDecoder(inputFile)
+	XMLDecoder := xml.NewDecoder(inputFile)
 
 	var CentroBankValuteCourses ValCurs
 
-	if err := decoder.Decode(&CentroBankValuteCourses); err != nil {
+	if err := XMLDecoder.Decode(&CentroBankValuteCourses); err != nil {
 		panic(err)
 	}
-	fmt.Println(CentroBankValuteCourses)
+
+	for _, v := range CentroBankValuteCourses.Valute {
+		fmt.Println(v.NumCode)
+		fmt.Println(v.CharCode)
+		fmt.Println(v.Value)
+	}
+
+	JSONEncoder := json.NewEncoder(outputFile)
+	if err := JSONEncoder.Encode(CentroBankValuteCourses); err != nil {
+		panic(err)
+	}
 }
