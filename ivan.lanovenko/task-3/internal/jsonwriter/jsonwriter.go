@@ -7,18 +7,23 @@ import (
 )
 
 func SaveToJSON(data any, filePath string) {
-	if err := os.MkdirAll(filepath.Dir(filePath), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
 		panic(err)
 	}
 
-	output_file, err := os.Create(filePath)
+	outputFile, err := os.Create(filePath)
 	if err != nil {
 		panic(err)
 	}
-	defer output_file.Close()
+	defer func() {
+		if err := outputFile.Close(); err != nil {
+			panic(err)
+		}
+	}()
 
-	encoder := json.NewEncoder(output_file)
+	encoder := json.NewEncoder(outputFile)
 	encoder.SetIndent("", "  ")
+
 	if err := encoder.Encode(data); err != nil {
 		panic(err)
 	}
