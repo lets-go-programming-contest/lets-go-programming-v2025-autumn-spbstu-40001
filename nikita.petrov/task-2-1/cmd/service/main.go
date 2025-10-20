@@ -53,7 +53,7 @@ func main() {
 
 			newOptimalTemp, err := airConditioner.SetAndGetNewOptimalTemp(condition, wishfulTemp)
 			if err != nil {
-				fmt.Println(err)
+				fmt.Println("failed to recalculate temp", err)
 
 				continue
 			}

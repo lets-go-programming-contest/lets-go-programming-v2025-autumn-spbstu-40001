@@ -19,20 +19,16 @@ func (tm *TempManager) SetAndGetNewOptimalTemp(condition string, newTemp int) (i
 		if newTemp > tm.minTemp {
 			tm.minTemp = newTemp
 		}
-
-		if tm.minTemp > tm.maxTemp {
-			return -1, nil
-		}
 	case "<=":
 		if newTemp < tm.maxTemp {
 			tm.maxTemp = newTemp
 		}
-
-		if tm.maxTemp < tm.minTemp {
-			return -1, nil
-		}
 	default:
 		return 0, ErrSetNewOptTemp
+	}
+
+	if tm.maxTemp < tm.minTemp {
+		return -1, nil
 	}
 
 	return tm.minTemp, nil
