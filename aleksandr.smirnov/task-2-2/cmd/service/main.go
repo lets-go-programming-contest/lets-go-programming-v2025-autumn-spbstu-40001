@@ -18,7 +18,7 @@ func main() {
 
 	_, err := fmt.Scan(&dishCount)
 	if err != nil {
-		fmt.Println("Invalid input", err)
+		fmt.Println("Failed to read number of dishes:", err)
 
 		return
 	}
@@ -31,7 +31,7 @@ func main() {
 
 		_, err := fmt.Scan(&rating)
 		if err != nil {
-			fmt.Println("Invalid input", err)
+			fmt.Println("Failed to read dish rating:", err)
 
 			return
 		}
@@ -43,7 +43,7 @@ func main() {
 
 	_, err = fmt.Scan(&preferredDishNumber)
 	if err != nil {
-		fmt.Println("Invalid input", err)
+		fmt.Println("Failed to read preferred dish number:", err)
 
 		return
 	}
@@ -53,5 +53,10 @@ func main() {
 	}
 
 	result := heap.Pop(ratingsHeap)
+	if result == nil {
+		fmt.Println("No result found:", err)
+		return
+	}
+
 	fmt.Println(result)
 }
