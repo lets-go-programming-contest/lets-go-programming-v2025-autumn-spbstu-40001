@@ -15,11 +15,29 @@ import (
 	"golang.org/x/text/encoding/charmap"
 )
 
+type FloatWithComma float64
+
+func (f *FloatWithComma) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	var valueStr string
+	if err := d.DecodeElement(&valueStr, &start); err != nil {
+		return err
+	}
+
+	cleaned := strings.Replace(valueStr, ",", ".", -1)
+	floatVal, err := strconv.ParseFloat(cleaned, 64)
+	if err != nil {
+		return err
+	}
+
+	*f = FloatWithComma(floatVal)
+	return nil
+}
+
 type ValCurs struct {
 	Valutes []struct {
-		NumCode  int    `xml:"NumCode" json:"num_code"`
-		CharCode string `xml:"CharCode" json:"char_code"`
-		Value    string `xml:"Value" json:"value"`
+		NumCode  int            `xml:"NumCode" json:"num_code"`
+		CharCode string         `xml:"CharCode" json:"char_code"`
+		Value    FloatWithComma `xml:"Value" json:"value"`
 	} `xml:"Valute"`
 }
 
@@ -69,14 +87,8 @@ func main() {
 		panic(err)
 	}
 
-	for i := range valCurs.Valutes {
-		valCurs.Valutes[i].Value = strings.Replace(valCurs.Valutes[i].Value, ",", ".", -1)
-	}
-
 	sort.Slice(valCurs.Valutes, func(i, j int) bool {
-		valI, _ := strconv.ParseFloat(valCurs.Valutes[i].Value, 64)
-		valJ, _ := strconv.ParseFloat(valCurs.Valutes[j].Value, 64)
-		return valI > valJ
+		return valCurs.Valutes[i].Value > valCurs.Valutes[j].Value
 	})
 
 	if err := os.MkdirAll(filepath.Dir(outputFilePath), 0755); err != nil {
@@ -94,5 +106,4 @@ func main() {
 	if err := encoder.Encode(valCurs.Valutes); err != nil {
 		panic(err)
 	}
-
 }
