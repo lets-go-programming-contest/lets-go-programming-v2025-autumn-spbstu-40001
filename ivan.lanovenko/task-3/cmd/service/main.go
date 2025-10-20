@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"golang.org/x/text/encoding/charmap"
+	"gopkg.in/yaml.v3"
 )
 
 type FloatWithComma float64
@@ -66,10 +67,18 @@ func main() {
 		panic(err)
 	}
 
-	lines := strings.Split(string(configFile), "\n")
+	var config struct {
+		InputFile  string `yaml:"input-file"`
+		OutputFile string `yaml:"output-file"`
+	}
 
-	inputFilePath := lines[0][strings.Index((lines[0]), "\"")+1 : strings.LastIndex((lines[0]), "\"")]
-	outputFilePath := lines[1][strings.Index((lines[1]), "\"")+1 : strings.LastIndex((lines[1]), "\"")]
+	err = yaml.Unmarshal(configFile, &config) // &config - указатель на структуру
+	if err != nil {
+		panic(err)
+	}
+
+	inputFilePath := config.InputFile
+	outputFilePath := config.OutputFile
 
 	if _, err := os.Stat(inputFilePath); os.IsNotExist(err) {
 		panic(err)
