@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	"golang.org/x/text/encoding/ianaindex"
+	"golang.org/x/net/html/charset"
 )
 
 const (
@@ -57,17 +57,8 @@ func readValCurs(inputFile string) (*ValCurs, error) {
 	dataRdr := bytes.NewReader(xmlData)
 	decoder := xml.NewDecoder(dataRdr)
 
-	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
-		encoding, err := ianaindex.IANA.Encoding(charset)
-		if err != nil {
-			return nil, fmt.Errorf("unsupported encoding: %s, %w", charset, err)
-		}
-
-		if encoding == nil {
-			return input, nil
-		}
-
-		return encoding.NewDecoder().Reader(input), nil
+	decoder.CharsetReader = func(c string, input io.Reader) (io.Reader, error) {
+		return charset.NewReader(input, c)
 	}
 
 	var valCurs ValCurs
