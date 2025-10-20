@@ -55,6 +55,7 @@ func main() {
 	result := heap.Pop(ratingsHeap)
 	if result == nil {
 		fmt.Println("No result found:", err)
+
 		return
 	}
 

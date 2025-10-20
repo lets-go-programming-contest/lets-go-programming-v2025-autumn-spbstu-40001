@@ -18,6 +18,7 @@ func (h *IntHeap) Swap(i, j int) {
 	if i >= len(*h) || j >= len(*h) || i < 0 || j < 0 {
 		return
 	}
+
 	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
 }
 
