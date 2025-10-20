@@ -34,5 +34,11 @@ func main() {
 		fmt.Println("failed to read priority: ", err.Error())
 	}
 
-	fmt.Println(currentHeap.CalculatePriority(priority))
+	for range priority - 1 {
+		heap.Pop(currentHeap)
+	}
+
+	todayDish := heap.Pop(currentHeap)
+
+	fmt.Println(todayDish)
 }
