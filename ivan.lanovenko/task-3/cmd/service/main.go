@@ -1,14 +1,18 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"flag"
+	"io"
 	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
+
+	"golang.org/x/text/encoding/charmap"
 )
 
 type ValCurs struct {
@@ -17,6 +21,17 @@ type ValCurs struct {
 		CharCode string `xml:"CharCode" json:"char_code"`
 		Value    string `xml:"Value" json:"value"`
 	} `xml:"Valute"`
+}
+
+func parseXML(data []byte, v interface{}) error {
+	decoder := xml.NewDecoder(bytes.NewReader(data))
+	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
+		if charset == "windows-1251" {
+			return charmap.Windows1251.NewDecoder().Reader(input), nil
+		}
+		return input, nil
+	}
+	return decoder.Decode(v)
 }
 
 func main() {
@@ -49,7 +64,7 @@ func main() {
 	}
 
 	valCurs := new(ValCurs)
-	err = xml.Unmarshal(inputFile, valCurs)
+	err = parseXML(inputFile, valCurs)
 	if err != nil {
 		panic(err)
 	}
