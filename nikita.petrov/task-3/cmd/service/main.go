@@ -16,16 +16,16 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var configPathFlag = flag.String("config", "config.yaml", "path to config file")
-
 func main() {
+	var configPathFlag = flag.String("config", "config.yaml", "path to config file")
+
 	configFile := fmanager.GetConfigFile(configPathFlag)
 	configData := fmanager.GetConfigData(configFile)
 
 	var files fmanager.Config
-	err := yaml.Unmarshal([]byte(configData), &files)
+	err := yaml.Unmarshal(configData, &files)
 	if err != nil {
-		panic("cannot unmarshal config data")
+		panic(err)
 	}
 
 	dir, filename := fmanager.ParseOutputFilePath(files.OutputFile)
@@ -42,12 +42,13 @@ func main() {
 	}
 
 	XMLDecoder := xml.NewDecoder(inputFile)
-	var CentroBankValuteCourses currencyrate.CurrencyRate
-	if err := XMLDecoder.Decode(&CentroBankValuteCourses); err != nil {
+
+	var CB currencyrate.CurrencyRate
+	if err := XMLDecoder.Decode(&CB); err != nil {
 		panic(err)
 	}
 
-	sort.Sort(valutessorter.ByValue(CentroBankValuteCourses))
+	sort.Sort(valutessorter.ByValue(CB))
 
 	outputFile, err := os.OpenFile(path.Join(dir, filename), os.O_WRONLY, 0777)
 	if err != nil {
@@ -56,5 +57,8 @@ func main() {
 
 	JSONEncoder := json.NewEncoder(outputFile)
 	JSONEncoder.SetIndent("", "\t")
-	JSONEncoder.Encode(&CentroBankValuteCourses.Valute)
+	err = JSONEncoder.Encode(&CB.Valute)
+	if err != nil {
+		panic(err)
+	}
 }

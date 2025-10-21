@@ -15,8 +15,9 @@ type Config struct {
 func GetConfigFile(configPathFlag *string) *os.File {
 	configFile, err := os.Open(*configPathFlag)
 	if err != nil && os.IsNotExist(err) {
-		panic("config file does not exist")
+		panic(err)
 	}
+
 	return configFile
 }
 
@@ -25,11 +26,13 @@ func GetConfigData(configFile *os.File) []byte {
 	if err != nil {
 		panic("cannot read file")
 	}
+
 	return configData
 }
 
 func ParseOutputFilePath(outputFilePath string) (string, string) {
 	var dir string
+
 	var filename string
 
 	if strings.Contains(outputFilePath, "/") {
@@ -39,6 +42,7 @@ func ParseOutputFilePath(outputFilePath string) (string, string) {
 	} else {
 		filename = outputFilePath
 	}
+
 	return dir, filename
 }
 
@@ -46,7 +50,7 @@ func MakeDirectory(dirName string) {
 	if dirName != "" {
 		errCreateDir := os.Mkdir(dirName, 0777)
 		if errCreateDir != nil {
-			panic("cannot make directory")
+			panic(errCreateDir)
 		}
 	}
 }
@@ -54,6 +58,6 @@ func MakeDirectory(dirName string) {
 func CreateFile(dirName string, fileName string) {
 	_, errCreateFile := os.OpenFile(path.Join(dirName, fileName), os.O_APPEND|os.O_CREATE|os.O_RDWR, 0777)
 	if errCreateFile != nil {
-		panic("cannot create file")
+		panic(errCreateFile)
 	}
 }
