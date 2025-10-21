@@ -127,7 +127,7 @@ func findKthLargest(ratings []int, positionK int) (int, error) {
 	heap.Init(maxHeap)
 
 	var result int
-	found := false
+	var found bool
 
 	for range positionK {
 		value := heap.Pop(maxHeap)
