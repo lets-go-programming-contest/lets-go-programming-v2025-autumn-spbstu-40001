@@ -25,11 +25,6 @@ type OutputFileInfo struct {
 	Filename string
 }
 
-func New(outputFile string) OutputFileInfo {
-	outputFilePath := strings.Split(outputFile, "/")
-	return OutputFileInfo{outputFilePath[0], outputFilePath[1]}
-}
-
 type ValCurs struct {
 	Valute []struct {
 		NumCode  string `xml:"NumCode" json:"num_code"`
@@ -73,16 +68,27 @@ func main() {
 		panic("cannot unmarshal config data")
 	}
 
-	outputFileInfo := New(files.OutputFile)
+	var dir string
+	var filename string
+
+	if strings.Contains(files.OutputFile, "/") {
+		outputFilePath := strings.Split(files.OutputFile, "/")
+		dir = outputFilePath[0]
+		filename = outputFilePath[1]
+	} else {
+		filename = files.OutputFile
+	}
 
 	_, err = os.Stat(files.OutputFile)
 	if errors.Is(err, os.ErrNotExist) {
-		errCreate := os.Mkdir(outputFileInfo.Dir, 0777)
-		if errCreate != nil {
-			panic("cannot make directory")
+		if dir != "" {
+			errCreateDir := os.Mkdir(dir, 0777)
+			if errCreateDir != nil {
+				panic("cannot make directory")
+			}
 		}
-		_, errCreate = os.OpenFile(path.Join(outputFileInfo.Dir, outputFileInfo.Filename), os.O_APPEND|os.O_CREATE|os.O_RDWR, 0777)
-		if errCreate != nil {
+		_, errCreateFile := os.OpenFile(path.Join(dir, filename), os.O_APPEND|os.O_CREATE|os.O_RDWR, 0777)
+		if errCreateFile != nil {
 			panic("cannot create file")
 		}
 	}
@@ -108,14 +114,14 @@ func main() {
 
 	sort.Sort(ByValue(CentroBankValuteCourses))
 
-	outputFile, err := os.OpenFile(path.Join(outputFileInfo.Dir, outputFileInfo.Filename), os.O_WRONLY, 0777)
+	outputFile, err := os.OpenFile(path.Join(dir, filename), os.O_WRONLY, 0777)
 
 	if err != nil {
 		panic(err)
 	}
 
 	JSONEncoder := json.NewEncoder(outputFile)
-	JSONEncoder.SetIndent("", " ")
+	JSONEncoder.SetIndent("", "\t")
 
 	JSONEncoder.Encode(&CentroBankValuteCourses.Valute)
 }
