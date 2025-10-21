@@ -91,8 +91,14 @@ func main() {
 		fmt.Println(v.Value)
 	}
 
-	JSONEncoder := json.NewEncoder(outputFile)
-	if err := JSONEncoder.Encode(CentroBankValuteCourses); err != nil {
+	outputFile, err := os.OpenFile(path.Join(outputFileInfo.Dir, outputFileInfo.Filename), os.O_WRONLY, 0777)
+
+	if err != nil {
 		panic(err)
 	}
+
+	JSONEncoder := json.NewEncoder(outputFile)
+	JSONEncoder.SetIndent("", " ")
+
+	JSONEncoder.Encode(&CentroBankValuteCourses.Valute)
 }
