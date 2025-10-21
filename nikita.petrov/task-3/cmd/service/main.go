@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"sort"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -38,6 +39,20 @@ type ValCurs struct {
 }
 
 var configPathFlag = flag.String("config", "config.yaml", "path to config file")
+
+type ByValue ValCurs
+
+func (myValCurs ByValue) Len() int {
+	return len(myValCurs.Valute)
+}
+
+func (myValCurs ByValue) Swap(i, j int) {
+	myValCurs.Valute[i], myValCurs.Valute[j] = myValCurs.Valute[j], myValCurs.Valute[i]
+}
+
+func (myValCurs ByValue) Less(i, j int) bool {
+	return myValCurs.Valute[i].Value > myValCurs.Valute[j].Value
+}
 
 func main() {
 	configFile, err := os.Open(*configPathFlag)
@@ -90,6 +105,8 @@ func main() {
 		fmt.Println(v.CharCode)
 		fmt.Println(v.Value)
 	}
+
+	sort.Sort(ByValue(CentroBankValuteCourses))
 
 	outputFile, err := os.OpenFile(path.Join(outputFileInfo.Dir, outputFileInfo.Filename), os.O_WRONLY, 0777)
 
