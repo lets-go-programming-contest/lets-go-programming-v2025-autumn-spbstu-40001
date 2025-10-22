@@ -40,6 +40,7 @@ func ParseOutputFilePath(outputFilePath string) (string, string) {
 		dir = outputFilePath[0]
 		filename = outputFilePath[1]
 	} else {
+		dir = ""
 		filename = outputFilePath
 	}
 
@@ -48,10 +49,7 @@ func ParseOutputFilePath(outputFilePath string) (string, string) {
 
 func MakeDirectory(dirName string) {
 	if dirName != "" {
-		errCreateDir := os.Mkdir(dirName, 0777)
-		if errCreateDir != nil {
-			panic(errCreateDir)
-		}
+		os.Mkdir(dirName, 0777)
 	}
 }
 
