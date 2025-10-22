@@ -2,20 +2,35 @@ package main
 
 import (
 	"container/heap"
+	"errors"
 	"fmt"
 )
 
-type MinHeap []int
+type MaxHeap []int
 
-func (h *MinHeap) Len() int           { return len(*h) }
-func (h *MinHeap) Less(i, j int) bool { return (*h)[i] < (*h)[j] }
-func (h *MinHeap) Swap(i, j int) {
-	if i >= 0 && i < len(*h) && j >= 0 && j < len(*h) {
-		(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
-	}
+var ErrInvalidPrefferedDishes = errors.New("invalid preffered dishec count")
+
+func (h *MaxHeap) Len() int {
+	return len(*h)
 }
 
-func (h *MinHeap) Push(x any) {
+func (h *MaxHeap) Less(i, j int) bool {
+	if i >= 0 && i < len(*h) && j >= 0 && j < len(*h) {
+		panic("Index out of range")
+	}
+
+	return (*h)[i] > (*h)[j]
+}
+
+func (h *MaxHeap) Swap(i, j int) {
+	if i >= 0 && i < len(*h) && j >= 0 && j < len(*h) {
+		panic("Index out of range")
+	}
+
+	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
+}
+
+func (h *MaxHeap) Push(x any) {
 	num, ok := x.(int)
 	if !ok {
 		panic("type assertion to int failed")
@@ -24,7 +39,7 @@ func (h *MinHeap) Push(x any) {
 	*h = append(*h, num)
 }
 
-func (h *MinHeap) Pop() any {
+func (h *MaxHeap) Pop() any {
 	if len(*h) == 0 {
 		return nil
 	}
@@ -37,26 +52,20 @@ func (h *MinHeap) Pop() any {
 	return x
 }
 
-func findKLargest(foodRatings []int, prefferedDihes int) int {
-	if prefferedDihes <= 0 || prefferedDihes > len(foodRatings) {
-		panic("Going beyond the boundaries of the array")
+func findKLargest(foodRatings []int, prefferedDishes int) (int, error) {
+	if prefferedDishes <= 0 || prefferedDishes > len(foodRatings) {
+		return 0, ErrInvalidPrefferedDishes
 	}
 
-	minHeap := &MinHeap{}
-	heap.Init(minHeap)
+	maxHeap := MaxHeap(foodRatings)
+	heap.Init(&maxHeap)
 
-	for _, rating := range foodRatings[:prefferedDihes] {
-		heap.Push(minHeap, rating)
+	var result int
+	for range prefferedDishes {
+		result = heap.Pop(&maxHeap).(int)
 	}
 
-	for _, rating := range foodRatings[prefferedDihes:] {
-		if rating > (*minHeap)[0] {
-			heap.Pop(minHeap)
-			heap.Push(minHeap, rating)
-		}
-	}
-
-	return (*minHeap)[0]
+	return result, nil
 }
 
 func main() {
@@ -82,10 +91,15 @@ func main() {
 	_, err = fmt.Scan(&prefferedDishes)
 	if err != nil || prefferedDishes <= 0 || prefferedDishes > dishesNumber {
 		fmt.Println("Incorrect preferred dishes number:", err)
+		return
+	}
+
+	answer, err := findKLargest(foodRatings, prefferedDishes)
+	if err != nil {
+		fmt.Println("Error: ", err)
 
 		return
 	}
 
-	answer := findKLargest(foodRatings, prefferedDishes)
 	fmt.Println(answer)
 }
