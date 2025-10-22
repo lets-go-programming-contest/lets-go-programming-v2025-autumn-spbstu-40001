@@ -15,7 +15,7 @@ func (h *MaxHeap) Len() int {
 }
 
 func (h *MaxHeap) Less(i, j int) bool {
-	if i >= 0 && i < len(*h) && j >= 0 && j < len(*h) {
+	if i < 0 || i >= h.Len() || j < 0 || j >= h.Len() {
 		panic("Index out of range")
 	}
 
@@ -23,7 +23,7 @@ func (h *MaxHeap) Less(i, j int) bool {
 }
 
 func (h *MaxHeap) Swap(i, j int) {
-	if i >= 0 && i < len(*h) && j >= 0 && j < len(*h) {
+	if i < 0 || i >= h.Len() || j < 0 || j >= h.Len() {
 		panic("Index out of range")
 	}
 
@@ -91,6 +91,7 @@ func main() {
 	_, err = fmt.Scan(&prefferedDishes)
 	if err != nil || prefferedDishes <= 0 || prefferedDishes > dishesNumber {
 		fmt.Println("Incorrect preferred dishes number:", err)
+
 		return
 	}
 
