@@ -23,9 +23,7 @@ const (
 	expectedInputCount = 2
 )
 
-var (
-	ErrInvalidOperand = errors.New("invalid operand")
-)
+var ErrInvalidOperand = errors.New("invalid operand")
 
 func (temp *Temperature) getSuitableTemperature(operand string, prefferedTemperature int) (int, error) {
 	switch operand {
