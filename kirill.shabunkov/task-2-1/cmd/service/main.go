@@ -22,23 +22,21 @@ const (
 	expectedInputCount = 2
 )
 
-func (temp *Temperature) getSuitableTemperature(operand string, prefferedTemperature int) {
+func (temp *Temperature) getSuitableTemperature(operand string, prefferedTemperature int) (int, error) {
 	switch operand {
 	case ">=":
 		temp.Min = max(temp.Min, prefferedTemperature)
 	case "<=":
 		temp.Max = min(temp.Max, prefferedTemperature)
 	default:
-		fmt.Println("Wrong operand!")
-
-		return
+		return 0, fmt.Errorf("Invalid operand: %s", operand)
 	}
 
 	if temp.Min > temp.Max {
-		fmt.Println(-1)
-	} else {
-		fmt.Println(temp.Min)
+		return -1, nil
 	}
+
+	return temp.Min, nil
 }
 
 func main() {
@@ -83,7 +81,14 @@ func main() {
 				return
 			}
 
-			currentTemperature.getSuitableTemperature(operand, prefferedTemperature)
+			result, err := currentTemperature.getSuitableTemperature(operand, prefferedTemperature)
+			if err != nil {
+				fmt.Println("Error: ", err)
+
+				return
+			}
+
+			fmt.Println(result)
 		}
 	}
 }
