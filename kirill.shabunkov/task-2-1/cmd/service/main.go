@@ -6,8 +6,7 @@ import (
 )
 
 var (
-	ErrInvalidOperand        = errors.New("invalid operand")
-	ErrNoSuitableTemperature = errors.New("no suitable temperature found")
+	ErrInvalidOperand = errors.New("invalid operand")
 )
 
 type Temperature struct {
@@ -39,7 +38,7 @@ func (temp *Temperature) getSuitableTemperature(operand string, prefferedTempera
 	}
 
 	if temp.Min > temp.Max {
-		return -1, fmt.Errorf("%w: min (%d) exceeds max (%d)", ErrNoSuitableTemperature, temp.Min, temp.Max)
+		return -1, nil
 	}
 
 	return temp.Min, nil
