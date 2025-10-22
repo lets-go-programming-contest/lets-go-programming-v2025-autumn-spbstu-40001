@@ -1,7 +1,13 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+)
+
+var (
+	ErrInvalidOperand        = errors.New("invalid operand")
+	ErrNoSuitableTemperature = errors.New("no suitable temperature found")
 )
 
 type Temperature struct {
@@ -29,11 +35,11 @@ func (temp *Temperature) getSuitableTemperature(operand string, prefferedTempera
 	case "<=":
 		temp.Max = min(temp.Max, prefferedTemperature)
 	default:
-		return 0, fmt.Errorf("Invalid operand: %s", operand)
+		return 0, fmt.Errorf("%w: %s, expected '>=' or '<='", ErrInvalidOperand, operand)
 	}
 
 	if temp.Min > temp.Max {
-		return -1, nil
+		return -1, fmt.Errorf("%w: min (%d) exceeds max (%d)", ErrNoSuitableTemperature, temp.Min, temp.Max)
 	}
 
 	return temp.Min, nil
