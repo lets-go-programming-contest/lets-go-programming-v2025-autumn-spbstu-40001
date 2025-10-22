@@ -76,6 +76,7 @@ func main() {
 
 				return
 			}
+
 			if count != expectedInputCount {
 				fmt.Printf("Incorrect amount of input data: expected %d values, but got %d\n", expectedInputCount, count)
 
