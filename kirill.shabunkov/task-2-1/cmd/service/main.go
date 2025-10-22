@@ -5,10 +5,6 @@ import (
 	"fmt"
 )
 
-var (
-	ErrInvalidOperand = errors.New("invalid operand")
-)
-
 type Temperature struct {
 	Min int
 	Max int
@@ -25,6 +21,10 @@ const (
 	minTemperature     = 15
 	maxTemperature     = 30
 	expectedInputCount = 2
+)
+
+var (
+	ErrInvalidOperand = errors.New("invalid operand")
 )
 
 func (temp *Temperature) getSuitableTemperature(operand string, prefferedTemperature int) (int, error) {
