@@ -9,6 +9,13 @@ type Temperature struct {
 	Max int
 }
 
+func NewTemperature() Temperature {
+	return Temperature{
+		Min: minTemperature,
+		Max: maxTemperature,
+	}
+}
+
 const (
 	minTemperature     = 15
 	maxTemperature     = 30
@@ -46,7 +53,7 @@ func main() {
 
 	for range departamentNum {
 		var (
-			currentTemperature = Temperature{Min: minTemperature, Max: maxTemperature}
+			currentTemperature = NewTemperature()
 			workerNum          int
 		)
 
