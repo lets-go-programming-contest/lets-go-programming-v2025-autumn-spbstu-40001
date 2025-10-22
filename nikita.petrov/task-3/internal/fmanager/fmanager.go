@@ -1,10 +1,13 @@
 package fmanager
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path"
 	"strings"
+
+	"golang.org/x/text/encoding/charmap"
 )
 
 type Config struct {
@@ -57,5 +60,14 @@ func CreateFile(dirName string, fileName string) {
 	_, errCreateFile := os.OpenFile(path.Join(dirName, fileName), os.O_APPEND|os.O_CREATE|os.O_RDWR, 0777)
 	if errCreateFile != nil {
 		panic(errCreateFile)
+	}
+}
+
+func Charset(charset string, input io.Reader) (io.Reader, error) {
+	switch charset {
+	case "windows-1251":
+		return charmap.Windows1251.NewDecoder().Reader(input), nil
+	default:
+		return nil, fmt.Errorf("unknown charset: %s", charset)
 	}
 }
