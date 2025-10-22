@@ -71,14 +71,13 @@ func main() {
 			)
 
 			count, err := fmt.Scan(&operand, &prefferedTemperature)
-			if count != expectedInputCount {
-				fmt.Println("Incorrect amount of input data!")
+			if err != nil {
+				fmt.Printf("Error reading input: expected %d values, got error: %v\n", expectedInputCount, err)
 
 				return
 			}
-
-			if err != nil {
-				fmt.Println("Invalid input data: ", err)
+			if count != expectedInputCount {
+				fmt.Printf("Incorrect amount of input data: expected %d values, but got %d\n", expectedInputCount, count)
 
 				return
 			}
