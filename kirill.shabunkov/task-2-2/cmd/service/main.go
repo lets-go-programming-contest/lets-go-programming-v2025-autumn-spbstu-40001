@@ -64,6 +64,7 @@ func findKLargest(foodRatings []int, prefferedDishes int) (int, error) {
 	heap.Init(&maxHeap)
 
 	var result int
+
 	for range prefferedDishes {
 		item := heap.Pop(&maxHeap)
 
