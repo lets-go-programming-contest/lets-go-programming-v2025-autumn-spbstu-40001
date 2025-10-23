@@ -46,7 +46,9 @@ func main() {
 
 	XMLDecoder := xml.NewDecoder(inputFile)
 	XMLDecoder.CharsetReader = fmanager.Charset
+
 	var CBCurrencyRate currencyrate.CurrencyRate
+
 	if err := XMLDecoder.Decode(&CBCurrencyRate); err != nil {
 		panic(err)
 	}

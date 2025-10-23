@@ -22,15 +22,17 @@ func (fd *floatWithDots) UnmarshalXML(d *xml.Decoder, start xml.StartElement) er
 	var content string
 	err := d.DecodeElement(&content, &start)
 	if err != nil {
-
-		return err
+		panic(err)
 	}
-	content = strings.Replace(content, ",", ".", -1)
+	content = strings.ReplaceAll(content, ",", ".")
+
 	var retFloat64 float64
+
 	retFloat64, err = strconv.ParseFloat(content, 64)
 	if err != nil {
 		panic(err)
 	}
+
 	*fd = floatWithDots(retFloat64)
 
 	return nil

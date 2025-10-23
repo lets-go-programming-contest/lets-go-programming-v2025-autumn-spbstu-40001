@@ -1,7 +1,7 @@
 package fmanager
 
 import (
-	"fmt"
+	"errors"
 	"io"
 	"os"
 	"path"
@@ -45,7 +45,9 @@ func ParseOutputFilePath(outputFilePath string) (string, string) {
 		for i := range len(pathAndFile) - 1 {
 			path = filepath.Join(path, pathAndFile[i])
 		}
+
 		filename = pathAndFile[len(pathAndFile)-1]
+
 	} else {
 		path = ""
 		filename = outputFilePath
@@ -56,7 +58,10 @@ func ParseOutputFilePath(outputFilePath string) (string, string) {
 
 func MakeDirectory(dirPath string) {
 	if dirPath != "" {
-		os.MkdirAll(dirPath, 0777)
+		err := os.MkdirAll(dirPath, 0777)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
@@ -72,6 +77,6 @@ func Charset(charset string, input io.Reader) (io.Reader, error) {
 	case "windows-1251":
 		return charmap.Windows1251.NewDecoder().Reader(input), nil
 	default:
-		return nil, fmt.Errorf("unknown charset: %s", charset)
+		return nil, errors.New("unknown charset")
 	}
 }
