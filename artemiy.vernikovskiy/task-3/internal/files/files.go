@@ -8,8 +8,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
 
 	"github.com/Aapng-cmd/task-3/internal/models"
 	"golang.org/x/net/html/charset"
@@ -35,33 +33,6 @@ func ReadYAMLConfigFile(yamlPath string) (string, string, error) {
 	}
 
 	return settings.InputFileSetting, settings.OutputFileSetting, nil
-}
-
-type CommaFloat float64 // this one also has right for a living
-
-func (cf *CommaFloat) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	// let it be here, please, i do not want one more packet in this small task
-	var sIsAWorkingStringForFloatsWithCommaIsThisNameLongEnough string
-
-	err := d.DecodeElement(&sIsAWorkingStringForFloatsWithCommaIsThisNameLongEnough, &start)
-	if err != nil {
-		return fmt.Errorf("ah, kozache, UnmarshalXML override func failed: %w", err)
-	}
-
-	sIsAWorkingStringForFloatsWithCommaIsThisNameLongEnough = strings.ReplaceAll(
-		sIsAWorkingStringForFloatsWithCommaIsThisNameLongEnough,
-		",",
-		".",
-	)
-
-	val, err := strconv.ParseFloat(sIsAWorkingStringForFloatsWithCommaIsThisNameLongEnough, 64)
-	if err != nil {
-		return fmt.Errorf("ah, kozache, UnmarshalXML override func failed: %w", err)
-	}
-
-	*cf = CommaFloat(val)
-
-	return nil
 }
 
 func ReadAndParseXML(xmlFilePath string) (models.ValCurs, error) {
