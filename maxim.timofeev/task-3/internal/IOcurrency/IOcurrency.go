@@ -4,7 +4,11 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"io"
 	"os"
+	"strings"
+
+	"golang.org/x/text/encoding/charmap"
 )
 
 type ValCurs struct {
@@ -30,6 +34,18 @@ func LoadXML(path string) ([]ValuteJSON, error) {
 		return nil, err
 	}
 	defer file.Close()
+
+	decoder := xml.NewDecoder(file)
+
+	// ДОБАВЛЯЕМ ОБРАБОТКУ КОДИРОВКИ windows-1251
+	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
+		if strings.ToLower(charset) == "windows-1251" {
+			// Конвертируем windows-1251 в UTF-8
+			return charmap.Windows1251.NewDecoder().Reader(input), nil
+		}
+		// Для других кодировок возвращаем как есть
+		return input, nil
+	}
 
 	var curs ValCurs
 	if err := xml.NewDecoder(file).Decode(&curs); err != nil {
