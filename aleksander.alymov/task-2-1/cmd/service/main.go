@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 const (
 	defaultLowerBound = 15
@@ -8,24 +11,21 @@ const (
 	invalidTemp       = -1
 )
 
+var ErrInvalidOperation = errors.New("invalid operation")
+
 type ClimateController struct {
 	lowerBound int
 	upperBound int
-	valid      bool
 }
 
 func NewClimateController() *ClimateController {
 	return &ClimateController{
 		lowerBound: defaultLowerBound,
 		upperBound: defaultUpperBound,
-		valid:      true,
 	}
 }
 
-func (cc *ClimateController) ApplyConstraint(operator string, value int) {
-	if !cc.valid {
-		return
-	}
+func (cc *ClimateController) ApplyConstraint(operator string, value int) error {
 
 	switch operator {
 	case ">=":
@@ -36,15 +36,15 @@ func (cc *ClimateController) ApplyConstraint(operator string, value int) {
 		if value < cc.upperBound {
 			cc.upperBound = value
 		}
+	default:
+		return fmt.Errorf("%w: %s", ErrInvalidOperation, operator)
 	}
 
-	if cc.lowerBound > cc.upperBound {
-		cc.valid = false
-	}
+	return nil
 }
 
 func (cc *ClimateController) FindComfortableTemperature() int {
-	if !cc.valid {
+	if cc.lowerBound > cc.upperBound {
 		return invalidTemp
 	}
 
@@ -56,6 +56,7 @@ func main() {
 
 	_, err := fmt.Scanln(&departCount)
 	if err != nil {
+		fmt.Println("Error reading number of departments:", err)
 		return
 	}
 
@@ -64,6 +65,7 @@ func main() {
 
 		_, err := fmt.Scanln(&peopleCount)
 		if err != nil {
+			fmt.Println("Error reading number of people for department:", err)
 			return
 		}
 
@@ -77,10 +79,15 @@ func main() {
 
 			_, err := fmt.Scanf("%s %d\n", &operation, &needTemp)
 			if err != nil {
+				fmt.Println("Error reading operation or temperature:", err)
 				return
 			}
 
-			tempRange.ApplyConstraint(operation, needTemp)
+			constraintErr := tempRange.ApplyConstraint(operation, needTemp)
+			if constraintErr != nil {
+				fmt.Println("Error applying constraint:", constraintErr)
+				return
+			}
 			fmt.Println(tempRange.FindComfortableTemperature())
 		}
 	}
