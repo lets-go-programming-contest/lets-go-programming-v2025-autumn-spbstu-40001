@@ -52,10 +52,11 @@ func LoadXML(path string) ([]ValuteJSON, error) {
 
 	valutes := make([]ValuteJSON, 0, len(curs.Valutes))
 	for _, v := range curs.Valutes {
+		valueStr := strings.Replace(v.ValueStr, ",", ".", 1)
+
 		var value float64
-		_, err := fmt.Sscanf(v.ValueStr, "%f", &value)
-		if err != nil {
-			fmt.Sscanf(replaceComma(v.ValueStr), "%f", &value)
+		if _, err := fmt.Sscanf(valueStr, "%f", &value); err != nil {
+			return nil, fmt.Errorf("failed to parse value %s: %v", v.ValueStr, err)
 		}
 
 		valutes = append(valutes, ValuteJSON{
@@ -91,16 +92,4 @@ func dir(path string) string {
 		return path[:i]
 	}
 	return ""
-}
-
-func replaceComma(s string) string {
-	out := []rune{}
-	for _, r := range s {
-		if r == ',' {
-			out = append(out, '.')
-		} else {
-			out = append(out, r)
-		}
-	}
-	return string(out)
 }
