@@ -1,131 +1,37 @@
 package currency
 
 import (
-	"bytes"
-	"encoding/json"
-	"encoding/xml"
 	"fmt"
-	"io"
-	"os"
-	"path/filepath"
 	"sort"
-	"strconv"
-	"strings"
 
-	"golang.org/x/net/html/charset"
+	"github.com/Danil3352/task-3/internal/json"
+	"github.com/Danil3352/task-3/internal/xml"
 )
 
-const (
-	DirPerms  os.FileMode = 0o755
-	FilePerms os.FileMode = 0o644
-)
+type ByValue []xml.Currency
 
-type ValCurs struct {
-	Valutes []Valute `xml:"Valute"`
-}
-type Valute struct {
-	NumCode  int    `xml:"NumCode"`
-	CharCode string `xml:"CharCode"`
-	Value    string `xml:"Value"`
+func (a ByValue) Len() int {
+	return len(a)
 }
 
-type Currency struct {
-	NumCode  int
-	CharCode string
-	Value    float64
-}
-type ByValue []Currency
-
-func (a ByValue) Len() int           { return len(a) }
-func (a ByValue) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByValue) Less(i, j int) bool { return a[i].Value > a[j].Value }
-
-type CurrencyOutput struct {
-	NumCode  int     `json:"num_code"`
-	CharCode string  `json:"char_code"`
-	Value    float64 `json:"value"`
+func (a ByValue) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
 }
 
-func readValCurs(inputFile string) (*ValCurs, error) {
-	xmlData, err := os.ReadFile(inputFile)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read XML-file %s: %w", inputFile, err)
-	}
-
-	dataRdr := bytes.NewReader(xmlData)
-	decoder := xml.NewDecoder(dataRdr)
-
-	decoder.CharsetReader = func(c string, input io.Reader) (io.Reader, error) {
-		return charset.NewReader(input, c)
-	}
-
-	var valCurs ValCurs
-	if err := decoder.Decode(&valCurs); err != nil {
-		return nil, fmt.Errorf("failed to parse XML-file: %w", err)
-	}
-
-	return &valCurs, nil
-}
-
-func transformAndSort(valCurs *ValCurs) ([]Currency, error) {
-	currencies := make([]Currency, 0, len(valCurs.Valutes))
-
-	for _, valute := range valCurs.Valutes {
-		valueStr := strings.Replace(valute.Value, ",", ".", 1)
-
-		value, err := strconv.ParseFloat(valueStr, 64)
-		if err != nil {
-			return nil, fmt.Errorf("failed convert '%s' to number: %w", valute.Value, err)
-		}
-
-		currencies = append(currencies, Currency{
-			NumCode:  valute.NumCode,
-			CharCode: valute.CharCode,
-			Value:    value,
-		})
-	}
-
-	sort.Sort(ByValue(currencies))
-
-	return currencies, nil
-}
-
-func writeResult(currencies []Currency, outputFile string) error {
-	outputDir := filepath.Dir(outputFile)
-	if err := os.MkdirAll(outputDir, DirPerms); err != nil {
-		return fmt.Errorf("failed to create a dir %s: %w", outputDir, err)
-	}
-
-	outputData := make([]CurrencyOutput, 0, len(currencies))
-	for _, c := range currencies {
-		outputData = append(outputData, CurrencyOutput(c))
-	}
-
-	jsonData, err := json.MarshalIndent(outputData, "", "  ")
-	if err != nil {
-		return fmt.Errorf("failed to read to json: %w", err)
-	}
-
-	if err := os.WriteFile(outputFile, jsonData, FilePerms); err != nil {
-		return fmt.Errorf("failed write file %s: %w", outputFile, err)
-	}
-
-	return nil
+func (a ByValue) Less(i, j int) bool {
+	return a[i].Value > a[j].Value
 }
 
 func Process(inputFile, outputFile string) error {
-	valCurs, err := readValCurs(inputFile)
+	valCurs, err := xml.ReadValCurs(inputFile)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read and parse XML: %w", err)
 	}
 
-	currencies, err := transformAndSort(valCurs)
-	if err != nil {
-		return err
-	}
+	sort.Sort(ByValue(valCurs.Valutes))
 
-	if err := writeResult(currencies, outputFile); err != nil {
-		return err
+	if err := json.WriteResult(valCurs.Valutes, outputFile); err != nil {
+		return fmt.Errorf("failed to write JSON result: %w", err)
 	}
 
 	return nil
