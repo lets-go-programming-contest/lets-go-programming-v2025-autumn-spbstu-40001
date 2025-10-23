@@ -36,6 +36,7 @@ func (temperature *ComfortTemperature) PrintComfortTemperature() {
 
 		return
 	}
+
 	fmt.Println(temperature.minT)
 }
 
@@ -88,6 +89,7 @@ func main() {
 
 				return
 			}
+
 			temperature.PrintComfortTemperature()
 		}
 	}
