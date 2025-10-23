@@ -9,21 +9,21 @@ import (
 type floatWithDots float64
 
 type CurrencyRate struct {
-	Valute []*singleValute
-}
-
-type singleValute struct {
-	NumCode  int           `json:"num_code"  xml:"NumCode"`
-	CharCode string        `json:"char_code" xml:"CharCode"`
-	Value    floatWithDots `json:"value"     xml:"Value"`
+	Valute []struct {
+		NumCode  int           `json:"num_code"  xml:"NumCode"`
+		CharCode string        `json:"char_code" xml:"CharCode"`
+		Value    floatWithDots `json:"value"     xml:"Value"`
+	}
 }
 
 func (fd *floatWithDots) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	var content string
 	err := d.DecodeElement(&content, &start)
+
 	if err != nil {
 		panic(err)
 	}
+
 	content = strings.ReplaceAll(content, ",", ".")
 
 	var retFloat64 float64
