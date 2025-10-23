@@ -69,6 +69,7 @@ func (k *KthPreferenceFinder) FindKthPreference(kth int) int {
 	}
 
 	temp := make([]int, 0, kth)
+
 	var result int
 
 	for idx := range kth {
