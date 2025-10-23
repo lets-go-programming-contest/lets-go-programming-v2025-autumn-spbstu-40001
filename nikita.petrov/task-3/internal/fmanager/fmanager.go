@@ -11,6 +11,8 @@ import (
 	"golang.org/x/text/encoding/charmap"
 )
 
+var ErrUnknownCharset error = errors.New("unknown charset")
+
 type Config struct {
 	InputFile  string `yaml:"input-file"`
 	OutputFile string `yaml:"output-file"`
@@ -42,12 +44,12 @@ func ParseOutputFilePath(outputFilePath string) (string, string) {
 	if strings.Contains(outputFilePath, "/") {
 		pathAndFile := strings.Split(outputFilePath, "/")
 		path = ""
+
 		for i := range len(pathAndFile) - 1 {
 			path = filepath.Join(path, pathAndFile[i])
 		}
 
 		filename = pathAndFile[len(pathAndFile)-1]
-
 	} else {
 		path = ""
 		filename = outputFilePath
@@ -77,6 +79,6 @@ func Charset(charset string, input io.Reader) (io.Reader, error) {
 	case "windows-1251":
 		return charmap.Windows1251.NewDecoder().Reader(input), nil
 	default:
-		return nil, errors.New("unknown charset")
+		return nil, ErrUnknownCharset
 	}
 }
