@@ -113,7 +113,7 @@ func main() {
 
 	finder := NewKthPreferenceFinder()
 
-	for i := range dishCount {
+	for i := 0; i < dishCount; i++ {
 		var rating int
 		_, err := fmt.Scan(&rating)
 
