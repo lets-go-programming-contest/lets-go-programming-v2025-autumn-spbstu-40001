@@ -15,6 +15,8 @@ type ComfortTemperature struct {
 	maxT int
 }
 
+var errorSign = errors.New("unacceptable sign")
+
 func (temperature *ComfortTemperature) CalculationTemperature(sign string, grade int) error {
 	switch sign {
 	case "<=":
@@ -22,8 +24,7 @@ func (temperature *ComfortTemperature) CalculationTemperature(sign string, grade
 	case ">=":
 		temperature.minT = max(temperature.minT, grade)
 	default:
-
-		return errors.New("Unacceptable sign")
+		return errorSign
 	}
 
 	return nil
@@ -81,7 +82,12 @@ func main() {
 				return
 			}
 
-			temperature.CalculationTemperature(sign, grade)
+			err = temperature.CalculationTemperature(sign, grade)
+			if err != nil {
+				fmt.Println("failed to calculate temperature:", err)
+
+				return
+			}
 			temperature.PrintComfortTemperature()
 		}
 	}
