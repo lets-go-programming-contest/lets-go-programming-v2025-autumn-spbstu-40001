@@ -26,7 +26,6 @@ func NewClimateController() *ClimateController {
 }
 
 func (cc *ClimateController) ApplyConstraint(operator string, value int) error {
-
 	switch operator {
 	case ">=":
 		if value > cc.lowerBound {
@@ -57,6 +56,7 @@ func main() {
 	_, err := fmt.Scanln(&departCount)
 	if err != nil {
 		fmt.Println("Error reading number of departments:", err)
+
 		return
 	}
 
@@ -66,6 +66,7 @@ func main() {
 		_, err := fmt.Scanln(&peopleCount)
 		if err != nil {
 			fmt.Println("Error reading number of people for department:", err)
+
 			return
 		}
 
@@ -80,14 +81,17 @@ func main() {
 			_, err := fmt.Scanf("%s %d\n", &operation, &needTemp)
 			if err != nil {
 				fmt.Println("Error reading operation or temperature:", err)
+
 				return
 			}
 
 			constraintErr := tempRange.ApplyConstraint(operation, needTemp)
 			if constraintErr != nil {
 				fmt.Println("Error applying constraint:", constraintErr)
+
 				return
 			}
+
 			fmt.Println(tempRange.FindComfortableTemperature())
 		}
 	}
