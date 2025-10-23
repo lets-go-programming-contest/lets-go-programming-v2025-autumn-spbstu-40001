@@ -6,6 +6,7 @@ import (
 
 	"github.com/Aapng-cmd/task-3/internal/files"
 	"github.com/Aapng-cmd/task-3/internal/models"
+	"github.com/Aapng-cmd/task-3/internal/sorts"
 )
 
 func main() {
@@ -31,6 +32,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	valCurs = sorts.SortDataByValue(valCurs)
 
 	err = files.WriteDataToJSON(valCurs, outputFile)
 	if err != nil {
