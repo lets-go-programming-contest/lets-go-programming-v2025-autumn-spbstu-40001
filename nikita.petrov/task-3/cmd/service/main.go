@@ -41,7 +41,7 @@ func main() {
 
 	inputFile, err := os.Open(files.InputFile)
 	if err != nil && os.IsNotExist(err) {
-		panic("input file does not exist")
+		panic(err)
 	}
 
 	XMLDecoder := xml.NewDecoder(inputFile)

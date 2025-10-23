@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"golang.org/x/text/encoding/charmap"
@@ -27,32 +28,35 @@ func GetConfigFile(configPathFlag *string) *os.File {
 func GetConfigData(configFile *os.File) []byte {
 	configData, err := io.ReadAll(configFile)
 	if err != nil {
-		panic("cannot read file")
+		panic(err)
 	}
 
 	return configData
 }
 
 func ParseOutputFilePath(outputFilePath string) (string, string) {
-	var dir string
+	var path string
 
 	var filename string
 
 	if strings.Contains(outputFilePath, "/") {
-		outputFilePath := strings.Split(outputFilePath, "/")
-		dir = outputFilePath[0]
-		filename = outputFilePath[1]
+		pathAndFile := strings.Split(outputFilePath, "/")
+		path = ""
+		for i := range len(pathAndFile) - 1 {
+			path = filepath.Join(path, pathAndFile[i])
+		}
+		filename = pathAndFile[len(pathAndFile)-1]
 	} else {
-		dir = ""
+		path = ""
 		filename = outputFilePath
 	}
 
-	return dir, filename
+	return path, filename
 }
 
-func MakeDirectory(dirName string) {
-	if dirName != "" {
-		os.Mkdir(dirName, 0777)
+func MakeDirectory(dirPath string) {
+	if dirPath != "" {
+		os.MkdirAll(dirPath, 0777)
 	}
 }
 
