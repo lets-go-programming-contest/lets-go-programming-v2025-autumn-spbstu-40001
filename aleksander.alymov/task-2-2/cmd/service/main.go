@@ -117,7 +117,6 @@ func main() {
 	for range dishCount {
 		var rating int
 		_, err := fmt.Scan(&rating)
-
 		if err != nil {
 			fmt.Printf("Error reading dish rating: %v\n", err)
 
