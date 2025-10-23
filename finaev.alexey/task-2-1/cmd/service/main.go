@@ -1,7 +1,13 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+)
+
+const (
+	minT = 15
+	maxT = 30
 )
 
 type ComfortTemperature struct {
@@ -9,23 +15,27 @@ type ComfortTemperature struct {
 	maxT int
 }
 
-func (temperature *ComfortTemperature) CalculationAndPrintTemperature(sign string, grade int) {
+func (temperature *ComfortTemperature) CalculationTemperature(sign string, grade int) error {
 	switch sign {
 	case "<=":
 		temperature.maxT = min(temperature.maxT, grade)
 	case ">=":
 		temperature.minT = max(temperature.minT, grade)
 	default:
-		fmt.Println("Unacceptable sign")
+
+		return errors.New("Unacceptable sign")
+	}
+
+	return nil
+}
+
+func (temperature *ComfortTemperature) PrintComfortTemperature() {
+	if temperature.minT > temperature.maxT {
+		fmt.Println(-1)
 
 		return
 	}
-
-	if temperature.minT > temperature.maxT {
-		fmt.Println(-1)
-	} else {
-		fmt.Println(temperature.minT)
-	}
+	fmt.Println(temperature.minT)
 }
 
 func main() {
@@ -41,7 +51,7 @@ func main() {
 	for range depart {
 		var (
 			emploees    int
-			temperature = ComfortTemperature{15, 30}
+			temperature = ComfortTemperature{minT, maxT}
 		)
 
 		_, err = fmt.Scan(&emploees)
@@ -71,7 +81,8 @@ func main() {
 				return
 			}
 
-			temperature.CalculationAndPrintTemperature(sign, grade)
+			temperature.CalculationTemperature(sign, grade)
+			temperature.PrintComfortTemperature()
 		}
 	}
 }
