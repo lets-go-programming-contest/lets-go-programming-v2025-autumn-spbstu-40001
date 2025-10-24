@@ -60,6 +60,7 @@ func ParseOutputFilePath(outputFilePath string) (string, string) {
 
 func MakeDirectory(dirPath string) {
 	if dirPath != "" {
+
 		err := os.MkdirAll(dirPath, 0777)
 		if err != nil {
 			panic(err)

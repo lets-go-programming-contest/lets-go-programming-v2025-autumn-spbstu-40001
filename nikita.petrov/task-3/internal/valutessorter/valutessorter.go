@@ -7,13 +7,13 @@ import (
 type ByValue currencyrate.CurrencyRate
 
 func (myCurrRate ByValue) Len() int {
-	return len(myCurrRate.Valute)
+	return len(myCurrRate.Valutes)
 }
 
 func (myCurrRate ByValue) Swap(i, j int) {
-	myCurrRate.Valute[i], myCurrRate.Valute[j] = myCurrRate.Valute[j], myCurrRate.Valute[i]
+	myCurrRate.Valutes[i], myCurrRate.Valutes[j] = myCurrRate.Valutes[j], myCurrRate.Valutes[i]
 }
 
 func (myCurrRate ByValue) Less(i, j int) bool {
-	return myCurrRate.Valute[i].Value > myCurrRate.Valute[j].Value
+	return myCurrRate.Valutes[i].Value > myCurrRate.Valutes[j].Value
 }
