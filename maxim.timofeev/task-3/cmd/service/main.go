@@ -23,6 +23,7 @@ func main() {
 
 	var valutes IOcurrency.ValCurs
 	valutes.ReadXML(config.InputFile)
+	valutes.Sort()
 
 	if err = IOcurrency.SaveJSON(config.OutputFile, valutes.Valutes); err != nil {
 		panic(err.Error())
