@@ -70,7 +70,7 @@ func SaveJSON(path string, data any) error {
 	enc.SetIndent("", "    ")
 
 	if err := enc.Encode(data); err != nil {
-		return fmt.Errorf("failed to encode JSON %s: %w", err)
+		return fmt.Errorf("failed to encode JSON %s: ", err)
 	}
 
 	return nil
