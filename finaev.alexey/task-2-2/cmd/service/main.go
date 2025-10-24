@@ -12,10 +12,18 @@ func (a *MaxHeap) Len() int {
 }
 
 func (a *MaxHeap) Less(i, j int) bool {
+	if i >= a.Len() || j >= a.Len() {
+		panic("index out of range")
+	}
+
 	return (*a)[i] > (*a)[j]
 }
 
 func (a *MaxHeap) Swap(i, j int) {
+	if i >= a.Len() || j >= a.Len() {
+		panic("index out of range")
+	}
+
 	(*a)[i], (*a)[j] = (*a)[j], (*a)[i]
 }
 
@@ -29,6 +37,10 @@ func (a *MaxHeap) Push(x any) {
 }
 
 func (a *MaxHeap) Pop() any {
+	if a.Len() == 0 {
+		return nil
+	}
+
 	old := *a
 	n := len(old)
 	x := old[n-1]
@@ -48,7 +60,7 @@ func main() {
 
 	_, err := fmt.Scan(&numberDishes)
 	if err != nil {
-		fmt.Println("Invalid input:", err)
+		fmt.Println("Invalid number of dish input :", err)
 
 		return
 	}
@@ -61,7 +73,7 @@ func main() {
 
 		_, err = fmt.Scan(&preference)
 		if err != nil {
-			fmt.Println("Invalid input:", err)
+			fmt.Println("Invalid preference array input:", err)
 
 			return
 		}
@@ -73,7 +85,7 @@ func main() {
 
 	_, err = fmt.Scan(&dishCount)
 	if err != nil {
-		fmt.Println("Invalid input:", err)
+		fmt.Println("Invalid preference dish number input:", err)
 
 		return
 	}
@@ -88,5 +100,12 @@ func main() {
 		heap.Pop(preferences)
 	}
 
-	fmt.Println(heap.Pop(preferences))
+	result := heap.Pop(preferences)
+	if result == nil {
+		fmt.Println("Preference dish is missing")
+
+		return
+	}
+
+	fmt.Println(result)
 }
