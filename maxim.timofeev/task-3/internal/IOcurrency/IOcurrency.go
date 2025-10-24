@@ -15,16 +15,10 @@ import (
 type ValCurs struct {
 	XMLName xml.Name `xml:"ValCurs"`
 	Valutes []struct {
-		NumCode  int    `xml:"NumCode"`
-		CharCode string `xml:"CharCode"`
-		ValueStr string `xml:"Value"`
+		NumCode  int    `xml:"NumCode" json:"num_code"`
+		CharCode string `xml:"CharCode" json:"char_code"`
+		ValueStr string `xml:"Value" json:"value"`
 	} `xml:"Valute"`
-}
-
-type ValuteJSON struct {
-	NumCode  int     `json:"num_code"`
-	CharCode string  `json:"char_code"`
-	Value    float64 `json:"value"`
 }
 
 func (v *ValCurs) ReadXML(path string) {
