@@ -3,23 +3,22 @@ package IOcurrency
 import (
 	"encoding/json"
 	"encoding/xml"
-	"fmt"
 	"io"
 	"os"
+	"path/filepath"
+	"sort"
 	"strings"
 
 	"golang.org/x/text/encoding/charmap"
 )
 
 type ValCurs struct {
-	XMLName xml.Name    `xml:"ValCurs"`
-	Valutes []ValuteXML `xml:"Valute"`
-}
-
-type ValuteXML struct {
-	NumCode  int    `xml:"NumCode"`
-	CharCode string `xml:"CharCode"`
-	ValueStr string `xml:"Value"`
+	XMLName xml.Name `xml:"ValCurs"`
+	Valutes []struct {
+		NumCode  int    `xml:"NumCode"`
+		CharCode string `xml:"CharCode"`
+		ValueStr string `xml:"Value"`
+	} `xml:"Valute"`
 }
 
 type ValuteJSON struct {
@@ -28,10 +27,10 @@ type ValuteJSON struct {
 	Value    float64 `json:"value"`
 }
 
-func LoadXML(path string) ([]ValuteJSON, error) {
+func (v *ValCurs) ReadXML(path string) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 	defer file.Close()
 
@@ -45,31 +44,19 @@ func LoadXML(path string) ([]ValuteJSON, error) {
 		return input, nil
 	}
 
-	var curs ValCurs
-	if err := decoder.Decode(&curs); err != nil {
-		return nil, err
+	if err := decoder.Decode(&v); err != nil {
+		panic(err)
 	}
-
-	valutes := make([]ValuteJSON, 0, len(curs.Valutes))
-	for _, v := range curs.Valutes {
-		valueStr := strings.Replace(v.ValueStr, ",", ".", 1)
-
-		var value float64
-		if _, err := fmt.Sscanf(valueStr, "%f", &value); err != nil {
-			return nil, fmt.Errorf("failed to parse value %s: %v", v.ValueStr, err)
-		}
-
-		valutes = append(valutes, ValuteJSON{
-			NumCode:  v.NumCode,
-			CharCode: v.CharCode,
-			Value:    value,
-		})
-	}
-	return valutes, nil
 }
 
-func SaveJSON(path string, data []ValuteJSON) error {
-	if err := os.MkdirAll(dir(path), 0755); err != nil {
+func (v *ValCurs) Sort() {
+	sort.Slice(v.Valutes, func(i, j int) bool {
+		return v.Valutes[i].ValueStr > v.Valutes[j].ValueStr
+	})
+}
+
+func SaveJSON(path string, data any) error {
+	if err := os.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
 		return err
 	}
 
@@ -82,14 +69,4 @@ func SaveJSON(path string, data []ValuteJSON) error {
 	enc := json.NewEncoder(file)
 	enc.SetIndent("", "    ")
 	return enc.Encode(data)
-}
-
-func dir(path string) string {
-	if i := len(path) - 1; i >= 0 {
-		for i >= 0 && path[i] != '/' && path[i] != '\\' {
-			i--
-		}
-		return path[:i]
-	}
-	return ""
 }
