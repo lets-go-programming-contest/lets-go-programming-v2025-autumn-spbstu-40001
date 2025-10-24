@@ -1,6 +1,7 @@
 package IOcurrency
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"io"
@@ -15,20 +16,19 @@ import (
 type ValCurs struct {
 	XMLName xml.Name `xml:"ValCurs"`
 	Valutes []struct {
-		NumCode  int    `xml:"NumCode" json:"num_code"`
-		CharCode string `xml:"CharCode" json:"char_code"`
-		ValueStr string `xml:"Value" json:"value"`
+		NumCode  int     `xml:"NumCode" json:"num_code"`
+		CharCode string  `xml:"CharCode" json:"char_code"`
+		ValueStr float64 `xml:"Value" json:"value"`
 	} `xml:"Valute"`
 }
 
 func (v *ValCurs) ReadXML(path string) {
-	file, err := os.Open(path)
+	file, err := os.ReadFile(path)
 	if err != nil {
 		panic(err)
 	}
-	defer file.Close()
 
-	decoder := xml.NewDecoder(file)
+	decoder := xml.NewDecoder(bytes.NewReader(bytes.ReplaceAll(file, []byte(","), []byte("."))))
 
 	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
 		if strings.ToLower(charset) == "windows-1251" {
