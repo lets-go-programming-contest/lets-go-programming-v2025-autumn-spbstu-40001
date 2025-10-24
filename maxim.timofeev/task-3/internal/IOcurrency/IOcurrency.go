@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -16,9 +17,9 @@ import (
 type ValCurs struct {
 	XMLName xml.Name `xml:"ValCurs"`
 	Valutes []struct {
-		NumCode  int     `xml:"NumCode" json:"num_code"`
-		CharCode string  `xml:"CharCode" json:"char_code"`
-		ValueStr float64 `xml:"Value" json:"value"`
+		NumCode  int     `json:"num_code" xml:"NumCode"`
+		CharCode string  `json:"char_code" xml:"CharCode"`
+		ValueStr float64 `json:"value" xml:"Value"`
 	} `xml:"Valute"`
 }
 
@@ -51,16 +52,20 @@ func (v *ValCurs) Sort() {
 
 func SaveJSON(path string, data any) error {
 	if err := os.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
-		return err
+		return fmt.Errorf("failed to create directory for %s: %w", path, err)
 	}
 
 	file, err := os.Create(path)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create file %s: %w", path, err)
 	}
-	defer file.Close()
-
+	defer func() {
+		if err := file.Close(); err != nil {
+			panic(err)
+		}
+	}()
 	enc := json.NewEncoder(file)
 	enc.SetIndent("", "    ")
+
 	return enc.Encode(data)
 }
