@@ -11,6 +11,8 @@ import (
 	"golang.org/x/text/encoding/charmap"
 )
 
+const AccessMask = 0o777
+
 var ErrUnknownCharset error = errors.New("unknown charset")
 
 type Config struct {
@@ -60,8 +62,7 @@ func ParseOutputFilePath(outputFilePath string) (string, string) {
 
 func MakeDirectory(dirPath string) {
 	if dirPath != "" {
-
-		err := os.MkdirAll(dirPath, 0777)
+		err := os.MkdirAll(dirPath, 0o777)
 		if err != nil {
 			panic(err)
 		}
@@ -69,7 +70,7 @@ func MakeDirectory(dirPath string) {
 }
 
 func CreateFile(dirName string, fileName string) {
-	_, errCreateFile := os.OpenFile(path.Join(dirName, fileName), os.O_APPEND|os.O_CREATE|os.O_RDWR, 0777)
+	_, errCreateFile := os.OpenFile(path.Join(dirName, fileName), os.O_APPEND|os.O_CREATE|os.O_RDWR, AccessMask)
 	if errCreateFile != nil {
 		panic(errCreateFile)
 	}

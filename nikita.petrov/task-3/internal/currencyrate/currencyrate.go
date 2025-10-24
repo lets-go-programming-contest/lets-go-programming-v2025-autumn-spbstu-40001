@@ -9,7 +9,7 @@ import (
 type floatWithDots float64
 
 type CurrencyRate struct {
-	Valutes []*singleValute `json:"valute"   xml:"Valute" `
+	Valutes []*singleValute `json:"valute" xml:"Valute" `
 }
 
 type singleValute struct {
