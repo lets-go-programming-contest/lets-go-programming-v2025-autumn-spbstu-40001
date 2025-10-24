@@ -15,14 +15,16 @@ type Config struct {
 func ReadConfig(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read config file: %w", err.Error())
+		fmt.Errorf("failed to read config file: %w", err.Error())
+		return nil, err
 	}
 
 	var config Config
 
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse YAML: %w", err.Error())
+		fmt.Errorf("failed to parse YAML: %w", err.Error())
+		return nil, err
 	}
 
 	return &config, nil
