@@ -9,11 +9,13 @@ import (
 type floatWithDots float64
 
 type CurrencyRate struct {
-	Valute []struct {
-		NumCode  int           `xml:"NumCode"  json:"num_code"`
-		CharCode string        `xml:"CharCode" json:"char_code"`
-		Value    floatWithDots `xml:"Value"    json:"value"`
-	}
+	Valutes []*singleValute `json:"valute"   xml:"Valute" `
+}
+
+type singleValute struct {
+	NumCode  int           `json:"num_code"  xml:"NumCode"`
+	CharCode string        `json:"char_code" xml:"CharCode"`
+	Value    floatWithDots `json:"value"     xml:"Value"`
 }
 
 func (fd *floatWithDots) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {

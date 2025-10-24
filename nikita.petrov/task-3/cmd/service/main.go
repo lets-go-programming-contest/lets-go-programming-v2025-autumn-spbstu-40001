@@ -12,7 +12,6 @@ import (
 	"github.com/Nekich06/task-3/internal/currencyrate"
 	"github.com/Nekich06/task-3/internal/fmanager"
 	"github.com/Nekich06/task-3/internal/valutessorter"
-
 	"gopkg.in/yaml.v3"
 )
 
@@ -62,7 +61,7 @@ func main() {
 
 	JSONEncoder := json.NewEncoder(outputFile)
 	JSONEncoder.SetIndent("", "\t")
-	err = JSONEncoder.Encode(&CBCurrencyRate.Valute)
+	err = JSONEncoder.Encode(&CBCurrencyRate.Valutes)
 
 	if err != nil {
 		panic(err)
