@@ -23,7 +23,7 @@ const (
 )
 
 func main() {
-	var configPathFlag *string = flag.String(ConfigName, ConfigFile, ConfigInfo)
+	configPathFlag := flag.String(ConfigName, ConfigFile, ConfigInfo)
 
 	flag.Parse()
 
@@ -31,7 +31,7 @@ func main() {
 	configData := fmanager.GetConfigData(configFile)
 
 	var files fmanager.Config
-	
+
 	err := yaml.Unmarshal(configData, &files)
 	if err != nil {
 		panic(err)
@@ -68,6 +68,7 @@ func main() {
 
 	JSONEncoder := json.NewEncoder(outputFile)
 	JSONEncoder.SetIndent("", "\t")
+	
 	err = JSONEncoder.Encode(&CBCurrencyRate.Valutes)
 	if err != nil {
 		panic(err)
