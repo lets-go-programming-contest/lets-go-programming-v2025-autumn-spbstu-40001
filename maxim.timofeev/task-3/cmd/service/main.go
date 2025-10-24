@@ -33,9 +33,7 @@ func main() {
 		return valutes[i].Value > valutes[j].Value
 	})
 
-	err = IOcurrency.SaveJSON(config.OutputFile, valutes)
-
-	if err != nil {
+	if err = IOcurrency.SaveJSON(config.OutputFile, valutes); err != nil {
 		panic(fmt.Errorf("failed to read JSON: %v", err))
 	}
 }
