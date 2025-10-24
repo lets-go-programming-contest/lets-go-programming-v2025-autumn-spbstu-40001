@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 
-	"github.com/PigoDog/task-3/internal/IOcurrency"
 	"github.com/PigoDog/task-3/internal/config"
+	"github.com/PigoDog/task-3/internal/iocurrency"
 )
 
 func main() {
@@ -20,12 +20,12 @@ func main() {
 		panic(err.Error())
 	}
 
-	var valutes IOcurrency.ValCurs
+	var valutes iocurrency.ValCurs
 
 	valutes.ReadXML(config.InputFile)
 	valutes.Sort()
 
-	if err = IOcurrency.SaveJSON(config.OutputFile, valutes.Valutes); err != nil {
+	if err = iocurrency.SaveJSON(config.OutputFile, valutes.Valutes); err != nil {
 		panic(err.Error())
 	}
 }
