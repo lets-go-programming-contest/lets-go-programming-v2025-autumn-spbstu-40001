@@ -1,4 +1,4 @@
-package IOcurrency
+package iocurrency
 
 import (
 	"bytes"
@@ -17,9 +17,9 @@ import (
 type ValCurs struct {
 	XMLName xml.Name `xml:"ValCurs"`
 	Valutes []struct {
-		NumCode  int     `json:"num_code" xml:"NumCode"`
+		NumCode  int     `json:"num_code"  xml:"NumCode"`
 		CharCode string  `json:"char_code" xml:"CharCode"`
-		ValueStr float64 `json:"value" xml:"Value"`
+		ValueStr float64 `json:"value"     xml:"Value"`
 	} `xml:"Valute"`
 }
 
@@ -59,13 +59,19 @@ func SaveJSON(path string, data any) error {
 	if err != nil {
 		return fmt.Errorf("failed to create file %s: %w", path, err)
 	}
+
 	defer func() {
 		if err := file.Close(); err != nil {
 			panic(err)
 		}
 	}()
+
 	enc := json.NewEncoder(file)
 	enc.SetIndent("", "    ")
 
-	return enc.Encode(data)
+	if err := enc.Encode(data); err != nil {
+		return fmt.Errorf("failed to encode JSON %s: %w", err)
+	}
+
+	return nil
 }
