@@ -22,6 +22,7 @@ type Config struct {
 
 func GetConfigFile(configPathFlag *string) *os.File {
 	configFile, err := os.Open(*configPathFlag)
+
 	if err != nil && os.IsNotExist(err) {
 		panic(err)
 	}

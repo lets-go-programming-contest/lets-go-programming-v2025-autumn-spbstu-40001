@@ -19,10 +19,11 @@ const (
 	ConfigName = "config"
 	ConfigFile = "config.yaml"
 	ConfigInfo = "path to config file"
+	AccessMask = 0o777
 )
 
 func main() {
-	var configPathFlag = flag.String(ConfigName, ConfigFile, ConfigInfo)
+	var configPathFlag *string = flag.String(ConfigName, ConfigFile, ConfigInfo)
 
 	flag.Parse()
 
@@ -30,6 +31,7 @@ func main() {
 	configData := fmanager.GetConfigData(configFile)
 
 	var files fmanager.Config
+	
 	err := yaml.Unmarshal(configData, &files)
 	if err != nil {
 		panic(err)
@@ -59,7 +61,7 @@ func main() {
 
 	sort.Sort(valutessorter.ByValue(CBCurrencyRate))
 
-	outputFile, err := os.OpenFile(path.Join(dir, filename), os.O_WRONLY, 0777)
+	outputFile, err := os.OpenFile(path.Join(dir, filename), os.O_WRONLY, AccessMask)
 	if err != nil {
 		panic(err)
 	}
@@ -67,7 +69,6 @@ func main() {
 	JSONEncoder := json.NewEncoder(outputFile)
 	JSONEncoder.SetIndent("", "\t")
 	err = JSONEncoder.Encode(&CBCurrencyRate.Valutes)
-
 	if err != nil {
 		panic(err)
 	}
