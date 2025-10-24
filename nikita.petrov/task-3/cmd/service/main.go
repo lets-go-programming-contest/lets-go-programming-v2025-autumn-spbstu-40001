@@ -68,7 +68,7 @@ func main() {
 
 	JSONEncoder := json.NewEncoder(outputFile)
 	JSONEncoder.SetIndent("", "\t")
-	
+
 	err = JSONEncoder.Encode(&CBCurrencyRate.Valutes)
 	if err != nil {
 		panic(err)
