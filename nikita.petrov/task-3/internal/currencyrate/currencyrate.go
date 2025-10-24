@@ -20,6 +20,7 @@ type singleValute struct {
 
 func (fd *floatWithDots) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	var content string
+	
 	err := d.DecodeElement(&content, &start)
 	if err != nil {
 		panic(err)
