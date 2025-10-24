@@ -15,8 +15,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const (
+	ConfigName = "config"
+	ConfigFile = "config.yaml"
+	ConfigInfo = "path to config file"
+)
+
 func main() {
-	var configPathFlag = flag.String("config", "config.yaml", "path to config file")
+	var configPathFlag = flag.String(ConfigName, ConfigFile, ConfigInfo)
 
 	flag.Parse()
 
@@ -25,7 +31,6 @@ func main() {
 
 	var files fmanager.Config
 	err := yaml.Unmarshal(configData, &files)
-
 	if err != nil {
 		panic(err)
 	}

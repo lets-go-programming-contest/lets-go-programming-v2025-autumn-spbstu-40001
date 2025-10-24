@@ -9,7 +9,7 @@ import (
 type floatWithDots float64
 
 type CurrencyRate struct {
-	Valutes []*singleValute `json:"valute" xml:"Valute" `
+	Valutes []*singleValute `json:"valute" xml:"Valute"`
 }
 
 type singleValute struct {
@@ -21,7 +21,6 @@ type singleValute struct {
 func (fd *floatWithDots) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	var content string
 	err := d.DecodeElement(&content, &start)
-
 	if err != nil {
 		panic(err)
 	}
