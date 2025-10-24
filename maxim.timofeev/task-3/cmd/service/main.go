@@ -16,12 +16,12 @@ func main() {
 	}
 
 	config, err := config.ReadConfig(*configPath)
-
 	if err != nil {
 		panic(err.Error())
 	}
 
 	var valutes IOcurrency.ValCurs
+
 	valutes.ReadXML(config.InputFile)
 	valutes.Sort()
 
