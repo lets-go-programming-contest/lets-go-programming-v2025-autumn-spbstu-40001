@@ -27,6 +27,7 @@ func main() {
 
 			return
 		}
+
 		heap.Push(heapOfRatings, current)
 	}
 
