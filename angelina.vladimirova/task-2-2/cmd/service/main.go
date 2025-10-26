@@ -49,34 +49,43 @@ func (h *MaxHeap) Pop() interface{} {
 	return x
 }
 
-func readInput() (int, []int, int, error) {
+func readCount() (int, error) {
 	var count int
 
 	_, err := fmt.Scan(&count)
 	if err != nil {
-		return 0, nil, 0, fmt.Errorf("read count: %w", err)
+		return 0, fmt.Errorf("read count: %w", err)
 	}
 
 	if count <= 0 {
-		return 0, nil, 0, fmt.Errorf("%w: %d", ErrInvalidCount, count)
+		return 0, fmt.Errorf("%w: %d", ErrInvalidCount, count)
 	}
 
+	return count, nil
+}
+
+func readRatings(count int) ([]int, error) {
 	ratings := make([]int, count)
+
 	for index := range ratings {
 		_, err := fmt.Scan(&ratings[index])
 		if err != nil {
-			return 0, nil, 0, fmt.Errorf("read rating: %w", err)
+			return nil, fmt.Errorf("read rating: %w", err)
 		}
 	}
 
+	return ratings, nil
+}
+
+func readPositionK() (int, error) {
 	var positionK int
 
-	_, err = fmt.Scan(&positionK)
+	_, err := fmt.Scan(&positionK)
 	if err != nil {
-		return 0, nil, 0, fmt.Errorf("read k: %w", err)
+		return 0, fmt.Errorf("read k: %w", err)
 	}
 
-	return count, ratings, positionK, nil
+	return positionK, nil
 }
 
 func findKthLargest(ratings []int, positionK int) (int, error) {
@@ -110,7 +119,21 @@ func main() {
 		}
 	}()
 
-	count, ratings, positionK, err := readInput()
+	count, err := readCount()
+	if err != nil {
+		fmt.Printf("Invalid input: %v\n", err)
+
+		return
+	}
+
+	ratings, err := readRatings(count)
+	if err != nil {
+		fmt.Printf("Invalid input: %v\n", err)
+
+		return
+	}
+
+	positionK, err := readPositionK()
 	if err != nil {
 		fmt.Printf("Invalid input: %v\n", err)
 
