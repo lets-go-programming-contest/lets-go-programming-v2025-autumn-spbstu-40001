@@ -27,7 +27,6 @@ func main() {
 
 			return
 		}
-
 		heap.Push(heapOfRatings, current)
 	}
 
@@ -46,17 +45,15 @@ func main() {
 		return
 	}
 
-	var value any
-
-	for range sequenceNumber {
-		value = heap.Pop(heapOfRatings)
-	}
-
-	if lastValue, ok := value.(int); !ok {
-		fmt.Println("failed to cast last value")
+	if heapOfRatings.Len() == 0 {
+		fmt.Println("there is no dishes")
 
 		return
-	} else {
-		fmt.Println(lastValue)
 	}
+
+	for range sequenceNumber - 1 {
+		heap.Pop(heapOfRatings)
+	}
+
+	fmt.Println(heap.Pop(heapOfRatings))
 }
