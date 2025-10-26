@@ -7,10 +7,11 @@ import (
 )
 
 var (
-	ErrInvalidCount   = errors.New("invalid count")
-	ErrEmptyRatings   = errors.New("empty ratings")
-	ErrHeapEmpty      = errors.New("heap is empty")
-	ErrUnexpectedType = errors.New("unexpected type from heap")
+	ErrInvalidCount    = errors.New("invalid count")
+	ErrEmptyRatings    = errors.New("empty ratings")
+	ErrHeapEmpty       = errors.New("heap is empty")
+	ErrUnexpectedType  = errors.New("unexpected type from heap")
+	ErrIndexOutOfRange = errors.New("index out of range")
 )
 
 type MaxHeap []int
@@ -20,10 +21,18 @@ func (h *MaxHeap) Len() int {
 }
 
 func (h *MaxHeap) Less(i, j int) bool {
+	if i < 0 || i >= h.Len() || j < 0 || j >= h.Len() {
+		panic(ErrIndexOutOfRange)
+	}
+
 	return (*h)[i] > (*h)[j]
 }
 
 func (h *MaxHeap) Swap(i, j int) {
+	if i < 0 || i >= h.Len() || j < 0 || j >= h.Len() {
+		panic(ErrIndexOutOfRange)
+	}
+
 	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
 }
 
@@ -38,7 +47,7 @@ func (h *MaxHeap) Push(x interface{}) {
 
 func (h *MaxHeap) Pop() interface{} {
 	if h.Len() == 0 {
-		return nil
+		panic(ErrHeapEmpty)
 	}
 
 	old := *h
@@ -93,47 +102,33 @@ func findKthLargest(ratings []int, positionK int) (int, error) {
 		return 0, ErrEmptyRatings
 	}
 
-	maxHeap := MaxHeap(ratings)
-	heap.Init(&maxHeap)
+	maxHeap := &MaxHeap{}
+	heap.Init(maxHeap)
+
+	for _, rating := range ratings {
+		heap.Push(maxHeap, rating)
+	}
 
 	if positionK > maxHeap.Len() {
 		return 0, ErrHeapEmpty
 	}
 
 	for range positionK - 1 {
-		heap.Pop(&maxHeap)
+		heap.Pop(maxHeap)
 	}
 
-	result := heap.Pop(&maxHeap)
-	if result == nil {
-		return 0, ErrHeapEmpty
-	}
-
+	result := heap.Pop(maxHeap)
 	return result.(int), nil
 }
 
 func main() {
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Println("Error:", r)
+			fmt.Printf("Error: %v\n", r)
 		}
 	}()
 
-	count, err := readCount()
-	if err != nil {
-		fmt.Printf("Invalid input: %v\n", err)
-
-		return
-	}
-
-	ratings, err := readRatings(count)
-	if err != nil {
-		fmt.Printf("Invalid input: %v\n", err)
-
-		return
-	}
-
-	positionK, err := readPositionK()
+	count, ratings, positionK, err := readInput()
 	if err != nil {
 		fmt.Printf("Invalid input: %v\n", err)
 
@@ -154,4 +149,23 @@ func main() {
 	}
 
 	fmt.Println(result)
+}
+
+func readInput() (int, []int, int, error) {
+	count, err := readCount()
+	if err != nil {
+		return 0, nil, 0, err
+	}
+
+	ratings, err := readRatings(count)
+	if err != nil {
+		return 0, nil, 0, err
+	}
+
+	positionK, err := readPositionK()
+	if err != nil {
+		return 0, nil, 0, err
+	}
+
+	return count, ratings, positionK, nil
 }
