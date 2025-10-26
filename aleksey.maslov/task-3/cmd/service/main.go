@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
@@ -28,4 +29,28 @@ func readConfig(configPath string) (*Config, error) {
 	return &config, nil
 }
 
-func main() {}
+func parseXML(path string) (//data, error) {}
+
+func saveJSON(path string, //data) error {}
+
+
+
+func main() {
+	configPath := flag.String("config", "config.yaml", "path to config")
+	flag.Parse()
+
+	config, err := readConfig(*configPath)
+	if err != nil {
+		panic(err)
+	}
+
+	data, err = parseXML(config.InputFile)
+	if err != nil {
+		panic(err)
+	}
+//sort
+	err = saveJSON(config.OutputFile, //data)
+	if err != nil {
+		panic(err)
+	}
+}
