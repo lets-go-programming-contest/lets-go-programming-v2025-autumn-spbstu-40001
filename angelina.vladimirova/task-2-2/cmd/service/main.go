@@ -103,7 +103,7 @@ func findKthLargest(ratings []int, positionK int) (int, error) {
 		return 0, ErrHeapEmpty
 	}
 
-	for i := 0; i < positionK-1; i++ {
+	for range positionK - 1 {
 		heap.Pop(maxHeap)
 	}
 
@@ -112,7 +112,12 @@ func findKthLargest(ratings []int, positionK int) (int, error) {
 		return 0, ErrHeapEmpty
 	}
 
-	return result.(int), nil
+	intResult, ok := result.(int)
+	if !ok {
+		return 0, ErrUnexpectedType
+	}
+
+	return intResult, nil
 }
 
 func main() {
