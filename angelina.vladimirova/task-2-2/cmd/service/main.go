@@ -20,25 +20,17 @@ func (h *MaxHeap) Len() int {
 }
 
 func (h *MaxHeap) Less(i, j int) bool {
-	if i < 0 || i >= h.Len() || j < 0 || j >= h.Len() {
-		panic("index out of range")
-	}
-
 	return (*h)[i] > (*h)[j]
 }
 
 func (h *MaxHeap) Swap(i, j int) {
-	if i < 0 || i >= h.Len() || j < 0 || j >= h.Len() {
-		panic("index out of range")
-	}
-
 	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
 }
 
 func (h *MaxHeap) Push(x interface{}) {
 	value, ok := x.(int)
 	if !ok {
-		panic("value is not an int")
+		panic(ErrUnexpectedType)
 	}
 
 	*h = append(*h, value)
@@ -92,32 +84,23 @@ func findKthLargest(ratings []int, positionK int) (int, error) {
 		return 0, ErrEmptyRatings
 	}
 
-	maxHeap := &MaxHeap{}
-	heap.Init(maxHeap)
-
-	for _, rating := range ratings {
-		heap.Push(maxHeap, rating)
-	}
+	maxHeap := MaxHeap(ratings)
+	heap.Init(&maxHeap)
 
 	if positionK > maxHeap.Len() {
 		return 0, ErrHeapEmpty
 	}
 
 	for range positionK - 1 {
-		heap.Pop(maxHeap)
+		heap.Pop(&maxHeap)
 	}
 
-	result := heap.Pop(maxHeap)
+	result := heap.Pop(&maxHeap)
 	if result == nil {
 		return 0, ErrHeapEmpty
 	}
 
-	intResult, ok := result.(int)
-	if !ok {
-		return 0, ErrUnexpectedType
-	}
-
-	return intResult, nil
+	return result.(int), nil
 }
 
 func main() {
