@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	configPath := flag.String("config", "example/yamlfile.yaml", "Path to yaml file")
+	configPath := flag.String("config", "example/config.yaml", "Path to yaml file")
 	flag.Parse()
 
 	config := new(config.Config)
