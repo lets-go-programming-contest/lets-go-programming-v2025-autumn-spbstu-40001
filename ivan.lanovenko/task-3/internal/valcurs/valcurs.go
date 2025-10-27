@@ -29,8 +29,8 @@ func (f *FloatWithComma) UnmarshalXML(d *xml.Decoder, start xml.StartElement) er
 	}
 
 	valueStr = strings.ReplaceAll(strings.TrimSpace(valueStr), ",", ".")
-	val, err := strconv.ParseFloat(valueStr, 64)
 
+	val, err := strconv.ParseFloat(valueStr, 64)
 	if err != nil {
 		return fmt.Errorf("parse float %q: %w", valueStr, err)
 	}
