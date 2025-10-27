@@ -6,14 +6,14 @@ import (
 	"path/filepath"
 )
 
-func SaveToJSON(data any, filePath string) {
+func SaveToJSON(data any, filePath string) error {
 	if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
-		panic(err)
+		return err
 	}
 
 	outputFile, err := os.Create(filePath)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	defer func() {
@@ -25,7 +25,5 @@ func SaveToJSON(data any, filePath string) {
 	encoder := json.NewEncoder(outputFile)
 	encoder.SetIndent("", "  ")
 
-	if err := encoder.Encode(data); err != nil {
-		panic(err)
-	}
+	return encoder.Encode(data)
 }
