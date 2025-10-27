@@ -11,6 +11,8 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
+type FloatWithComma float64
+
 type ValCurs struct {
 	Valutes []struct {
 		NumCode  int            `json:"num_code"  xml:"NumCode"`
@@ -18,8 +20,6 @@ type ValCurs struct {
 		Value    FloatWithComma `json:"value"     xml:"Value"`
 	} `xml:"Valute"`
 }
-
-type FloatWithComma float64
 
 func (f *FloatWithComma) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	valueStr := ""
@@ -30,6 +30,7 @@ func (f *FloatWithComma) UnmarshalXML(d *xml.Decoder, start xml.StartElement) er
 
 	valueStr = strings.ReplaceAll(strings.TrimSpace(valueStr), ",", ".")
 	val, err := strconv.ParseFloat(valueStr, 64)
+
 	if err != nil {
 		return err
 	}
@@ -38,14 +39,13 @@ func (f *FloatWithComma) UnmarshalXML(d *xml.Decoder, start xml.StartElement) er
 	return nil
 }
 
-func (v *ValCurs) ParseXML(data []byte) {
+func (v *ValCurs) ParseXML(data []byte) error {
 	decoder := xml.NewDecoder(bytes.NewReader(data))
 	decoder.CharsetReader = func(charSet string, input io.Reader) (io.Reader, error) {
 		return charset.NewReader(input, charSet)
 	}
-	if err := decoder.Decode(v); err != nil {
-		panic(err)
-	}
+
+	return decoder.Decode(v)
 }
 
 func (v *ValCurs) SortByValueDown() {
