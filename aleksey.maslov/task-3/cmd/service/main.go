@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -40,7 +41,7 @@ func (cv *CurrencyValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) er
 
 	value, err := strconv.ParseFloat(str, 64)
 	if err != nil {
-		return fmt.Errorf("failed to parse currency value '%s': %w", str, err)
+		return fmt.Errorf("failed to parse currency value: %w", err)
 	}
 
 	*cv = CurrencyValue(value)
@@ -78,7 +79,15 @@ func parseXML(path string) ([]Valute, error) {
 	return valCurs.Valutes, nil
 }
 
-func saveJSON(path string, valutes []Valute) error {}
+func sortByValue(valutes []Valute) {
+	sort.Slice(valutes, func(i, j int) bool {
+		return valutes[i].Value > valutes[j].Value
+	})
+}
+
+func saveJSON(path string, valutes []Valute) error {
+	return nil
+}
 
 func main() {
 	configPath := flag.String("config", "configs/config.yaml", "path to config file")
@@ -93,7 +102,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	//sort
+
+	sortByValue(valutes)
+
 	err = saveJSON(config.OutputFile, valutes)
 	if err != nil {
 		panic(err)
