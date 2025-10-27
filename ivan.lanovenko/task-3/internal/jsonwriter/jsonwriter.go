@@ -2,18 +2,19 @@ package jsonwriter
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 )
 
 func SaveToJSON(data any, filePath string) error {
 	if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
-		return err
+		return fmt.Errorf("create directory: %w", err)
 	}
 
 	outputFile, err := os.Create(filePath)
 	if err != nil {
-		return err
+		return fmt.Errorf("create file: %w", err)
 	}
 
 	defer func() {
@@ -25,5 +26,9 @@ func SaveToJSON(data any, filePath string) error {
 	encoder := json.NewEncoder(outputFile)
 	encoder.SetIndent("", "  ")
 
-	return encoder.Encode(data)
+	if err := encoder.Encode(data); err != nil {
+		return fmt.Errorf("encode JSON: %w", err)
+	}
+
+	return nil
 }

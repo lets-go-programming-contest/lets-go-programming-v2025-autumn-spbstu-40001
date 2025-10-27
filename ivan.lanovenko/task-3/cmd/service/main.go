@@ -10,11 +10,14 @@ import (
 )
 
 func main() {
-	configPath := flag.String("config", "...example/yamlfile.yaml", "Path to yaml file")
+	configPath := flag.String("config", "example/yamlfile.yaml", "Path to yaml file")
 	flag.Parse()
 
 	config := new(config.Config)
-	config.LoadFromFile(*configPath)
+
+	if err := config.LoadFromFile(*configPath); err != nil {
+		panic(err)
+	}
 
 	inputFile, err := os.ReadFile(config.InputFilePath)
 	if err != nil {
