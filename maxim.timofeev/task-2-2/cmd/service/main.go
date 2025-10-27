@@ -45,5 +45,6 @@ func main() {
 
 		return
 	}
+
 	fmt.Println(todayDish)
 }
