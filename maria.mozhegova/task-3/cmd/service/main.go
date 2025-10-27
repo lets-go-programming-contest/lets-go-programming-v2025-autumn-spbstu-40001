@@ -27,7 +27,7 @@ func main() {
 
 	valCurs.SortByValueDesc()
 
-	err = json.WriteToJSON(valCurs, config.OutputFile)
+	err = json.WriteToJSON(valCurs.Valutes, config.OutputFile)
 	if err != nil {
 		panic(err)
 	}
