@@ -40,5 +40,10 @@ func main() {
 
 	todayDish := heap.Pop(currentHeap)
 
+	if todayDish == nil {
+		fmt.Println("no dish")
+
+		return
+	}
 	fmt.Println(todayDish)
 }
