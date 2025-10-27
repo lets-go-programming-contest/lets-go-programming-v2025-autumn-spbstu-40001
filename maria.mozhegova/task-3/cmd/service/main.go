@@ -5,29 +5,29 @@ import (
 
 	"github.com/mipxe/task-3/internal/config"
 	"github.com/mipxe/task-3/internal/currency"
+	"github.com/mipxe/task-3/internal/json"
+	"github.com/mipxe/task-3/internal/xml"
 )
 
 func main() {
-	configPath := flag.String("config", "", "path to yaml file")
+	configPath := flag.String("config", "config.yaml", "path to yaml file")
 	flag.Parse()
-
-	if *configPath == "" {
-		panic("config flag is required")
-	}
 
 	config, err := config.ReadConfig(*configPath)
 	if err != nil {
 		panic(err)
 	}
 
-	valCurs, err := currency.ReadValCurs(config.InputFile)
+	var valCurs currency.ValCurs
+
+	err = xml.ParseXML(config.InputFile, &valCurs)
 	if err != nil {
 		panic(err)
 	}
 
 	valCurs.SortByValueDesc()
 
-	err = currency.WriteToJSON(valCurs, config.OutputFile)
+	err = json.WriteToJSON(valCurs, config.OutputFile)
 	if err != nil {
 		panic(err)
 	}
