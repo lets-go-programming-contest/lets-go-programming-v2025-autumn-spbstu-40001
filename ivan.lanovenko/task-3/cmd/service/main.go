@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	configPath := flag.String("config", "", "Path to yaml file")
+	configPath := flag.String("config", "...example/yamlfile.yaml", "Path to yaml file")
 	flag.Parse()
 
 	config := new(config.Config)
@@ -22,8 +22,13 @@ func main() {
 	}
 
 	valCurs := new(valcurs.ValCurs)
-	valCurs.ParseXML(inputFile)
+
+	if err := valCurs.ParseXML(inputFile); err != nil {
+		panic(err)
+	}
 	valCurs.SortByValueDown()
 
-	jsonwriter.SaveToJSON(valCurs.Valutes, config.OutputFilePath)
+	if err := jsonwriter.SaveToJSON(valCurs.Valutes, config.OutputFilePath); err != nil {
+		panic(err)
+	}
 }
