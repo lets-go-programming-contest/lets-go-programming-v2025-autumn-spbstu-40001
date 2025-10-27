@@ -5,8 +5,10 @@ import (
 	"encoding/xml"
 	"io"
 	"sort"
+	"strconv"
+	"strings"
 
-	"golang.org/x/text/encoding/charmap"
+	"golang.org/x/net/html/charset"
 )
 
 type ValCurs struct {
@@ -17,16 +19,30 @@ type ValCurs struct {
 	} `xml:"Valute"`
 }
 
-func (v *ValCurs) ParseXML(data []byte) {
-	decoder := xml.NewDecoder(bytes.NewReader(bytes.ReplaceAll(data, []byte(","), []byte("."))))
-	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
-		if charset == "windows-1251" {
-			return charmap.Windows1251.NewDecoder().Reader(input), nil
-		}
+type FloatWithComma float64
 
-		return input, nil
+func (f *FloatWithComma) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	valueStr := ""
+	if err := d.DecodeElement(&valueStr, &start); err != nil {
+
+		return err
 	}
 
+	valueStr = strings.ReplaceAll(strings.TrimSpace(valueStr), ",", ".")
+	val, err := strconv.ParseFloat(valueStr, 64)
+	if err != nil {
+		return err
+	}
+
+	*f = FloatWithComma(val)
+	return nil
+}
+
+func (v *ValCurs) ParseXML(data []byte) {
+	decoder := xml.NewDecoder(bytes.NewReader(data))
+	decoder.CharsetReader = func(charSet string, input io.Reader) (io.Reader, error) {
+		return charset.NewReader(input, charSet)
+	}
 	if err := decoder.Decode(v); err != nil {
 		panic(err)
 	}
