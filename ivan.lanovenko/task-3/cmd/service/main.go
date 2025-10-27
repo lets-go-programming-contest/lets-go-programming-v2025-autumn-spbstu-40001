@@ -29,6 +29,7 @@ func main() {
 	if err := valCurs.ParseXML(inputFile); err != nil {
 		panic(err)
 	}
+
 	valCurs.SortByValueDown()
 
 	if err := jsonwriter.SaveToJSON(valCurs.Valutes, config.OutputFilePath); err != nil {
