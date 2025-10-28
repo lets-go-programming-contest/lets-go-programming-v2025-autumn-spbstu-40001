@@ -2,42 +2,45 @@ package main
 
 import (
 	"container/heap"
+	"errors"
 	"fmt"
 )
 
-type IntHeap []int
+var (
+	ErrHeapWrongType        = errors.New("attempt to add element of wrong type to heap")
+	ErrHeapEmpty            = errors.New("attempt to extract element from empty heap")
+	ErrPreferenceOutOfRange = errors.New("preference order out of range")
+)
 
-func (h *IntHeap) Len() int {
+type MinHeap []int
+
+func (h *MinHeap) Len() int {
 	return len(*h)
 }
 
-func (h *IntHeap) Less(i, j int) bool {
-	return (*h)[i] > (*h)[j]
+func (h *MinHeap) Less(i, j int) bool {
+	return (*h)[i] < (*h)[j]
 }
 
-func (h *IntHeap) Swap(i, j int) {
+func (h *MinHeap) Swap(i, j int) {
 	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
 }
 
-func (h *IntHeap) Push(x interface{}) {
+func (h *MinHeap) Push(x interface{}) {
 	value, ok := x.(int)
 	if !ok {
-		fmt.Printf("Error: attempt to add element of wrong type to heap\n")
-
-		return
+		panic(ErrHeapWrongType)
 	}
 
 	*h = append(*h, value)
 }
 
-func (h *IntHeap) Pop() interface{} {
+func (h *MinHeap) Pop() interface{} {
 	old := *h
 	length := len(old)
 
 	if length == 0 {
-		fmt.Printf("Error: attempt to extract element from empty heap\n")
-
-		return -1
+		panic(ErrHeapEmpty)
 	}
 
 	x := old[length-1]
@@ -46,96 +49,55 @@ func (h *IntHeap) Pop() interface{} {
 	return x
 }
 
-type KthPreferenceFinder struct {
-	dishes *IntHeap
-}
-
-func NewKthPreferenceFinder() *KthPreferenceFinder {
-	h := &IntHeap{}
-	heap.Init(h)
-
-	return &KthPreferenceFinder{dishes: h}
-}
-
-func (k *KthPreferenceFinder) AddDish(rating int) {
-	heap.Push(k.dishes, rating)
-}
-
-func (k *KthPreferenceFinder) FindKthPreference(kth int) int {
-	if kth < 1 || kth > k.dishes.Len() {
-		fmt.Printf("Error: invalid kth value = %d\n", kth)
-
-		return -1
+func FindKthPreference(ratings []int, preferenceOrder int) (int, error) {
+	if preferenceOrder < 1 || preferenceOrder > len(ratings) {
+		return 0, fmt.Errorf("%w: %d is out of range [1, %d]",
+			ErrPreferenceOutOfRange, preferenceOrder, len(ratings))
 	}
 
-	temp := make([]int, 0, kth)
+	dishHeap := &MinHeap{}
+	heap.Init(dishHeap)
 
-	var result int
-
-	for idx := range kth {
-		dish := heap.Pop(k.dishes)
-		dishValue, ok := dish.(int)
-
-		if !ok {
-			fmt.Printf("Error: received element of wrong type from heap\n")
-
-			return -1
+	for _, rating := range ratings {
+		heap.Push(dishHeap, rating)
+		if dishHeap.Len() > preferenceOrder {
+			heap.Pop(dishHeap)
 		}
-
-		if idx == kth-1 {
-			result = dishValue
-		}
-
-		temp = append(temp, dishValue)
 	}
 
-	for _, value := range temp {
-		heap.Push(k.dishes, value)
-	}
-
-	return result
+	kthPreferenceDish := heap.Pop(dishHeap).(int)
+	return kthPreferenceDish, nil
 }
 
 func main() {
-	var dishCount int
-
-	_, err := fmt.Scan(&dishCount)
+	var dishesCount int
+	_, err := fmt.Scan(&dishesCount)
 	if err != nil {
-		fmt.Printf("Error reading number of dishes: %v\n", err)
-
+		fmt.Printf("Error reading dishes count: %v\n", err)
 		return
 	}
 
-	if dishCount <= 0 {
-		fmt.Printf("Error: number of dishes must be positive\n")
-
-		return
-	}
-
-	finder := NewKthPreferenceFinder()
-
-	for range dishCount {
-		var rating int
-
-		_, err = fmt.Scan(&rating)
+	ratings := make([]int, dishesCount)
+	for dishIndex := 0; dishIndex < dishesCount; dishIndex++ {
+		_, err = fmt.Scan(&ratings[dishIndex])
 		if err != nil {
 			fmt.Printf("Error reading dish rating: %v\n", err)
-
 			return
 		}
-
-		finder.AddDish(rating)
 	}
 
 	var preferenceOrder int
-
 	_, err = fmt.Scan(&preferenceOrder)
 	if err != nil {
 		fmt.Printf("Error reading preference order: %v\n", err)
-
 		return
 	}
 
-	result := finder.FindKthPreference(preferenceOrder)
-	fmt.Println(result)
+	kthPreference, err := FindKthPreference(ratings, preferenceOrder)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
+
+	fmt.Println(kthPreference)
 }
