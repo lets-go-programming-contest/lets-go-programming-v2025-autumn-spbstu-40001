@@ -83,14 +83,13 @@ func main() {
 	heapInt := &IntHeap{}
 	heap.Init(heapInt)
 
-	for i := 0; i < kCount; i++ {
-		heap.Push(heapInt, arr[i])
-	}
+	*heapInt = append(*heapInt, arr[:kCount]...)
+	heap.Init(heapInt)
 
-	for i := kCount; i < len(arr); i++ {
-		if arr[i] > (*heapInt)[0] {
-			heap.Pop(heapInt)
-			heap.Push(heapInt, arr[i])
+	for _, v := range arr[:kCount] {
+		if v > (*heapInt)[0] {
+			(*heapInt)[0] = v
+			heap.Fix(heapInt, 0)
 		}
 	}
 
