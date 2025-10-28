@@ -1,13 +1,16 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+}
 
 const (
 	MinTemp = 15
 	MaxTemp = 30
 )
 
-var ErrorInvalidOperation = errors.New("Invalid operation")
+var ErrInvalidOperation = errors.New("Invalid operation")
 
 type TemperatureRange struct {
 	min int
@@ -21,7 +24,7 @@ func NewTemperatureRange() *TemperatureRange {
 	}
 }
 
-func (t *TemperatureRange) UpdateAndGet(operation string, temp int) int {
+func (t *TemperatureRange) UpdateAndGet(operation string, temp int) (int, error) {
 	switch operation {
 	case "<=":
 		if temp < t.max {
@@ -32,7 +35,7 @@ func (t *TemperatureRange) UpdateAndGet(operation string, temp int) int {
 			t.min = temp
 		}
 	default:
-		return fmt.Errorf("operation '%s': %w", operation, ErrorInvalidOperation)
+		return 0, fmt.Errorf("operation '%s': %w", operation, ErrInvalidOperation)
 	}
 
 	if t.min > t.max {
@@ -74,7 +77,13 @@ func main() {
 				return
 			}
 
-			result := tempRange.UpdateAndGet(operation, needTemp)
+			result, err := tempRange.UpdateAndGet(operation, needTemp)
+			if err != nil {
+				fmt.Println("Error:", err)
+
+				return
+			}
+
 			fmt.Println(result)
 		}
 	}
