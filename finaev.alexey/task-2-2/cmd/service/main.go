@@ -12,7 +12,7 @@ func (a *MaxHeap) Len() int {
 }
 
 func (a *MaxHeap) Less(i, j int) bool {
-	if i >= a.Len() || j >= a.Len() {
+	if i < 0 || j < 0 || i >= a.Len() || j >= a.Len() {
 		panic("index out of range")
 	}
 
@@ -20,7 +20,7 @@ func (a *MaxHeap) Less(i, j int) bool {
 }
 
 func (a *MaxHeap) Swap(i, j int) {
-	if i >= a.Len() || j >= a.Len() {
+	if i < 0 || j < 0 || i >= a.Len() || j >= a.Len() {
 		panic("index out of range")
 	}
 
