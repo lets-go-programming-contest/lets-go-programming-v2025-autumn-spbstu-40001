@@ -3,11 +3,10 @@ package main
 import (
 	"flag"
 	"sort"
-
-	"github.com/angelina.vladimirova/task-3/internal/config"
-	"github.com/angelina.vladimirova/task-3/internal/currency"
-	"github.com/angelina.vladimirova/task-3/internal/json"
-	"github.com/angelina.vladimirova/task-3/internal/xml"
+	"task-3/internal/config"
+	"task-3/internal/currency"
+	"task-3/internal/json"
+	"task-3/internal/xml"
 )
 
 func main() {
