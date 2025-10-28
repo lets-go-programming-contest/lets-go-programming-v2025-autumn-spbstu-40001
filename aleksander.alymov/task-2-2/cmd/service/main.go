@@ -60,17 +60,24 @@ func FindKthPreference(ratings []int, preferenceOrder int) (int, error) {
 
 	for _, rating := range ratings {
 		heap.Push(dishHeap, rating)
+
 		if dishHeap.Len() > preferenceOrder {
 			heap.Pop(dishHeap)
 		}
 	}
 
-	kthPreferenceDish := heap.Pop(dishHeap).(int)
+	dish := heap.Pop(dishHeap)
+	kthPreferenceDish, ok := dish.(int)
+	if !ok {
+		return 0, ErrHeapWrongType
+	}
+
 	return kthPreferenceDish, nil
 }
 
 func main() {
 	var dishesCount int
+
 	_, err := fmt.Scan(&dishesCount)
 	if err != nil {
 		fmt.Printf("Error reading dishes count: %v\n", err)
@@ -78,7 +85,8 @@ func main() {
 	}
 
 	ratings := make([]int, dishesCount)
-	for dishIndex := 0; dishIndex < dishesCount; dishIndex++ {
+
+	for dishIndex := range dishesCount {
 		_, err = fmt.Scan(&ratings[dishIndex])
 		if err != nil {
 			fmt.Printf("Error reading dish rating: %v\n", err)
@@ -87,6 +95,7 @@ func main() {
 	}
 
 	var preferenceOrder int
+
 	_, err = fmt.Scan(&preferenceOrder)
 	if err != nil {
 		fmt.Printf("Error reading preference order: %v\n", err)
