@@ -1,4 +1,3 @@
-// meow
 package main
 
 import (
