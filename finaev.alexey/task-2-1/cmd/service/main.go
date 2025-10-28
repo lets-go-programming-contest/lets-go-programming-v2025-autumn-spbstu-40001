@@ -15,7 +15,11 @@ type ComfortTemperature struct {
 	maxT int
 }
 
-var errSign = errors.New("unacceptable sign")
+func NewTemperatureObject(minTemp, maxTemp int) ComfortTemperature {
+	return ComfortTemperature{minT: minTemp, maxT: maxTemp}
+}
+
+var errSign = errors.New("Unacceptable sign")
 
 func (temperature *ComfortTemperature) CalculationTemperature(sign string, grade int) error {
 	switch sign {
@@ -30,14 +34,12 @@ func (temperature *ComfortTemperature) CalculationTemperature(sign string, grade
 	return nil
 }
 
-func (temperature *ComfortTemperature) PrintComfortTemperature() {
+func (temperature *ComfortTemperature) ComfortTemperature() int {
 	if temperature.minT > temperature.maxT {
-		fmt.Println(-1)
-
-		return
+		return -1
 	}
 
-	fmt.Println(temperature.minT)
+	return temperature.minT
 }
 
 func main() {
@@ -51,10 +53,7 @@ func main() {
 	}
 
 	for range depart {
-		var (
-			emploees    int
-			temperature = ComfortTemperature{minT, maxT}
-		)
+		var emploees int
 
 		_, err = fmt.Scan(&emploees)
 		if err != nil {
@@ -62,6 +61,8 @@ func main() {
 
 			return
 		}
+
+		temperature := NewTemperatureObject(minT, maxT)
 
 		for range emploees {
 			var (
@@ -85,12 +86,12 @@ func main() {
 
 			err = temperature.CalculationTemperature(sign, grade)
 			if err != nil {
-				fmt.Println("failed to calculate temperature:", err)
+				fmt.Println("Failed to calculate temperature:", err)
 
 				return
 			}
 
-			temperature.PrintComfortTemperature()
+			fmt.Println(temperature.ComfortTemperature())
 		}
 	}
 }
