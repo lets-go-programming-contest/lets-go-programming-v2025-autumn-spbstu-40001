@@ -3,14 +3,14 @@ package main
 import (
 	"errors"
 	"fmt"
-}
+)
 
 const (
 	MinTemp = 15
 	MaxTemp = 30
 )
 
-var ErrInvalidOperation = errors.New("Invalid operation")
+var ErrInvalidOperation = errors.New("invalid operation")
 
 type TemperatureRange struct {
 	min int
@@ -39,10 +39,10 @@ func (t *TemperatureRange) UpdateAndGet(operation string, temp int) (int, error)
 	}
 
 	if t.min > t.max {
-		return -1
+		return -1, nil
 	}
 
-	return t.min
+	return t.min, nil
 }
 
 func main() {
