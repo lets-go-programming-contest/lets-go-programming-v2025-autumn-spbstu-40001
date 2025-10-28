@@ -14,13 +14,14 @@ func main() {
 	configPath := flag.String("config", "config.yaml", "path to config")
 	flag.Parse()
 
-	config, err := config.ParseYaml(*configPath)
+	cfg, err := config.ParseYaml(*configPath)
 	if err != nil {
 		panic(err)
 	}
 
 	currencyList := currency.Rates{Data: []currency.Currency{}}
-	err = xml.ParseXML(config.InputFilePath, &currencyList)
+
+	err = xml.ParseXML(cfg.InputFilePath, &currencyList)
 	if err != nil {
 		panic(err)
 	}
@@ -29,7 +30,7 @@ func main() {
 		return currencyList.Data[i].Value > currencyList.Data[j].Value
 	})
 
-	err = json.ParseJSON(config.OutputFilePath, currencyList.Data)
+	err = json.ParseJSON(cfg.OutputFilePath, currencyList.Data)
 	if err != nil {
 		panic(err)
 	}
