@@ -67,14 +67,14 @@ func main() {
 		}
 	}
 
-	var k int
-	if _, err := fmt.Scan(&k); err != nil {
+	var kCount int
+	if _, err := fmt.Scan(&kCount); err != nil {
 		fmt.Println("Error reading k:", err)
 
 		return
 	}
 
-	if k <= 0 || k > dishCount {
+	if kCount <= 0 || kCount > dishCount {
 		fmt.Println("Invalid k value")
 
 		return
@@ -83,11 +83,11 @@ func main() {
 	heapInt := &IntHeap{}
 	heap.Init(heapInt)
 
-	for i := 0; i < k; i++ {
+	for i := 0; i < kCount; i++ {
 		heap.Push(heapInt, arr[i])
 	}
 
-	for i := k; i < len(arr); i++ {
+	for i := kCount; i < len(arr); i++ {
 		if arr[i] > (*heapInt)[0] {
 			heap.Pop(heapInt)
 			heap.Push(heapInt, arr[i])
