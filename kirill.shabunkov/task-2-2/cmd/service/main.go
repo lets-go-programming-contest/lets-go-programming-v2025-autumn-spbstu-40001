@@ -108,7 +108,7 @@ func main() {
 
 	answer, err := findKLargest(foodRatings, prefferedDishes)
 	if err != nil {
-		fmt.Println("Error: ", err)
+		fmt.Printf("Failed to find %d-th largest rating: %v\n", prefferedDishes, err)
 
 		return
 	}
