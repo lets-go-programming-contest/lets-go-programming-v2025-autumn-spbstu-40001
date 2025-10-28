@@ -1,26 +1,25 @@
-package xml
+package json
 
 import (
-	"bytes"
-	"encoding/xml"
+	"encoding/json"
 	"fmt"
 	"os"
-
-	"golang.org/x/net/html/charset"
+	"path/filepath"
 )
 
-func ParseXML(path string, result interface{}) error {
-	fileData, err := os.ReadFile(path)
+func ParseJSON(filePath string, data interface{}) error {
+	jsonData, err := json.MarshalIndent(data, "", "\t")
 	if err != nil {
-		return fmt.Errorf("cannot read xml file: %w", err)
+		return fmt.Errorf("serialize to JSON: %w", err)
 	}
 
-	decoder := xml.NewDecoder(bytes.NewReader(fileData))
-	decoder.CharsetReader = charset.NewReaderLabel
+	directory := filepath.Dir(filePath)
+	if err := os.MkdirAll(directory, 0o755); err != nil {
+		return fmt.Errorf("cannot create directory '%s': %w", directory, err)
+	}
 
-	err = decoder.Decode(result)
-	if err != nil {
-		return fmt.Errorf("failed to parse xml file: %w", err)
+	if err := os.WriteFile(filePath, jsonData, 0o600); err != nil {
+		return fmt.Errorf("cannot write to file '%s': %w", filePath, err)
 	}
 
 	return nil

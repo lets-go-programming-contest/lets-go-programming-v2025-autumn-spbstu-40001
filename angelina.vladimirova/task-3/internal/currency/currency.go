@@ -39,7 +39,7 @@ func (cf *FloatforCur) UnmarshalText(text []byte) error {
 
 	value, err := strconv.ParseFloat(normalized, 64)
 	if err != nil {
-		return fmt.Errorf("invalid number: %q", text)
+		return fmt.Errorf("%w: %q", ErrInvalidNumber, text)
 	}
 
 	*cf = FloatforCur(value)

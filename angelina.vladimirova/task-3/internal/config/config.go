@@ -14,14 +14,13 @@ type Config struct {
 
 func ParseYaml(configPath string) (*Config, error) {
 	var result Config
-	file, err := os.ReadFile(configPath)
 
+	file, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("cannot read config file: %w", err)
 	}
 
 	err = yaml.Unmarshal(file, &result)
-
 	if err != nil {
 		return nil, fmt.Errorf("cannot unmarshal file: %w", err)
 	}
