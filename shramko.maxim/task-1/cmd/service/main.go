@@ -31,11 +31,10 @@ func main() {
 	var (
 		firstNum, secondNum int
 		operator            string
-		err                 error
 	)
 
 	var scannedCount int
-	scannedCount, err = fmt.Scan(&firstNum, &secondNum, &operator)
+	scannedCount, err := fmt.Scan(&firstNum, &secondNum, &operator)
 	switch {
 	case err == nil:
 	case scannedCount == 0:
@@ -49,8 +48,7 @@ func main() {
 		return
 	}
 
-	var result int
-	result, err = compute(firstNum, operator, secondNum)
+	result, err := compute(firstNum, operator, secondNum)
 	if err != nil {
 		fmt.Println(err)
 		return
