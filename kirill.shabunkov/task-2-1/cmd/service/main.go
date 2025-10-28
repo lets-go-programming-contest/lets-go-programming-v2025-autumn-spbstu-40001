@@ -5,25 +5,24 @@ import (
 	"fmt"
 )
 
+const (
+	minTemperature = 15
+	maxTemperature = 30
+)
+
+var ErrInvalidOperand = errors.New("invalid operand")
+
 type Temperature struct {
 	Min int
 	Max int
 }
 
-func NewTemperature() Temperature {
+func NewTemperature(minTemperature int, maxTemperature int) Temperature {
 	return Temperature{
 		Min: minTemperature,
 		Max: maxTemperature,
 	}
 }
-
-const (
-	minTemperature     = 15
-	maxTemperature     = 30
-	expectedInputCount = 2
-)
-
-var ErrInvalidOperand = errors.New("invalid operand")
 
 func (temp *Temperature) getSuitableTemperature(operand string, prefferedTemperature int) (int, error) {
 	switch operand {
@@ -54,7 +53,7 @@ func main() {
 
 	for range departamentNum {
 		var (
-			currentTemperature = NewTemperature()
+			currentTemperature = NewTemperature(minTemperature, maxTemperature)
 			workerNum          int
 		)
 
@@ -71,15 +70,9 @@ func main() {
 				operand              string
 			)
 
-			count, err := fmt.Scan(&operand, &prefferedTemperature)
+			_, err := fmt.Scan(&operand, &prefferedTemperature)
 			if err != nil {
-				fmt.Printf("Error reading input: expected %d values, got error: %v\n", expectedInputCount, err)
-
-				return
-			}
-
-			if count != expectedInputCount {
-				fmt.Printf("Incorrect amount of input data: expected %d values, but got %d\n", expectedInputCount, count)
+				fmt.Printf("Input error: %v\n", err)
 
 				return
 			}
