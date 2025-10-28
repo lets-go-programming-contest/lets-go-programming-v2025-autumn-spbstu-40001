@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"os"
+
 	"golang.org/x/net/html/charset"
 )
 
