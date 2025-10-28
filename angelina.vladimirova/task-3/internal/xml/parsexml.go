@@ -1,25 +1,29 @@
 package xml
 
 import (
+	"bytes"
 	"encoding/xml"
 	"fmt"
+	"io"
 	"os"
-	"path/filepath"
+
+	"golang.org/x/net/html/charset"
 )
 
-func ParseXML(filePath string, data interface{}) error {
-	xmlData, err := xml.MarshalIndent(data, "", "\t")
+func ParseXML(path string, result interface{}) error {
+	data, err := os.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("serialize to XML: %w", err)
+		return fmt.Errorf("cannot read xml file: %w", err)
 	}
 
-	directory := filepath.Dir(filePath)
-	if err := os.MkdirAll(directory, 0o755); err != nil {
-		return fmt.Errorf("cannot create directory '%s': %w", directory, err)
+	decoder := xml.NewDecoder(bytes.NewReader(data))
+	decoder.CharsetReader = func(encoding string, input io.Reader) (io.Reader, error) {
+		return charset.NewReader(input, encoding)
 	}
 
-	if err := os.WriteFile(filePath, xmlData, 0o600); err != nil {
-		return fmt.Errorf("cannot write to file '%s': %w", filePath, err)
+	err = decoder.Decode(result)
+	if err != nil {
+		return fmt.Errorf("failed to parse XML: %w", err)
 	}
 
 	return nil

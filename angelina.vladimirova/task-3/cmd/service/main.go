@@ -21,7 +21,6 @@ func main() {
 
 	currencyList := currency.Rates{Data: []currency.Currency{}}
 	err = xml.ParseXML(config.InputFilePath, &currencyList)
-
 	if err != nil {
 		panic(err)
 	}
@@ -31,7 +30,6 @@ func main() {
 	})
 
 	err = json.ParseJSON(config.OutputFilePath, currencyList.Data)
-
 	if err != nil {
 		panic(err)
 	}
