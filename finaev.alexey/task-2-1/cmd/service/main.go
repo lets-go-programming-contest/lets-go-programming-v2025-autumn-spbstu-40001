@@ -19,7 +19,7 @@ func NewTemperatureObject(minTemp, maxTemp int) ComfortTemperature {
 	return ComfortTemperature{minT: minTemp, maxT: maxTemp}
 }
 
-var errSign = errors.New("Unacceptable sign")
+var errSign = errors.New("unacceptable sign")
 
 func (temperature *ComfortTemperature) CalculationTemperature(sign string, grade int) error {
 	switch sign {
