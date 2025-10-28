@@ -1,6 +1,6 @@
 module task-3
 
-go 1.22.7
+go 1.21
 
 require (
 	golang.org/x/net v0.22.0
