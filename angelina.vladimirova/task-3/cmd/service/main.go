@@ -3,9 +3,6 @@ package main
 import (
 	"flag"
 	"sort"
-
-	"flag"
-	"sort"
 	"task-3/internal/config"
 	"task-3/internal/currency"
 	"task-3/internal/json"
