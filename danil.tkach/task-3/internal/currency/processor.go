@@ -2,13 +2,15 @@ package currency
 
 import (
 	"fmt"
+	"os"
 	"sort"
 
 	"github.com/Danil3352/task-3/internal/json"
+	"github.com/Danil3352/task-3/internal/models"
 	"github.com/Danil3352/task-3/internal/xml"
 )
 
-type ByValue []xml.Currency
+type ByValue []models.Currency
 
 func (a ByValue) Len() int {
 	return len(a)
@@ -30,7 +32,12 @@ func Process(inputFile, outputFile string) error {
 
 	sort.Sort(ByValue(valCurs.Valutes))
 
-	if err := json.WriteResult(valCurs.Valutes, outputFile); err != nil {
+	const (
+		DirPerms  os.FileMode = 0o755
+		FilePerms os.FileMode = 0o644
+	)
+
+	if err := json.WriteResult(valCurs.Valutes, outputFile, DirPerms, FilePerms); err != nil {
 		return fmt.Errorf("failed to write JSON result: %w", err)
 	}
 
