@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"sort"
+
 	"task-3/internal/config"
 	"task-3/internal/currency"
 	"task-3/internal/json"
@@ -20,6 +21,7 @@ func main() {
 
 	currencyList := currency.Rates{Data: []currency.Currency{}}
 	err = xml.ParseXML(config.InputFilePath, &currencyList)
+
 	if err != nil {
 		panic(err)
 	}
@@ -29,6 +31,7 @@ func main() {
 	})
 
 	err = json.ParseJSON(config.OutputFilePath, currencyList.Data)
+
 	if err != nil {
 		panic(err)
 	}
