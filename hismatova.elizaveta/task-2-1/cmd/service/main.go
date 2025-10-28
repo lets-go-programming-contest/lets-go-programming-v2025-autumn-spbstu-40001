@@ -7,6 +7,8 @@ const (
 	MaxTemp = 30
 )
 
+var ErrorInvalidOperation = errors.New("Invalid operation")
+
 type TemperatureRange struct {
 	min int
 	max int
@@ -29,6 +31,8 @@ func (t *TemperatureRange) UpdateAndGet(operation string, temp int) int {
 		if temp > t.min {
 			t.min = temp
 		}
+	default:
+		return fmt.Errorf("operation '%s': %w", operation, ErrorInvalidOperation)
 	}
 
 	if t.min > t.max {
