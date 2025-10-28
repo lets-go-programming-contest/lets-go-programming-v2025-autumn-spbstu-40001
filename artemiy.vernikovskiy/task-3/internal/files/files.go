@@ -1,3 +1,4 @@
+// Package files provides utilities for reading configuration files, parsing XML data, and writing JSON output.
 package files
 
 import (
@@ -15,10 +16,14 @@ import (
 )
 
 const (
-	DirPerm  = 0o750 // rwxr-x---
+	// DirPerm defines the permissions for created directories.
+	DirPerm = 0o750 // rwxr-x---
+	// FilePerm defines the permissions for created files.
 	FilePerm = 0o600 // rw-------
 )
 
+// ReadYAMLConfigFile reads and parses a YAML configuration file.
+// It returns the input file path, output file path, and any error encountered.
 func ReadYAMLConfigFile(yamlPath string) (string, string, error) {
 	var settings models.Settings
 
@@ -35,6 +40,8 @@ func ReadYAMLConfigFile(yamlPath string) (string, string, error) {
 	return settings.InputFileSetting, settings.OutputFileSetting, nil
 }
 
+// ReadAndParseXML reads an XML file and parses it into a ValCurs structure.
+// It handles character encoding and returns the parsed data or an error.
 func ReadAndParseXML(xmlFilePath string) (models.ValCurs, error) {
 	var valCurs models.ValCurs
 
@@ -42,8 +49,6 @@ func ReadAndParseXML(xmlFilePath string) (models.ValCurs, error) {
 	if err != nil {
 		return valCurs, fmt.Errorf("error reading XML file: %w", err)
 	}
-
-	// xmlData = []byte(strings.ReplaceAll(string(xmlData), ",", ".")) // i think this is less ram
 
 	decoder := xml.NewDecoder(bytes.NewReader(xmlData))
 	decoder.CharsetReader = func(encoding string, input io.Reader) (io.Reader, error) {
@@ -58,20 +63,22 @@ func ReadAndParseXML(xmlFilePath string) (models.ValCurs, error) {
 	return valCurs, nil
 }
 
+// WriteDataToJSON writes the ValCurs data to a JSON file.
+// It creates necessary directories and returns any error encountered.
 func WriteDataToJSON(valCurs models.ValCurs, jsonFilePath string) error {
 	jsonData, err := json.MarshalIndent(valCurs.Valutes, "", "\t")
 	if err != nil {
-		return fmt.Errorf("WriteDataToJSON: %w", err)
+		return fmt.Errorf("error marshaling to JSON: %w", err)
 	}
 
 	err = os.MkdirAll(filepath.Dir(jsonFilePath), DirPerm)
 	if err != nil {
-		return fmt.Errorf("WriteDataToJSON: %w", err)
+		return fmt.Errorf("error creating directories: %w", err)
 	}
 
 	err = os.WriteFile(jsonFilePath, jsonData, FilePerm)
 	if err != nil {
-		return fmt.Errorf("WriteDataToJSON: %w", err)
+		return fmt.Errorf("error writing JSON file: %w", err)
 	}
 
 	return nil
