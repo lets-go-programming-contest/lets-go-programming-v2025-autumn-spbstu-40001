@@ -11,9 +11,9 @@ import (
 type CurrencyValue float64
 
 type Valute struct {
-	NumCode  int           `json:"num_code" xml:"NumCode"`
+	NumCode  int           `json:"num_code"  xml:"NumCode"`
 	CharCode string        `json:"char_code" xml:"CharCode"`
-	Value    CurrencyValue `json:"value" xml:"Value"`
+	Value    CurrencyValue `json:"value"     xml:"Value"`
 }
 
 type ValCurs struct {
