@@ -1,6 +1,7 @@
 package xmlparser
 
 import (
+	"bytes"
 	"encoding/xml"
 	"fmt"
 	"os"
@@ -9,14 +10,12 @@ import (
 )
 
 func ParseXML(path string, result any) error {
-	file, err := os.Open(path)
+	file, err := os.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("failed to read XML file: %w", err)
 	}
 
-	defer file.Close()
-
-	decoder := xml.NewDecoder(file)
+	decoder := xml.NewDecoder(bytes.NewReader(file))
 	decoder.CharsetReader = charset.NewReaderLabel
 
 	err = decoder.Decode(result)
