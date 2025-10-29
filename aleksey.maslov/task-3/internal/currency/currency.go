@@ -41,8 +41,8 @@ func (cv *CurrencyValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) er
 	return nil
 }
 
-func SortByValue(valutes []Valute) {
-	sort.Slice(valutes, func(i, j int) bool {
-		return valutes[i].Value > valutes[j].Value
+func (v *ValCurs) SortByValue() {
+	sort.Slice(v.Valutes, func(i, j int) bool {
+		return v.Valutes[i].Value > v.Valutes[j].Value
 	})
 }

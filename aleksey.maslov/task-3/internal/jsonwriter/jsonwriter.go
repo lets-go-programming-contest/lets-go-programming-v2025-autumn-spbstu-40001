@@ -4,24 +4,31 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-
-	"github.com/A1exMas1ov/task-3/internal/currency"
+	"path/filepath"
 )
 
-func SaveJSON(path string, valutes []currency.Valute) error {
+const permission = 0o755
 
-	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0644)
+func SaveJSON(outputFile string, data any) error {
+	dir := filepath.Dir(outputFile)
+
+	err := os.MkdirAll(dir, permission)
 	if err != nil {
-		return fmt.Errorf("failed to open file: %w", err)
+		return fmt.Errorf("failed to creating directory: %w", err)
+	}
+
+	file, err := os.Create(outputFile)
+	if err != nil {
+		return fmt.Errorf("failed to creating file: %w", err)
 	}
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "\t")
 
-	if err := encoder.Encode(valutes); err != nil {
-		return fmt.Errorf("failed to encode JSON: %w", err)
+	err = encoder.Encode(data)
+	if err != nil {
+		return fmt.Errorf("failed to encoding JSON: %w", err)
 	}
 
 	return nil
-
 }

@@ -18,12 +18,14 @@ func main() {
 		panic(err)
 	}
 
-	valutes, err := xmlparser.ParseXML(config.InputFile)
+	var valutes currency.ValCurs
+
+	err = xmlparser.ParseXML(config.InputFile, &valutes)
 	if err != nil {
 		panic(err)
 	}
 
-	currency.SortByValue(valutes)
+	valutes.SortByValue()
 
 	err = jsonwriter.SaveJSON(config.OutputFile, valutes)
 	if err != nil {

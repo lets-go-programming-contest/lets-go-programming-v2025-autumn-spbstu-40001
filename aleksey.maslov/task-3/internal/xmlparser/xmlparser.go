@@ -4,22 +4,18 @@ import (
 	"encoding/xml"
 	"fmt"
 	"os"
-
-	"github.com/A1exMas1ov/task-3/internal/currency"
 )
 
-func ParseXML(path string) ([]currency.Valute, error) {
+func ParseXML(path string, target any) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read XML file: %w", err)
+		return fmt.Errorf("failed to read XML file: %w", err)
 	}
 
-	var valCurs currency.ValCurs
-
-	err = xml.Unmarshal(data, &valCurs)
+	err = xml.Unmarshal(data, target)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse XML: %w", err)
+		return fmt.Errorf("failed to parse XML: %w", err)
 	}
 
-	return valCurs.Valutes, nil
+	return nil
 }
