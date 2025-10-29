@@ -1,4 +1,4 @@
-package currency
+package models
 
 import (
 	"encoding/xml"
@@ -17,8 +17,13 @@ type Valute struct {
 }
 
 type ValCurs struct {
-	XMLName xml.Name `xml:"ValCurs"`
 	Valutes []Valute `xml:"Valute"`
+}
+
+func (v *ValCurs) SortByValue() {
+	sort.Slice(v.Valutes, func(i, j int) bool {
+		return v.Valutes[i].Value > v.Valutes[j].Value
+	})
 }
 
 func (cv *CurrencyValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
@@ -39,10 +44,4 @@ func (cv *CurrencyValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) er
 	*cv = CurrencyValue(value)
 
 	return nil
-}
-
-func (v *ValCurs) SortByValue() {
-	sort.Slice(v.Valutes, func(i, j int) bool {
-		return v.Valutes[i].Value > v.Valutes[j].Value
-	})
 }
