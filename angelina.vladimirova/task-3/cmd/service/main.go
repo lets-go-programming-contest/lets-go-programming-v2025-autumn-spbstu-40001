@@ -20,6 +20,7 @@ func main() {
 	}
 
 	var currencyList currency.Rates
+
 	err = xml.ParseXML(cfg.InputFilePath, &currencyList)
 	if err != nil {
 		panic(err)
