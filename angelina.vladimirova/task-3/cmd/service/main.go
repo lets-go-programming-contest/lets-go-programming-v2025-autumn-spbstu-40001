@@ -4,10 +4,10 @@ import (
 	"flag"
 	"sort"
 
-	"task-3/internal/config"
-	"task-3/internal/currency"
-	"task-3/internal/json"
-	"task-3/internal/xml"
+	"github.com/verticalochka/task-3/internal/config"
+	"github.com/verticalochka/task-3/internal/currency"
+	"github.com/verticalochka/task-3/internal/json"
+	"github.com/verticalochka/task-3/internal/xml"
 )
 
 func main() {
