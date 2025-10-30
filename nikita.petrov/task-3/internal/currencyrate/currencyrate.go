@@ -23,7 +23,7 @@ func (fd *floatWithDots) UnmarshalXML(d *xml.Decoder, start xml.StartElement) er
 
 	err := d.DecodeElement(&content, &start)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	content = strings.ReplaceAll(content, ",", ".")
@@ -32,7 +32,7 @@ func (fd *floatWithDots) UnmarshalXML(d *xml.Decoder, start xml.StartElement) er
 
 	retFloat64, err = strconv.ParseFloat(content, 64)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	*fd = floatWithDots(retFloat64)
