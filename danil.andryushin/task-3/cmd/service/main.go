@@ -4,6 +4,7 @@ import (
 	"flag"
 	"sort"
 
+	"github.com/atroxxxxxx/task-3/internal/config"
 	"github.com/atroxxxxxx/task-3/internal/parsing/json"
 	"github.com/atroxxxxxx/task-3/internal/parsing/xml"
 	"github.com/atroxxxxxx/task-3/internal/parsing/yaml"
@@ -16,7 +17,8 @@ func main() {
 	path := flag.String("config", "config.yaml", "config path")
 	flag.Parse()
 
-	data, err := yaml.Unmarshall(*path)
+	var data config.Config
+	err := yaml.Unmarshall(*path, &data)
 	if err != nil {
 		panic(err)
 	}
