@@ -35,10 +35,12 @@ func ParseXMLFile(inputFile string) (*ValCurs, error) {
 		return nil, fmt.Errorf("cannot read input file: %w", err)
 	}
 
-	_ = file.Close()
+	if err := file.Close(); err != nil {
+		return nil, fmt.Errorf("cannot close input file: %w", err)
+	}
 
 	var valCurs ValCurs
-	if err = xml.Unmarshal(data, &valCurs); err != nil {
+	if err := xml.Unmarshal(data, &valCurs); err != nil {
 		return nil, fmt.Errorf("cannot parse XML data: %w", err)
 	}
 

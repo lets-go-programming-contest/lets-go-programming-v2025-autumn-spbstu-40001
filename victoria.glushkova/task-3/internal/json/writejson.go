@@ -11,8 +11,8 @@ import (
 
 func WriteToFile(outputFile string, currencies []currency.Currency) error {
 	outputDir := filepath.Dir(outputFile)
-	err := os.MkdirAll(outputDir, 0755)
-	if err != nil {
+
+	if err := os.MkdirAll(outputDir, 0755); err != nil {
 		return fmt.Errorf("cannot create output directory: %w", err)
 	}
 
@@ -24,11 +24,14 @@ func WriteToFile(outputFile string, currencies []currency.Currency) error {
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "    ")
 
-	if err = encoder.Encode(currencies); err != nil {
-		file.Close()
+	if err := encoder.Encode(currencies); err != nil {
+		_ = file.Close()
 		return fmt.Errorf("cannot encode JSON data: %w", err)
 	}
 
-	file.Close()
+	if err := file.Close(); err != nil {
+		return fmt.Errorf("cannot close output file: %w", err)
+	}
+
 	return nil
 }
