@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-
-	"github.com/vikaglushkova/task-3/internal/currency"
 )
 
-func WriteToFile(outputFile string, currencies []currency.Currency) error {
+func WriteToFile(outputFile string, data interface{}) error {
 	outputDir := filepath.Dir(outputFile)
 
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
@@ -24,9 +22,8 @@ func WriteToFile(outputFile string, currencies []currency.Currency) error {
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "    ")
 
-	if err := encoder.Encode(currencies); err != nil {
+	if err := encoder.Encode(data); err != nil {
 		_ = file.Close()
-
 		return fmt.Errorf("cannot encode JSON data: %w", err)
 	}
 
