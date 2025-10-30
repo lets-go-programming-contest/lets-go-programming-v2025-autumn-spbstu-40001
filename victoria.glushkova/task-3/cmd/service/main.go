@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -18,21 +19,21 @@ type Config struct {
 	OutputFile string `yaml:"output-file"`
 }
 
+var ErrConfigFieldsRequired = errors.New("config file must contain both input-file and output-file fields")
+
 func ReadConfig(configPath string) (*Config, error) {
 	file, err := os.Open(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("cannot open config file: %w", err)
 	}
-	defer func() {
-		if closeErr := file.Close(); closeErr != nil {
-			fmt.Printf("Warning: error closing file: %v\n", closeErr)
-		}
-	}()
 
 	data, err := io.ReadAll(file)
 	if err != nil {
+		_ = file.Close()
 		return nil, fmt.Errorf("cannot read config file: %w", err)
 	}
+
+	_ = file.Close()
 
 	var config Config
 	if err = yaml.Unmarshal(data, &config); err != nil {
@@ -40,7 +41,7 @@ func ReadConfig(configPath string) (*Config, error) {
 	}
 
 	if config.InputFile == "" || config.OutputFile == "" {
-		return nil, fmt.Errorf("config file must contain both input-file and output-file fields")
+		return nil, ErrConfigFieldsRequired
 	}
 
 	return &config, nil
