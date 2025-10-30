@@ -6,15 +6,20 @@ import (
 	"os"
 )
 
+const (
+	minTemp = 15
+	maxTemp = 30
+)
+
 type OfficeThermostat struct {
 	min int
 	max int
 }
 
-func NewOfficeThermostat(min, max int) *OfficeThermostat {
+func NewOfficeThermostat(minTemp, maxTemp int) *OfficeThermostat {
 	return &OfficeThermostat{
-		min: min,
-		max: max,
+		min: minTemp,
+		max: maxTemp,
 	}
 }
 
@@ -55,7 +60,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		thermostat := NewOfficeThermostat(15, 30)
+		thermostat := NewOfficeThermostat(minTemp, maxTemp)
 
 		for range staffCount {
 			var operation string
