@@ -6,9 +6,10 @@ import (
 	"strconv"
 	"strings"
 )
+
 var ( 
 	ErrElemDecode error = errors.New("cannot decode element")
-    ErrFloatParse error = errors.New("cannot parse float")
+	ErrFloatParse error = errors.New("cannot parse float")
 )
 
 type floatWithDots float64
