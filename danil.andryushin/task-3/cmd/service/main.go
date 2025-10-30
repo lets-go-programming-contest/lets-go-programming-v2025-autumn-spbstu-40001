@@ -18,19 +18,23 @@ func main() {
 	if len(args) < 3 || args[1] != "-config" {
 		fmt.Println("invalid args")
 	}
+
 	data, err := yaml.Unmarshall(args[2])
 	if err != nil {
 		panic(err)
 	}
 
 	var valuteSlice valute.ValuteSlice
+
 	err = xml.Unmarshall(data.InputFile, &valuteSlice)
 	if err != nil {
 		panic(err)
 	}
+
 	sort.Slice(valuteSlice.Valutes, func(i, j int) bool {
 		return valuteSlice.Valutes[i].Value > valuteSlice.Valutes[j].Value
 	})
+
 	err = json.WriteToFile(data.OutputFile, valuteSlice.Valutes, Permission)
 	if err != nil {
 		panic(err)
