@@ -22,12 +22,19 @@ func main() {
 
 	flag.Parse()
 
-	configFile := fmanager.GetConfigFile(configPathFlag)
-	configData := fmanager.GetConfigData(configFile)
+	configFile, err := fmanager.GetConfigFile(configPathFlag)
+	if err != nil {
+		panic(err)
+	}
+
+	configData, err := fmanager.GetConfigData(configFile)
+	if err != nil {
+		panic(err)
+	}
 
 	var files fmanager.Config
 
-	err := yaml.Unmarshal(configData, &files)
+	err = yaml.Unmarshal(configData, &files)
 	if err != nil {
 		panic(err)
 	}
@@ -36,8 +43,15 @@ func main() {
 
 	_, err = os.Stat(files.OutputFile)
 	if errors.Is(err, os.ErrNotExist) {
-		fmanager.MakeDirectory(dir)
-		fmanager.CreateFile(dir, filename)
+		err := fmanager.MakeDirectory(dir)
+		if err != nil {
+			panic(err)
+		}
+
+		err = fmanager.CreateFile(dir, filename)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	inputFile, err := os.Open(files.InputFile)

@@ -2,9 +2,13 @@ package currencyrate
 
 import (
 	"encoding/xml"
+	"errors"
 	"strconv"
 	"strings"
 )
+
+var ErrElemDecode error = errors.New("cannot decode element")
+var ErrFloatParse error = errors.New("cannot parse float")
 
 type floatWithDots float64
 
@@ -23,7 +27,7 @@ func (fd *floatWithDots) UnmarshalXML(d *xml.Decoder, start xml.StartElement) er
 
 	err := d.DecodeElement(&content, &start)
 	if err != nil {
-		return err
+		return ErrElemDecode
 	}
 
 	content = strings.ReplaceAll(content, ",", ".")
@@ -32,7 +36,7 @@ func (fd *floatWithDots) UnmarshalXML(d *xml.Decoder, start xml.StartElement) er
 
 	retFloat64, err = strconv.ParseFloat(content, 64)
 	if err != nil {
-		return err
+		return ErrFloatParse
 	}
 
 	*fd = floatWithDots(retFloat64)
