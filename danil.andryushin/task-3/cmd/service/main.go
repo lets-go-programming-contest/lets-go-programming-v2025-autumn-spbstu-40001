@@ -1,8 +1,7 @@
 package main
 
 import (
-	"fmt"
-	"os"
+	"flag"
 	"sort"
 
 	"github.com/atroxxxxxx/task-3/internal/parsing/json"
@@ -14,12 +13,10 @@ import (
 const Permission = 0o666
 
 func main() {
-	args := os.Args
-	if len(args) < 3 || args[1] != "-config" {
-		fmt.Println("invalid args")
-	}
+	path := flag.String("config", "config.yaml", "config path")
+	flag.Parse()
 
-	data, err := yaml.Unmarshall(args[2])
+	data, err := yaml.Unmarshall(*path)
 	if err != nil {
 		panic(err)
 	}
