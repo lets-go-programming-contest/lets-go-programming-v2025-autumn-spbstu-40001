@@ -9,6 +9,7 @@ import (
 	"path"
 	"sort"
 
+	"github.com/Nekich06/task-3/internal/config"
 	"github.com/Nekich06/task-3/internal/currencyrate"
 	"github.com/Nekich06/task-3/internal/fmanager"
 	"github.com/Nekich06/task-3/internal/valutessorter"
@@ -22,17 +23,17 @@ func main() {
 
 	flag.Parse()
 
-	configFile, err := fmanager.GetConfigFile(configPathFlag)
+	configFile, err := config.GetConfigFile(configPathFlag)
 	if err != nil {
 		panic(err)
 	}
 
-	configData, err := fmanager.GetConfigData(configFile)
+	configData, err := config.GetConfigData(configFile)
 	if err != nil {
 		panic(err)
 	}
 
-	var files fmanager.Config
+	var files config.Config
 
 	err = yaml.Unmarshal(configData, &files)
 	if err != nil {

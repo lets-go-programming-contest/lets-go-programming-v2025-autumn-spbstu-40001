@@ -13,33 +13,11 @@ import (
 
 const accessMask = 0o777
 
-var ErrUnknownCharset error = errors.New("unknown charset")
-var ErrNotAbleToMkDir error = errors.New("cannot make directory")
-var ErrCreateFile error = errors.New("cannot create file")
-
-type Config struct {
-	InputFile  string `yaml:"input-file"`
-	OutputFile string `yaml:"output-file"`
-}
-
-func GetConfigFile(configPathFlag *string) (*os.File, error) {
-	configFile, err := os.Open(*configPathFlag)
-
-	if err != nil && os.IsNotExist(err) {
-		return nil, os.ErrNotExist
-	}
-
-	return configFile, nil
-}
-
-func GetConfigData(configFile *os.File) ([]byte, error) {
-	configData, err := io.ReadAll(configFile)
-	if err != nil {
-		return configData, io.EOF
-	}
-
-	return configData, nil
-}
+var (
+	ErrUnknownCharset error = errors.New("unknown charset")
+	ErrNotAbleToMkDir error = errors.New("cannot make directory")
+	ErrCreateFile     error = errors.New("cannot create file")
+)
 
 func ParseOutputFilePath(outputFilePath string) (string, string) {
 	var path string
