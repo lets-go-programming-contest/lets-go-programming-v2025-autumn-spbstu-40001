@@ -28,16 +28,14 @@ func ParseXMLFile(inputFile string) (*ValCurs, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot open input file: %w", err)
 	}
-	defer func() {
-		if closeErr := file.Close(); closeErr != nil {
-			fmt.Printf("Warning: error closing file: %v\n", closeErr)
-		}
-	}()
 
 	data, err := io.ReadAll(file)
 	if err != nil {
+		file.Close()
 		return nil, fmt.Errorf("cannot read input file: %w", err)
 	}
+
+	file.Close()
 
 	var valCurs ValCurs
 	if err = xml.Unmarshal(data, &valCurs); err != nil {
