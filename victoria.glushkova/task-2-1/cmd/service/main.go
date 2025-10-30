@@ -6,30 +6,28 @@ import (
 	"os"
 )
 
-const (
-	minTemp = 15
-	maxTemp = 30
-)
-
 type OfficeThermostat struct {
 	min int
 	max int
 }
 
-func NewOfficeThermostat() *OfficeThermostat {
+func NewOfficeThermostat(min, max int) *OfficeThermostat {
 	return &OfficeThermostat{
-		min: minTemp,
-		max: maxTemp,
+		min: min,
+		max: max,
 	}
 }
 
 func (ot *OfficeThermostat) Process(operation string, temperature int) int {
-	if operation == ">=" && temperature > ot.min {
-		ot.min = temperature
-	}
-
-	if operation == "<=" && temperature < ot.max {
-		ot.max = temperature
+	switch operation {
+	case ">=":
+		if temperature > ot.min {
+			ot.min = temperature
+		}
+	case "<=":
+		if temperature < ot.max {
+			ot.max = temperature
+		}
 	}
 
 	if ot.min > ot.max {
@@ -44,7 +42,7 @@ func main() {
 
 	_, err := fmt.Scan(&departmentCount)
 	if err != nil {
-		log.Printf("Error: %v", err)
+		log.Printf("Error reading department count: %v", err)
 		os.Exit(1)
 	}
 
@@ -53,20 +51,19 @@ func main() {
 
 		_, err := fmt.Scan(&staffCount)
 		if err != nil {
-			log.Printf("Error: %v", err)
+			log.Printf("Error reading staff count: %v", err)
 			os.Exit(1)
 		}
 
-		thermostat := NewOfficeThermostat()
+		thermostat := NewOfficeThermostat(15, 30)
 
 		for range staffCount {
 			var operation string
-
 			var temperature int
 
 			_, err := fmt.Scanf("%s %d\n", &operation, &temperature)
 			if err != nil {
-				log.Printf("Error: %v", err)
+				log.Printf("Error reading operation and temperature: %v", err)
 				os.Exit(1)
 			}
 
