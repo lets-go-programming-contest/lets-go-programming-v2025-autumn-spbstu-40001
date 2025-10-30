@@ -7,23 +7,15 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type Config struct {
-	InputFile  string `yaml:"input-file"`
-	OutputFile string `yaml:"output-file"`
-}
-
-func Unmarshall(path string) (Config, error) {
-	var config Config
-
+func Unmarshall(path string, obj any) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return config, fmt.Errorf("cannot read config file: %w", err)
+		return fmt.Errorf("cannot read config file: %w", err)
 	}
-
-	err = yaml.Unmarshal(data, &config)
+	err = yaml.Unmarshal(data, obj)
 	if err != nil {
-		return config, fmt.Errorf("unarshallig failed: %w", err)
+		return fmt.Errorf("unarshallig failed: %w", err)
 	}
 
-	return config, nil
+	return nil
 }
