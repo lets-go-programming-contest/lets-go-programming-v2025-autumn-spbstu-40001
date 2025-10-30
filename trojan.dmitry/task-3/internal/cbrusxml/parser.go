@@ -12,7 +12,6 @@ import (
 )
 
 type ValCurs struct {
-	XMLName xml.Name `xml:"ValCurs"`
 	Valutes []Valute `xml:"Valute"`
 }
 
@@ -32,21 +31,20 @@ func (f *FloatComma) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error 
 		return nil
 	}
 
-	v, err := strconv.ParseFloat(value, 64)
+	val, err := strconv.ParseFloat(value, 64)
 	if err != nil {
 		return err
 	}
 
-	*f = FloatComma(v)
+	*f = FloatComma(val)
 	return nil
 }
 
 type Valute struct {
-	NumCode   int        `xml:"NumCode"`
-	CharCode  string     `xml:"CharCode"`
-	Nominal   int        `xml:"Nominal"`
-	Value     FloatComma `xml:"Value"`
-	VunitRate FloatComma `xml:"VunitRate"`
+	NumCode  int        `xml:"NumCode"`
+	CharCode string     `xml:"CharCode"`
+	Nominal  int        `xml:"Nominal"`
+	Value    FloatComma `xml:"Value"`
 }
 
 func ParseFile(path string) (*ValCurs, error) {
