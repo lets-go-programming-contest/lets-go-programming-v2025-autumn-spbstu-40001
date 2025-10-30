@@ -26,6 +26,7 @@ func WriteToFile(outputFile string, currencies []currency.Currency) error {
 
 	if err := encoder.Encode(currencies); err != nil {
 		_ = file.Close()
+
 		return fmt.Errorf("cannot encode JSON data: %w", err)
 	}
 
