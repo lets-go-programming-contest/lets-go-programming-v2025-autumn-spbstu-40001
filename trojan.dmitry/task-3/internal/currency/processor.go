@@ -2,6 +2,7 @@ package currency
 
 import (
 	"fmt"
+	"math"
 	"sort"
 	"strconv"
 	"strings"
@@ -20,6 +21,10 @@ func Process(inputPath, outputPath string) error {
 	vc, err := cbrusxml.ParseFile(inputPath)
 	if err != nil {
 		return fmt.Errorf("parse xml: %w", err)
+	}
+
+	if vc == nil || len(vc.Valutes) == 0 {
+		return fmt.Errorf("no currency data found in XML file")
 	}
 
 	results := make([]Result, 0, len(vc.Valutes))
@@ -52,7 +57,11 @@ func Process(inputPath, outputPath string) error {
 	}
 
 	sort.Slice(results, func(i, j int) bool {
-		return results[i].Value > results[j].Value
+		if math.Abs(results[i].Value-results[j].Value) > 1e-6 {
+			return results[i].Value > results[j].Value
+		}
+
+		return results[i].CharCode < results[j].CharCode
 	})
 
 	err = jsonfile.Save(outputPath, results)
