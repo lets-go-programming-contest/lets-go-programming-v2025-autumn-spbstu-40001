@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-var ( 
+var (
 	ErrElemDecode error = errors.New("cannot decode element")
 	ErrFloatParse error = errors.New("cannot parse float")
 )
