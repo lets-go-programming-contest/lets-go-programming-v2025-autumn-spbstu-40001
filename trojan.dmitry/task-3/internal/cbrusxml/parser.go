@@ -13,8 +13,8 @@ import (
 type ValCurs struct {
 	XMLName xml.Name `xml:"ValCurs"`
 	Date    string   `xml:"Date,attr"`
-	Name    string   `xml:"name,attr"`
-	Valutes []Valute `xml:"valute"`
+	Name    string   `xml:"Name,attr"`
+	Valutes []Valute `xml:"Valute"`
 }
 
 type Valute struct {

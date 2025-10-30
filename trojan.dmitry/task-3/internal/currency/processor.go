@@ -32,7 +32,7 @@ func Process(inputPath, outputPath string) error {
 		valStr = strings.ReplaceAll(valStr, ",", ".")
 		parsed, err := strconv.ParseFloat(valStr, 64)
 		if err != nil {
-			return fmt.Errorf("Error:", v.CharCode, err)
+			continue
 		}
 
 		nominal := float64(v.Nominal)
@@ -47,6 +47,9 @@ func Process(inputPath, outputPath string) error {
 			Value:    valuePerOne,
 		})
 	}
+	if len(results) == 0 {
+		return fmt.Errorf("no valid currencies processed after filtering")
+	}
 
 	sort.Slice(results, func(i, j int) bool {
 		return results[i].Value > results[j].Value
@@ -54,7 +57,7 @@ func Process(inputPath, outputPath string) error {
 
 	err = jsonfile.Save(outputPath, results)
 	if err != nil {
-		return fmt.Errorf("Error:", err)
+		return fmt.Errorf("save json: %w", err)
 	}
 	return nil
 }
