@@ -25,8 +25,9 @@ func (a ByValue) Less(i, j int) bool {
 }
 
 func Process(inputFile, outputFile string) error {
-	valCurs, err := xml.ReadValCurs(inputFile)
-	if err != nil {
+	var valCurs models.ValCurs
+
+	if err := xml.DecodeXMLFile(inputFile, &valCurs); err != nil {
 		return fmt.Errorf("failed to read and parse XML: %w", err)
 	}
 

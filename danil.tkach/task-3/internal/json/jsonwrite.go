@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-func WriteResult(data interface{}, outputFile string, dirPerms, filePerms os.FileMode) error {
+func WriteResult[T any](data T, outputFile string, dirPerms, filePerms os.FileMode) error {
 	outputDir := filepath.Dir(outputFile)
 	if err := os.MkdirAll(outputDir, dirPerms); err != nil {
 		return fmt.Errorf("failed to create a dir %s: %w", outputDir, err)
