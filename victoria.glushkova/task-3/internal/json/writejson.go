@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-const dirPermissions = 0755
+const dirPermissions = 0o755
 
 func WriteToFile(outputFile string, data interface{}) error {
 	outputDir := filepath.Dir(outputFile)
