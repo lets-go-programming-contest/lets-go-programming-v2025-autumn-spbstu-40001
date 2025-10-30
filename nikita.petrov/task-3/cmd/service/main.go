@@ -15,15 +15,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const (
-	ConfigName = "config"
-	ConfigFile = "config.yaml"
-	ConfigInfo = "path to config file"
-	AccessMask = 0o777
-)
+const accessMask = 0o777
 
 func main() {
-	configPathFlag := flag.String(ConfigName, ConfigFile, ConfigInfo)
+	configPathFlag := flag.String("config", "config.yaml", "path to config file")
 
 	flag.Parse()
 
@@ -61,7 +56,7 @@ func main() {
 
 	sort.Sort(valutessorter.ByValue(CBCurrencyRate))
 
-	outputFile, err := os.OpenFile(path.Join(dir, filename), os.O_WRONLY, AccessMask)
+	outputFile, err := os.OpenFile(path.Join(dir, filename), os.O_WRONLY, accessMask)
 	if err != nil {
 		panic(err)
 	}
