@@ -17,6 +17,7 @@ func Unmarshall(path string, obj any) error {
 
 	decoder := xml.NewDecoder(bytes.NewReader(input))
 	decoder.CharsetReader = charset.NewReaderLabel
+
 	err = decoder.Decode(&obj)
 	if err != nil {
 		return fmt.Errorf("unmarshalling failed: %w", err)
