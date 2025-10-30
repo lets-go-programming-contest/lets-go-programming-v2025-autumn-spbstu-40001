@@ -12,12 +12,28 @@ import (
 	"github.com/Nekich06/task-3/internal/charsetsetter"
 	"github.com/Nekich06/task-3/internal/config"
 	"github.com/Nekich06/task-3/internal/currencyrate"
-	"github.com/Nekich06/task-3/internal/fmanager"
+	"github.com/Nekich06/task-3/internal/filesmanager"
 	"github.com/Nekich06/task-3/internal/valutessorter"
 	"gopkg.in/yaml.v3"
 )
 
 const accessMask = 0o777
+
+func manageOutputFileAndItsDirs(outputFilePath string, dir string, filename string) error {
+	_, err := os.Stat(outputFilePath)
+	if errors.Is(err, os.ErrNotExist) {
+		err := filesmanager.MakeDirectory(dir)
+		if err != nil {
+			return err
+		}
+
+		err = filesmanager.CreateFile(dir, filename)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 func main() {
 	configPathFlag := flag.String("config", "config.yaml", "path to config file")
@@ -41,19 +57,11 @@ func main() {
 		panic(err)
 	}
 
-	dir, filename := fmanager.ParseOutputFilePath(files.OutputFile)
+	dir, filename := filesmanager.ParseOutputFilePath(files.OutputFile)
 
-	_, err = os.Stat(files.OutputFile)
-	if errors.Is(err, os.ErrNotExist) {
-		err := fmanager.MakeDirectory(dir)
-		if err != nil {
-			panic(err)
-		}
-
-		err = fmanager.CreateFile(dir, filename)
-		if err != nil {
-			panic(err)
-		}
+	err = manageOutputFileAndItsDirs(files.OutputFile, dir, filename)
+	if err != nil {
+		panic(err)
 	}
 
 	inputFile, err := os.Open(files.InputFile)

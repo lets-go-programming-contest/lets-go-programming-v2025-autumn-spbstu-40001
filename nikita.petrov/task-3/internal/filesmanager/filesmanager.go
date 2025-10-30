@@ -1,4 +1,4 @@
-package fmanager
+package filesmanager
 
 import (
 	"errors"
@@ -11,7 +11,6 @@ import (
 const accessMask = 0o777
 
 var (
-	ErrUnknownCharset error = errors.New("unknown charset")
 	ErrNotAbleToMkDir error = errors.New("cannot make directory")
 	ErrCreateFile     error = errors.New("cannot create file")
 )
