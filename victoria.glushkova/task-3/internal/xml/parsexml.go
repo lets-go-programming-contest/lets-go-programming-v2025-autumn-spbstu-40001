@@ -31,11 +31,11 @@ func ParseXMLFile(inputFile string) (*ValCurs, error) {
 
 	data, err := io.ReadAll(file)
 	if err != nil {
-		file.Close()
+		_ = file.Close()
 		return nil, fmt.Errorf("cannot read input file: %w", err)
 	}
 
-	file.Close()
+	_ = file.Close()
 
 	var valCurs ValCurs
 	if err = xml.Unmarshal(data, &valCurs); err != nil {
