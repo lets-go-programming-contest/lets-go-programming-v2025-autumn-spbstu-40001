@@ -11,7 +11,7 @@ type ValCurs struct {
 	XMLName xml.Name `xml:"ValCurs"`
 	Date    string   `xml:"Date,attr"`
 	Name    string   `xml:"name,attr"`
-	Valutes []Valute `xml:"Valute"`
+	Valutes []Valute `xml:"Valute"
 }
 
 type Valute struct {
@@ -28,7 +28,11 @@ func ParseXMLFile(inputFile string) (*ValCurs, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot open input file: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil {
+			fmt.Printf("Warning: error closing file: %v\n", closeErr)
+		}
+	}()
 
 	data, err := io.ReadAll(file)
 	if err != nil {
@@ -36,8 +40,7 @@ func ParseXMLFile(inputFile string) (*ValCurs, error) {
 	}
 
 	var valCurs ValCurs
-	err = xml.Unmarshal(data, &valCurs)
-	if err != nil {
+	if err = xml.Unmarshal(data, &valCurs); err != nil {
 		return nil, fmt.Errorf("cannot parse XML data: %w", err)
 	}
 

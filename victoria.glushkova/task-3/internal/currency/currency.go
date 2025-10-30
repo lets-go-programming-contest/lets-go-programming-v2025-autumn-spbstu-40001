@@ -1,8 +1,9 @@
 package currency
 
 import (
-	"github.com/vikaglushkova/task-3/internal/xml"
 	"sort"
+
+	"github.com/vikaglushkova/task-3/internal/xml"
 )
 
 type Currency struct {
