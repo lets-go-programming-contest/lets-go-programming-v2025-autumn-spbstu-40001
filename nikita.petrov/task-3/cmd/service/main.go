@@ -19,19 +19,25 @@ import (
 
 const accessMask = 0o777
 
+var (
+	ErrMakeDir error = errors.New("cannot make directory")
+	ErrCreateFile error = errors.New("cannot create file")
+)
+
 func manageOutputFileAndItsDirs(outputFilePath string, dir string, filename string) error {
 	_, err := os.Stat(outputFilePath)
 	if errors.Is(err, os.ErrNotExist) {
 		err := filesmanager.MakeDirectory(dir)
 		if err != nil {
-			return err
+			return ErrMakeDir
 		}
 
 		err = filesmanager.CreateFile(dir, filename)
 		if err != nil {
-			return err
+			return ErrCreateFile
 		}
 	}
+
 	return nil
 }
 
