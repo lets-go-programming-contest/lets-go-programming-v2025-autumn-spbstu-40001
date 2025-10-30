@@ -10,6 +10,11 @@ import (
 	"github.com/verticalochka/task-3/internal/xml"
 )
 
+const (
+	dirPermissions  = 0o755
+	filePermissions = 0o600
+)
+
 func main() {
 	configPath := flag.String("config", "config.yaml", "path to config")
 	flag.Parse()
@@ -30,7 +35,7 @@ func main() {
 		return currencyList.Data[i].Value > currencyList.Data[j].Value
 	})
 
-	err = json.ParseJSON(cfg.OutputFilePath, currencyList.Data, 0o755, 0o600)
+	err = json.ParseJSON(cfg.OutputFilePath, currencyList.Data, dirPermissions, filePermissions)
 	if err != nil {
 		panic(err)
 	}
