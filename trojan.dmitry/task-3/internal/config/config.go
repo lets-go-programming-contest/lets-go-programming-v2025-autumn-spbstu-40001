@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -24,7 +25,7 @@ func LoadConfig(path string) (*Config, error) {
 	}
 
 	if config.InputFile == "" || config.OutputFile == "" {
-		return nil, err
+		return nil, fmt.Errorf("input-file and output-file must be specified")
 	}
 
 	return &config, nil
