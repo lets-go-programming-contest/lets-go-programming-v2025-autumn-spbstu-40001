@@ -2,13 +2,10 @@ package fmanager
 
 import (
 	"errors"
-	"io"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
-
-	"golang.org/x/text/encoding/charmap"
 )
 
 const accessMask = 0o777
@@ -59,13 +56,4 @@ func CreateFile(dirName string, fileName string) error {
 	}
 
 	return nil
-}
-
-func Charset(charset string, input io.Reader) (io.Reader, error) {
-	switch charset {
-	case "windows-1251":
-		return charmap.Windows1251.NewDecoder().Reader(input), nil
-	default:
-		return nil, ErrUnknownCharset
-	}
 }

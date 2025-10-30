@@ -9,6 +9,7 @@ import (
 	"path"
 	"sort"
 
+	"github.com/Nekich06/task-3/internal/charsetsetter"
 	"github.com/Nekich06/task-3/internal/config"
 	"github.com/Nekich06/task-3/internal/currencyrate"
 	"github.com/Nekich06/task-3/internal/fmanager"
@@ -61,7 +62,7 @@ func main() {
 	}
 
 	XMLDecoder := xml.NewDecoder(inputFile)
-	XMLDecoder.CharsetReader = fmanager.Charset
+	XMLDecoder.CharsetReader = charsetsetter.Charset
 
 	var CBCurrencyRate currencyrate.CurrencyRate
 
