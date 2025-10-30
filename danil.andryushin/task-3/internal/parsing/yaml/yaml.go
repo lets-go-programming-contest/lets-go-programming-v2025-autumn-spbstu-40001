@@ -12,6 +12,7 @@ func Unmarshall(path string, obj any) error {
 	if err != nil {
 		return fmt.Errorf("cannot read config file: %w", err)
 	}
+
 	err = yaml.Unmarshal(data, obj)
 	if err != nil {
 		return fmt.Errorf("unarshallig failed: %w", err)

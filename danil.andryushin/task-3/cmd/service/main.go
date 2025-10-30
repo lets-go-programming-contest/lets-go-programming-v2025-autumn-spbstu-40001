@@ -18,6 +18,7 @@ func main() {
 	flag.Parse()
 
 	var data config.Config
+
 	err := yaml.Unmarshall(*path, &data)
 	if err != nil {
 		panic(err)
