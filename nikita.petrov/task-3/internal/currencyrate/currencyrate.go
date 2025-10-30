@@ -7,8 +7,10 @@ import (
 	"strings"
 )
 
-var ErrElemDecode error = errors.New("cannot decode element")
-var ErrFloatParse error = errors.New("cannot parse float")
+var ( 
+	ErrElemDecode error = errors.New("cannot decode element")
+    ErrFloatParse error = errors.New("cannot parse float")
+)
 
 type floatWithDots float64
 
