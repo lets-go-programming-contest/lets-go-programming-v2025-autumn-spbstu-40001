@@ -2,7 +2,6 @@ package currency
 
 import (
 	"fmt"
-	"math"
 	"sort"
 	"strconv"
 	"strings"
@@ -57,10 +56,12 @@ func Process(inputPath, outputPath string) error {
 	}
 
 	sort.Slice(results, func(i, j int) bool {
-		if math.Abs(results[i].Value-results[j].Value) > 1e-6 {
+		if results[i].Value != results[j].Value {
 			return results[i].Value > results[j].Value
 		}
-
+		if results[i].NumCode != results[j].NumCode {
+			return results[i].NumCode < results[j].NumCode
+		}
 		return results[i].CharCode < results[j].CharCode
 	})
 
