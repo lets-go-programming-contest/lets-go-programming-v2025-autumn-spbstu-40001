@@ -4,10 +4,8 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/DimasFantomasA/internal/config"
-	"github.com/DimasFantomasA/internal/currency"
+	"github.com/DimasFantomasA/task-3/internal/config"
 	"github.com/DimasFantomasA/task-3/internal/currency"
-	"github.com/go-delve/delve/pkg/config"
 )
 
 func main() {
@@ -20,12 +18,12 @@ func main() {
 
 	config, err := config.LoadConfig(*path)
 	if err != nil {
-		panic(fmt.Errorf("Error:", err))
+		panic(fmt.Errorf("load config: %w", err))
 	}
 
 	err = currency.Process(config.InputFile, config.OutputFile)
 	if err != nil {
-		panic(fmt.Errorf("Error:", err))
+		panic(fmt.Errorf("process currency: %w", err))
 	}
 
 	fmt.Println("End")
