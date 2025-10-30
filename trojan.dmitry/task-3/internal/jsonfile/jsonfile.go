@@ -20,7 +20,6 @@ func Save(path string, data any) error {
 	defer file.Close()
 
 	enc := json.NewEncoder(file)
-	enc.SetEscapeHTML(false)
 	enc.SetIndent("", "    ")
 	err = enc.Encode(data)
 	if err != nil {

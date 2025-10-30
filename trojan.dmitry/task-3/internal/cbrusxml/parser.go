@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 
 	"golang.org/x/text/encoding/charmap"
@@ -12,17 +13,39 @@ import (
 
 type ValCurs struct {
 	XMLName xml.Name `xml:"ValCurs"`
-	Date    string   `xml:"Date,attr"`
-	Name    string   `xml:"Name,attr"`
 	Valutes []Valute `xml:"Valute"`
 }
 
+type FloatComma float64
+
+func (f *FloatComma) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	var value string
+	if err := d.DecodeElement(&value, &start); err != nil {
+		return err
+	}
+
+	value = strings.TrimSpace(value)
+	value = strings.ReplaceAll(value, ",", ".")
+
+	if value == "" {
+		*f = 0
+		return nil
+	}
+
+	v, err := strconv.ParseFloat(value, 64)
+	if err != nil {
+		return err
+	}
+
+	*f = FloatComma(v)
+	return nil
+}
+
 type Valute struct {
-	NumCode  int    `xml:"NumCode"`
-	CharCode string `xml:"CharCode"`
-	Nominal  int    `xml:"Nominal"`
-	Name     string `xml:"Name"`
-	Value    string `xml:"Value"`
+	NumCode  int        `xml:"NumCode"`
+	CharCode string     `xml:"CharCode"`
+	Nominal  int        `xml:"Nominal"`
+	Value    FloatComma `xml:"Value"`
 }
 
 func ParseFile(path string) (*ValCurs, error) {
@@ -32,11 +55,10 @@ func ParseFile(path string) (*ValCurs, error) {
 		return nil, err
 	}
 
-	normalized := bytes.ReplaceAll(val, []byte(","), []byte("."))
-	dec := xml.NewDecoder(bytes.NewReader(normalized))
+	dec := xml.NewDecoder(bytes.NewReader(val))
 
 	dec.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
-		if strings.EqualFold(strings.TrimSpace(charset), "windows-1251") {
+		if strings.ToLower(charset) == "windows-1251" {
 			return charmap.Windows1251.NewDecoder().Reader(input), nil
 		}
 
