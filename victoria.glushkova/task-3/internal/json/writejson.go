@@ -7,10 +7,12 @@ import (
 	"path/filepath"
 )
 
+const dirPermissions = 0755
+
 func WriteToFile(outputFile string, data interface{}) error {
 	outputDir := filepath.Dir(outputFile)
 
-	err := os.MkdirAll(outputDir, 0o755)
+	err := os.MkdirAll(outputDir, dirPermissions)
 	if err != nil {
 		return fmt.Errorf("cannot create output directory: %w", err)
 	}
