@@ -7,9 +7,11 @@ import (
 
 type IntHeap []int
 
-func (h IntHeap) Len() int           { return len(h) }
-func (h IntHeap) Less(i, j int) bool { return h[i] > h[j] }
-func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+func (h *IntHeap) Len() int { return len(*h) }
+
+func (h *IntHeap) Less(i, j int) bool { return (*h)[i] > (*h)[j] }
+
+func (h *IntHeap) Swap(i, j int) { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 
 func (h *IntHeap) Push(x interface{}) {
 	rating, ok := x.(int)
@@ -22,11 +24,11 @@ func (h *IntHeap) Push(x interface{}) {
 
 func (h *IntHeap) Pop() interface{} {
 	old := *h
-	n := len(old)
-	x := old[n-1]
-	*h = old[0 : n-1]
+	length := len(old)
+	item := old[length-1]
+	*h = old[0 : length-1]
 
-	return x
+	return item
 }
 
 func main() {
@@ -64,14 +66,14 @@ func main() {
 		return
 	}
 
-	temp := make(IntHeap, len(*heapInstance))
-	copy(temp, *heapInstance)
-	heap.Init(&temp)
+	tempHeap := make(IntHeap, len(*heapInstance))
+	copy(tempHeap, *heapInstance)
+	heap.Init(&tempHeap)
 
 	var result int
 
 	for range preferenceOrder {
-		item := heap.Pop(&temp)
+		item := heap.Pop(&tempHeap)
 		rating, ok := item.(int)
 
 		if !ok {
