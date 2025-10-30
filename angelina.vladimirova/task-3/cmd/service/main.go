@@ -30,7 +30,7 @@ func main() {
 		return currencyList.Data[i].Value > currencyList.Data[j].Value
 	})
 
-	err = json.ParseJSON(cfg.OutputFilePath, currencyList.Data)
+	err = json.ParseJSON(cfg.OutputFilePath, currencyList.Data, 0o755, 0o600)
 	if err != nil {
 		panic(err)
 	}
