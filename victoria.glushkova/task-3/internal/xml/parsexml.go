@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"golang.org/x/net/html/charset"
 )
 
 type ValCurs struct {
@@ -25,27 +27,20 @@ type Valute struct {
 }
 
 func ParseXMLFile(inputFile string) (*ValCurs, error) {
-	file, err := os.Open(inputFile)
+	data, err := os.ReadFile(inputFile)
 	if err != nil {
-		return nil, fmt.Errorf("cannot open input file: %w", err)
+		return nil, fmt.Errorf("cannot read xml file: %w", err)
 	}
 
-	data, err := io.ReadAll(file)
-	if err != nil {
-		_ = file.Close()
-
-		return nil, fmt.Errorf("cannot read input file: %w", err)
+	decoder := xml.NewDecoder(bytes.NewReader(data))
+	decoder.CharsetReader = func(encoding string, input io.Reader) (io.Reader, error) {
+		return charset.NewReader(input, encoding)
 	}
-
-	if err := file.Close(); err != nil {
-		return nil, fmt.Errorf("cannot close input file: %w", err)
-	}
-
-	data = bytes.ReplaceAll(data, []byte(`encoding="windows-1251"`), []byte(`encoding="UTF-8"`))
 
 	var valCurs ValCurs
-	if err := xml.Unmarshal(data, &valCurs); err != nil {
-		return nil, fmt.Errorf("cannot parse XML data: %w", err)
+	err = decoder.Decode(&valCurs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse XML: %w", err)
 	}
 
 	return &valCurs, nil
