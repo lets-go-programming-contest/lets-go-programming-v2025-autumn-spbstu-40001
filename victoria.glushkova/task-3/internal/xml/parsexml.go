@@ -30,38 +30,41 @@ type Valute struct {
 
 type currencyValue float64
 
-func (cv *currencyValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	var s string
-	err := d.DecodeElement(&s, &start)
+func (cv *currencyValue) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
+	var valueString string
+	err := decoder.DecodeElement(&valueString, &start)
 	if err != nil {
-		return err
+		return fmt.Errorf("decode element: %w", err)
 	}
 
-	s = strings.Replace(s, ",", ".", 1)
+	valueString = strings.Replace(valueString, ",", ".", 1)
 
-	value, err := strconv.ParseFloat(s, 64)
+	value, err := strconv.ParseFloat(valueString, 64)
 	if err != nil {
-		return fmt.Errorf("parse float %q: %w", s, err)
+		return fmt.Errorf("parse float %q: %w", valueString, err)
 	}
 
 	*cv = currencyValue(value)
+
 	return nil
 }
 
-func (v *Valute) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+func (v *Valute) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
 	type alias Valute
+
 	var temp struct {
 		alias
 		Value currencyValue `xml:"Value"`
 	}
 
-	err := d.DecodeElement(&temp, &start)
+	err := decoder.DecodeElement(&temp, &start)
 	if err != nil {
-		return err
+		return fmt.Errorf("decode element: %w", err)
 	}
 
 	*v = Valute(temp.alias)
 	v.Value = float64(temp.Value)
+
 	return nil
 }
 
@@ -77,6 +80,7 @@ func ParseXMLFile(inputFile string) (*ValCurs, error) {
 	}
 
 	var valCurs ValCurs
+
 	err = decoder.Decode(&valCurs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse XML: %w", err)
