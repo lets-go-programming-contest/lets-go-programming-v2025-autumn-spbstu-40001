@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
+	"strings"
 
 	"golang.org/x/net/html/charset"
 )
@@ -24,6 +26,43 @@ type Valute struct {
 	Nominal  int     `xml:"Nominal"`
 	Name     string  `xml:"Name"`
 	Value    float64 `xml:"Value"`
+}
+
+type currencyValue float64
+
+func (cv *currencyValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	var s string
+	err := d.DecodeElement(&s, &start)
+	if err != nil {
+		return err
+	}
+
+	s = strings.Replace(s, ",", ".", 1)
+
+	value, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return fmt.Errorf("parse float %q: %w", s, err)
+	}
+
+	*cv = currencyValue(value)
+	return nil
+}
+
+func (v *Valute) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	type alias Valute
+	var temp struct {
+		alias
+		Value currencyValue `xml:"Value"`
+	}
+
+	err := d.DecodeElement(&temp, &start)
+	if err != nil {
+		return err
+	}
+
+	*v = Valute(temp.alias)
+	v.Value = float64(temp.Value)
+	return nil
 }
 
 func ParseXMLFile(inputFile string) (*ValCurs, error) {
