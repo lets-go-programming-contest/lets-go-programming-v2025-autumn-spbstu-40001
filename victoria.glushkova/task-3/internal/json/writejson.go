@@ -10,7 +10,8 @@ import (
 func WriteToFile(outputFile string, data interface{}) error {
 	outputDir := filepath.Dir(outputFile)
 
-	if err := os.MkdirAll(outputDir, 0755); err != nil {
+	err := os.MkdirAll(outputDir, 0755)
+	if err != nil {
 		return fmt.Errorf("cannot create output directory: %w", err)
 	}
 
@@ -22,12 +23,15 @@ func WriteToFile(outputFile string, data interface{}) error {
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "    ")
 
-	if err := encoder.Encode(data); err != nil {
+	err = encoder.Encode(data)
+	if err != nil {
 		_ = file.Close()
+
 		return fmt.Errorf("cannot encode JSON data: %w", err)
 	}
 
-	if err := file.Close(); err != nil {
+	err = file.Close()
+	if err != nil {
 		return fmt.Errorf("cannot close output file: %w", err)
 	}
 
