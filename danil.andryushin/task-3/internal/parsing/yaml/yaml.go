@@ -1,4 +1,4 @@
-package config
+package yaml
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ type Config struct {
 	OutputFile string `yaml:"output-file"`
 }
 
-func New(path string) (Config, error) {
+func Unmarshall(path string) (Config, error) {
 	var config Config
 	data, err := os.ReadFile(path)
 	if err != nil {

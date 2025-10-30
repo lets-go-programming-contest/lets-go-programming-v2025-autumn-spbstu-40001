@@ -13,7 +13,7 @@ type (
 		CharCode string      `xml:"CharCode" json:"char_code"`
 		Value    ValuteValue `xml:"Value" json:"value"`
 	}
-	ValuteCourse struct { // TODO: renaming
+	ValuteSlice struct {
 		XMLName xml.Name `xml:"ValCurs"`
 		Valutes []Valute `xml:"Valute"`
 	}
