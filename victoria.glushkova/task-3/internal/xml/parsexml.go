@@ -1,6 +1,7 @@
 package xml
 
 import (
+	"bytes"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -32,12 +33,15 @@ func ParseXMLFile(inputFile string) (*ValCurs, error) {
 	data, err := io.ReadAll(file)
 	if err != nil {
 		_ = file.Close()
+
 		return nil, fmt.Errorf("cannot read input file: %w", err)
 	}
 
 	if err := file.Close(); err != nil {
 		return nil, fmt.Errorf("cannot close input file: %w", err)
 	}
+
+	data = bytes.ReplaceAll(data, []byte(`encoding="windows-1251"`), []byte(`encoding="UTF-8"`))
 
 	var valCurs ValCurs
 	if err := xml.Unmarshal(data, &valCurs); err != nil {

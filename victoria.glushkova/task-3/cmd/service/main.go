@@ -29,6 +29,7 @@ func ReadConfig(configPath string) (*Config, error) {
 	data, err := io.ReadAll(file)
 	if err != nil {
 		_ = file.Close()
+
 		return nil, fmt.Errorf("cannot read config file: %w", err)
 	}
 
