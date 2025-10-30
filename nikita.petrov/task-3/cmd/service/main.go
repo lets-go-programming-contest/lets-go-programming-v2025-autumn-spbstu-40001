@@ -20,7 +20,7 @@ import (
 const accessMask = 0o777
 
 var (
-	ErrMakeDir error = errors.New("cannot make directory")
+	ErrMakeDir    error = errors.New("cannot make directory")
 	ErrCreateFile error = errors.New("cannot create file")
 )
 
