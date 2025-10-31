@@ -35,7 +35,7 @@ func (v Valute) ToOutput() (CurrencyOutput, error) {
 	cleanedValue := strings.ReplaceAll(v.Value, ",", ".")
 
 	var (
-		value float 64
+		value float64
 		err error
 	)
 

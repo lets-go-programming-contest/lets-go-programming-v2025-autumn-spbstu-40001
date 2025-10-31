@@ -18,8 +18,12 @@ func main() {
 		panic("config flag is required")
 	}
 
-	cfg, err := config.LoadConfig(*configPath)
-	if err != nil {
+	var (
+		cfg *config.Config
+		err error
+	)
+
+	if cfg, err = config.LoadConfig(*configPath); err != nil {
 		panic(fmt.Sprintf("Failed to load config: %v", err))
 	}
 
