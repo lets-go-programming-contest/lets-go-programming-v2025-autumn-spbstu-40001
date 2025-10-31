@@ -36,7 +36,7 @@ func (v Valute) ToOutput() (CurrencyOutput, error) {
 
 	var (
 		value float64
-		err error
+		err   error
 	)
 
 	if value, err = strconv.ParseFloat(cleanedValue, 64); err != nil {
