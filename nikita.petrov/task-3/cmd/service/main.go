@@ -59,22 +59,22 @@ func manageOutputFileAndItsDirs(outputFilePath string, dir string, filename stri
 	return nil
 }
 
-func writeInfoFromInputFileToCurrRate(inputFile *os.File, CBCurrencyRate *currencyrate.CurrencyRate) error {
+func writeInfoFromInputFileToCurrRate(inputFile *os.File, cbCurrencyRate *currencyrate.CurrencyRate) error {
 	XMLDecoder := xml.NewDecoder(inputFile)
 	XMLDecoder.CharsetReader = charset.NewReader
 
-	if err := XMLDecoder.Decode(&CBCurrencyRate); err != nil {
+	if err := XMLDecoder.Decode(&cbCurrencyRate); err != nil {
 		return fmt.Errorf("failed to decode file %s: %w", inputFile.Name(), err)
 	}
 
 	return nil
 }
 
-func writeInfoFromCurrRateToOutputFile(CBCurrencyRate *currencyrate.CurrencyRate, outputFile *os.File) error {
+func writeInfoFromCurrRateToOutputFile(cbCurrencyRate *currencyrate.CurrencyRate, outputFile *os.File) error {
 	JSONEncoder := json.NewEncoder(outputFile)
 	JSONEncoder.SetIndent("", "\t")
 
-	if err := JSONEncoder.Encode(&CBCurrencyRate.Valutes); err != nil {
+	if err := JSONEncoder.Encode(&cbCurrencyRate.Valutes); err != nil {
 		return fmt.Errorf("failed to encode currency rate to file %s: %w", outputFile.Name(), err)
 	}
 
