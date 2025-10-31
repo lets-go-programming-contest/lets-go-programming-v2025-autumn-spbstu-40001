@@ -7,10 +7,12 @@ import (
 	"path/filepath"
 )
 
+const directoryPermission = 0o755
+
 func Write(path string, data any) error {
 	dir := filepath.Dir(path)
 
-	err := os.MkdirAll(dir, 0o755)
+	err := os.MkdirAll(dir, directoryPermission)
 	if err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}

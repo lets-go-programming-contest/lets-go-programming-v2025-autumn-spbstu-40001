@@ -45,10 +45,13 @@ func (v *Valute) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) erro
 	v.Name = alias.Name
 
 	normalized := strings.Replace(alias.Value, ",", ".", 1)
-	v.Value, err = strconv.ParseFloat(normalized, 64)
-	if err != nil {
-		return fmt.Errorf("failed to parse value: %w", err)
+
+	parsedValue, parseErr := strconv.ParseFloat(normalized, 64)
+	if parseErr != nil {
+		return fmt.Errorf("failed to parse value: %w", parseErr)
 	}
+
+	v.Value = parsedValue
 
 	return nil
 }
