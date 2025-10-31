@@ -16,7 +16,6 @@ type Result struct {
 
 func Process(inputPath, outputPath string) error {
 	valCurs, err := cbrusxml.ParseFile(inputPath)
-
 	if err != nil {
 		return fmt.Errorf("parse xml: %w", err)
 	}
