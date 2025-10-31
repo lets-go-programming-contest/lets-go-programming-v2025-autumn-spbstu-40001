@@ -10,8 +10,8 @@ type Config struct {
 	OutputFile string `yaml:"output-file"`
 }
 
-func GetConfigFile(configPathFlag *string) (*os.File, error) {
-	configFile, err := os.Open(*configPathFlag)
+func GetConfigFile(configPath *string) (*os.File, error) {
+	configFile, err := os.Open(*configPath)
 
 	if err != nil && os.IsNotExist(err) {
 		return nil, os.ErrNotExist
