@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -35,6 +36,7 @@ func (cl *CurrencyList) ParseXML(filepath string) {
 		if strings.ToLower(encoding) == "windows-1251" {
 			return charmap.Windows1251.NewDecoder().Reader(input), nil
 		}
+
 		return input, nil
 	}
 
@@ -51,21 +53,26 @@ func (cl *CurrencyList) OrderByValue() {
 
 func ExportJSON(path string, data interface{}) error {
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return err
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
 	file, err := os.Create(path)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create file: %w", err)
 	}
-	defer file.Close()
+
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil {
+			panic(closeErr)
+		}
+	}()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "    ")
 
 	if err := encoder.Encode(data); err != nil {
-		return err
+		return fmt.Errorf("failed to encode JSON: %w", err)
 	}
 
 	return nil
