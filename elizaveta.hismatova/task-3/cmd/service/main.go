@@ -19,12 +19,14 @@ func main() {
 	}
 
 	cfg, err := config.LoadConfig(*configPath)
+
 	if err != nil {
 		panic(fmt.Sprintf("Failed to load config: %v", err))
 	}
 
 	var valCurs types.ValCurs
 	err = xmlparser.ParseXML(cfg.InputFile, &valCurs)
+
 	if err != nil {
 		panic(fmt.Sprintf("Failed to parse XML: %v", err))
 	}
@@ -32,6 +34,7 @@ func main() {
 	sortedCurrencies := valCurs.SortByValueDesc()
 
 	err = jsonwriter.WriteJSON(cfg.OutputFile, sortedCurrencies)
+
 	if err != nil {
 		panic(fmt.Sprintf("Failed to write JSON: %v", err))
 	}
