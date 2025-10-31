@@ -3,28 +3,29 @@ package main
 import (
 	"flag"
 
-	"github.com/Elektrek/currency-processor/internal/currencyio"
-	"github.com/Elektrek/currency-processor/internal/settings"
+	"github.com/Elektrek/task-3/internal/config"
+	"github.com/Elektrek/task-3/internal/iocurrency"
 )
 
 func main() {
-	cfgPath := flag.String("config", "", "Configuration file path")
+	configFile := flag.String("config", "", "YAML configuration file path")
 	flag.Parse()
 
-	if *cfgPath == "" {
-		panic("Configuration file path is required")
+	if *configFile == "" {
+		panic("Configuration file not specified")
 	}
 
-	config, err := settings.LoadConfig(*cfgPath)
+	settings, err := config.LoadSettings(*configFile)
 	if err != nil {
 		panic(err)
 	}
 
-	var rates currencyio.ExchangeRates
-	rates.LoadFromXML(config.Source)
-	rates.SortByRate()
+	var currencyData iocurrency.CurrencyList
 
-	if err := currencyio.WriteJSONFile(config.Result, rates.Currencies); err != nil {
+	currencyData.ParseXML(settings.InputPath)
+	currencyData.OrderByValue()
+
+	if err = iocurrency.ExportJSON(settings.OutputPath, currencyData.Items); err != nil {
 		panic(err)
 	}
 }
