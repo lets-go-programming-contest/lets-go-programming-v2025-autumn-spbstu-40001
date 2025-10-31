@@ -30,34 +30,32 @@ type CurrencyOutput struct {
 	Value    float64 `json:"value"`
 }
 
-func (v *Valute) ConvertToOutput() (*CurrencyOutput, error) {
-	valueStr := strings.Replace(v.Value, ",", ".", -1)
-	value, err := strconv.ParseFloat(valueStr, 64)
+func (v Valute) ToOutput() (CurrencyOutput, error) {
+	cleanedValue := strings.Replace(v.Value, ",", ".", -1)
+	value, err := strconv.ParseFloat(cleanedValue, 64)
 	if err != nil {
-		return nil, err
+		return CurrencyOutput{}, err
 	}
 
-	return &CurrencyOutput{
+	return CurrencyOutput{
 		NumCode:  v.NumCode,
 		CharCode: v.CharCode,
 		Value:    value,
 	}, nil
 }
 
-func (vc *ValCurs) SortByValueDesc() []CurrencyOutput {
-	var currencies []CurrencyOutput
-
+func (vc ValCurs) SortByValueDesc() []CurrencyOutput {
+	outputs := make([]CurrencyOutput, 0, len(vc.Valutes))
 	for _, valute := range vc.Valutes {
-		output, err := valute.ConvertToOutput()
+		output, err := valute.ToOutput()
 		if err != nil {
 			continue
 		}
-		currencies = append(currencies, *output)
+		outputs = append(outputs, output)
 	}
-
-	sort.Slice(currencies, func(i, j int) bool {
-		return currencies[i].Value > currencies[j].Value
+	sort.Slice(outputs, func(i, j int) bool {
+		return outputs[i].Value > outputs[j].Value
 	})
 
-	return currencies
+	return outputs
 }
