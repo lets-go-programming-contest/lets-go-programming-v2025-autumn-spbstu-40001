@@ -7,16 +7,28 @@ import (
 	"path/filepath"
 )
 
+const (
+	DirPerm  os.FileMode = 0o755
+	FilePerm os.FileMode = 0o644
+)
+
 func SaveJSON(outputPath string, data any) error {
-	if err := os.MkdirAll(filepath.Dir(outputPath), 0o755); err != nil {
-		return fmt.Errorf("Failed create directory %s: %w", outputPath, err)
+	return SaveJSONwithPerms(outputPath, data, DirPerm, FilePerm)
+}
+
+func SaveJSONwithPerms(outputPath string, data any, dirPerm, filePerm os.FileMode) error {
+	if err := os.MkdirAll(filepath.Dir(outputPath), dirPerm); err != nil {
+		return fmt.Errorf("failed create directory %s: %w", outputPath, err)
 	}
+
 	jsonData, err := json.MarshalIndent(data, "", "    ")
+
 	if err != nil {
 		return fmt.Errorf("marshal JSON: %w", err)
 	}
-	if err := os.WriteFile(outputPath, jsonData, 0o644); err != nil {
+	if err := os.WriteFile(outputPath, jsonData, filePerm); err != nil {
 		return fmt.Errorf("write file: %w", err)
 	}
+
 	return nil
 }
