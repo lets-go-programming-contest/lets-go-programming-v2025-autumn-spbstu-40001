@@ -14,6 +14,8 @@ import (
 	"golang.org/x/text/encoding/charmap"
 )
 
+const dirPermission = 0o755
+
 type CurrencyList struct {
 	XMLName xml.Name `xml:"ValCurs"`
 	Items   []struct {
@@ -53,7 +55,7 @@ func (cl *CurrencyList) OrderByValue() {
 
 func ExportJSON(path string, data interface{}) error {
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, dirPermission); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
