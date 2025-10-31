@@ -18,10 +18,6 @@ func main() {
 		panic(err.Error())
 	}
 
-	if err != nil {
-		panic(err.Error())
-	}
-
 	var curs valcurs.Currency
 
 	err = xmlparser.LoadCurrencies(cfg.InputFile, &curs)
