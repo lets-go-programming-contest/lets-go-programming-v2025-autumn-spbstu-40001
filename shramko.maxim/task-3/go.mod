@@ -1,4 +1,4 @@
-module github.com/Elektrek/currency-processor
+module github.com/Elektrek/task-3
 
 go 1.22.7
 
