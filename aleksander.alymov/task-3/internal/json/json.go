@@ -7,26 +7,35 @@ import (
 	"path/filepath"
 )
 
-const (
-	dirPerms = 0o755
-)
+type FileSaver interface {
+	Save(filename string, data interface{}) error
+}
 
-func WriteJSON(data interface{}, outputPath string) error {
-	if err := os.MkdirAll(filepath.Dir(outputPath), dirPerms); err != nil {
+type JSONSaver struct {
+	DirPerms  os.FileMode
+	FilePerms os.FileMode
+}
+
+func NewSaver() *JSONSaver {
+	return &JSONSaver{
+		DirPerms:  0755,
+		FilePerms: 0644,
+	}
+}
+
+func (s *JSONSaver) Save(filename string, data interface{}) error {
+	outputDir := filepath.Dir(filename)
+	if err := os.MkdirAll(outputDir, s.DirPerms); err != nil {
 		return fmt.Errorf("create directory: %w", err)
 	}
 
-	file, err := os.Create(outputPath)
+	jsonData, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
-		return fmt.Errorf("create file: %w", err)
+		return fmt.Errorf("marshal JSON: %w", err)
 	}
-	defer file.Close()
 
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "  ")
-
-	if err := encoder.Encode(data); err != nil {
-		return fmt.Errorf("encode JSON: %w", err)
+	if err := os.WriteFile(filename, jsonData, s.FilePerms); err != nil {
+		return fmt.Errorf("write file: %w", err)
 	}
 
 	return nil

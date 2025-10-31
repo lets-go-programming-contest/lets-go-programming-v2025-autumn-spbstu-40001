@@ -2,11 +2,29 @@ package currency
 
 import (
 	"fmt"
-	"sort"
-
-	"github.com/netwite/task-3/internal/json"
-	"github.com/netwite/task-3/internal/xml"
+	"strconv"
+	"strings"
 )
+
+type Converter interface {
+	Convert(source interface{}) (interface{}, error)
+}
+
+type CurrencyConverter struct{}
+
+func NewConverter() *CurrencyConverter {
+	return &CurrencyConverter{}
+}
+
+type XMLValute struct {
+	NumCode  string `xml:"NumCode"`
+	CharCode string `xml:"CharCode"`
+	Value    string `xml:"Value"`
+}
+
+type XMLValCurs struct {
+	Valutes []XMLValute `xml:"Valute"`
+}
 
 type Currency struct {
 	NumCode  int     `json:"num_code"`
@@ -14,33 +32,46 @@ type Currency struct {
 	Value    float64 `json:"value"`
 }
 
-type byValueDesc []Currency
+type CurrencyCollection []Currency
 
-func (a byValueDesc) Len() int           { return len(a) }
-func (a byValueDesc) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a byValueDesc) Less(i, j int) bool { return a[i].Value > a[j].Value }
+func (c CurrencyCollection) Len() int           { return len(c) }
+func (c CurrencyCollection) Swap(i, j int)      { c[i], c[j] = c[j], c[i] }
+func (c CurrencyCollection) Less(i, j int) bool { return c[i].Value > c[j].Value }
 
-func ProcessValutes(inputFile, outputFile string) error {
-	valutes, err := xml.ParseXML(inputFile)
-	if err != nil {
-		return fmt.Errorf("parse XML: %w", err)
+func (conv *CurrencyConverter) Convert(source interface{}) (interface{}, error) {
+	valCurs, ok := source.(*XMLValCurs)
+	if !ok {
+		return nil, fmt.Errorf("invalid source type for currency conversion")
 	}
 
-	currencies := make([]Currency, 0, len(valutes))
-	for _, valute := range valutes {
-		currency := Currency{
-			NumCode:  valute.NumCode,
-			CharCode: valute.CharCode,
-			Value:    valute.Value,
+	currencies := make(CurrencyCollection, 0, len(valCurs.Valutes))
+
+	for _, valute := range valCurs.Valutes {
+		currency, err := conv.convertValute(valute)
+		if err != nil {
+			return nil, err
 		}
 		currencies = append(currencies, currency)
 	}
 
-	sort.Sort(byValueDesc(currencies))
+	return currencies, nil
+}
 
-	if err := json.WriteJSON(currencies, outputFile); err != nil {
-		return fmt.Errorf("write JSON: %w", err)
+func (conv *CurrencyConverter) convertValute(valute XMLValute) (Currency, error) {
+	numCode, err := strconv.Atoi(valute.NumCode)
+	if err != nil {
+		return Currency{}, fmt.Errorf("parse NumCode '%s': %w", valute.NumCode, err)
 	}
 
-	return nil
+	valueStr := strings.Replace(valute.Value, ",", ".", 1)
+	value, err := strconv.ParseFloat(valueStr, 64)
+	if err != nil {
+		return Currency{}, fmt.Errorf("parse Value '%s': %w", valute.Value, err)
+	}
+
+	return Currency{
+		NumCode:  numCode,
+		CharCode: valute.CharCode,
+		Value:    value,
+	}, nil
 }
