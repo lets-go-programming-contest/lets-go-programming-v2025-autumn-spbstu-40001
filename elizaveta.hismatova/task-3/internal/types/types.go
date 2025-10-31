@@ -72,4 +72,3 @@ func (vc ValCurs) SortByValueDesc() []CurrencyOutput {
 
 	return outputs
 }
-

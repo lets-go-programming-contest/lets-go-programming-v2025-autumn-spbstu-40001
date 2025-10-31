@@ -38,4 +38,3 @@ func main() {
 		panic(fmt.Sprintf("Failed to write JSON: %v", err))
 	}
 }
-
