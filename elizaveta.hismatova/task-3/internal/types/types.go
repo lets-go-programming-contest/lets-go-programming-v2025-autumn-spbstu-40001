@@ -56,7 +56,7 @@ func (vc ValCurs) SortByValueDesc() []CurrencyOutput {
 	for _, valute := range vc.Valutes {
 		var (
 			output CurrencyOutput
-			err error
+			err    error
 		)
 
 		if output, err = valute.ToOutput(); err != nil {
