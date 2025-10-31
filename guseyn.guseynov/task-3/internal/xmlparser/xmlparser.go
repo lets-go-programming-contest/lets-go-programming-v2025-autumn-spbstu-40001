@@ -17,5 +17,10 @@ func Parse(path string, result any) error {
 	decoder := xml.NewDecoder(bytes.NewReader(data))
 	decoder.CharsetReader = charset.NewReaderLabel
 
-	return decoder.Decode(result)
+	err = decoder.Decode(result)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
