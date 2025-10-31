@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"io"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -14,20 +13,14 @@ type Config struct {
 }
 
 func LoadConfig(configPath string) (*Config, error) {
-	file, err := os.Open(configPath)
+	file, err := os.ReadFile(configPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed open file: %w", err)
-	}
-	defer file.Close()
-
-	data, err := io.ReadAll(file)
-	if err != nil {
-		return nil, fmt.Errorf("failed read file: %w", err)
+		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}
 
 	var config Config
 
-	err = yaml.Unmarshal(data, &config)
+	err = yaml.Unmarshal(file, &config)
 	if err != nil {
 		return nil, fmt.Errorf("failed parse YAML: %w", err)
 	}
