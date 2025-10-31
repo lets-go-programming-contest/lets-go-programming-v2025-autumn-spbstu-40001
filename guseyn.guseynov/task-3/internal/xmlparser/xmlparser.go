@@ -3,6 +3,7 @@ package xmlparser
 import (
 	"bytes"
 	"encoding/xml"
+	"fmt"
 	"os"
 
 	"golang.org/x/net/html/charset"
@@ -11,7 +12,7 @@ import (
 func Parse(path string, result any) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read XML file: %w", err)
 	}
 
 	decoder := xml.NewDecoder(bytes.NewReader(data))
@@ -19,7 +20,7 @@ func Parse(path string, result any) error {
 
 	err = decoder.Decode(result)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to parse XML: %w", err)
 	}
 
 	return nil

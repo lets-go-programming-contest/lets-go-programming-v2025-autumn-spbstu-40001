@@ -2,26 +2,27 @@ package currency
 
 import (
 	"encoding/xml"
+	"fmt"
 	"strconv"
 	"strings"
 )
 
 type ValCurs struct {
-	XMLName xml.Name   `xml:"ValCurs"`
-	Valutes []Valute   `xml:"Valute"`
+	XMLName xml.Name `xml:"ValCurs"`
+	Valutes []Valute `xml:"Valute"`
 }
 
 type Valute struct {
-	ID       string    `xml:"ID,attr"`
-	NumCode  int       `json:"num_code" xml:"NumCode"`
-	CharCode string    `json:"char_code" xml:"CharCode"`
-	Nominal  int       `xml:"Nominal"`
-	Name     string    `xml:"Name"`
-	Value    float64   `json:"value" xml:"Value"`
+	ID       string  `xml:"ID,attr"`
+	NumCode  int     `json:"num_code"  xml:"NumCode"`
+	CharCode string  `json:"char_code" xml:"CharCode"`
+	Nominal  int     `xml:"Nominal"`
+	Name     string  `xml:"Name"`
+	Value    float64 `json:"value"     xml:"Value"`
 }
 
 func (v *Valute) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
-	type alias struct {
+	type valuteAlias struct {
 		ID       string `xml:"ID,attr"`
 		NumCode  int    `xml:"NumCode"`
 		CharCode string `xml:"CharCode"`
@@ -30,22 +31,23 @@ func (v *Valute) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) erro
 		Value    string `xml:"Value"`
 	}
 
-	var a alias
-	err := decoder.DecodeElement(&a, &start)
+	var alias valuteAlias
+
+	err := decoder.DecodeElement(&alias, &start)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to decode XML element: %w", err)
 	}
 
-	v.ID = a.ID
-	v.NumCode = a.NumCode
-	v.CharCode = a.CharCode
-	v.Nominal = a.Nominal
-	v.Name = a.Name
+	v.ID = alias.ID
+	v.NumCode = alias.NumCode
+	v.CharCode = alias.CharCode
+	v.Nominal = alias.Nominal
+	v.Name = alias.Name
 
-	normalized := strings.Replace(a.Value, ",", ".", 1)
+	normalized := strings.Replace(alias.Value, ",", ".", 1)
 	v.Value, err = strconv.ParseFloat(normalized, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to parse value: %w", err)
 	}
 
 	return nil
