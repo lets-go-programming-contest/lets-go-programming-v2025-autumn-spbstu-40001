@@ -25,7 +25,6 @@ func main() {
 
 	var valCurs types.ValCurs
 	err = xmlparser.ParseXML(cfg.InputFile, &valCurs)
-
 	if err != nil {
 		panic(fmt.Sprintf("Failed to parse XML: %v", err))
 	}
