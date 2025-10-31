@@ -3,8 +3,11 @@ package xmlparser
 import (
 	"encoding/xml"
 	"fmt"
+	"io"
 	"os"
 	"sort"
+
+	"golang.org/x/net/html/charset"
 )
 
 type Currency struct {
@@ -26,6 +29,11 @@ func LoadCurrencies(inputFile string) (*ValCurs, error) {
 	defer file.Close()
 
 	decoder := xml.NewDecoder(file)
+
+	decoder.CharsetReader = func(encoding string, input io.Reader) (io.Reader, error) {
+		return charset.NewReader(input, encoding)
+	}
+
 	var valCurs ValCurs
 
 	if err := decoder.Decode(&valCurs); err != nil {
