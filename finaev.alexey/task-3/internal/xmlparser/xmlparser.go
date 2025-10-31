@@ -36,7 +36,7 @@ func (c *ParseFloat64) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement
 }
 
 type Currency struct {
-	NumCode  string       `xml:"NumCode"`
+	NumCode  int          `xml:"NumCode"`
 	CharCode string       `xml:"CharCode"`
 	Value    ParseFloat64 `xml:"Value"`
 }
@@ -49,7 +49,7 @@ type ValCurs struct {
 func LoadCurrencies(inputFile string) (*ValCurs, error) {
 	file, err := os.Open(inputFile)
 	if err != nil {
-		return nil, fmt.Errorf("Failed open file: %w", err)
+		return nil, fmt.Errorf("failed open file: %w", err)
 	}
 	defer file.Close()
 
@@ -62,7 +62,7 @@ func LoadCurrencies(inputFile string) (*ValCurs, error) {
 	var valCurs ValCurs
 
 	if err := decoder.Decode(&valCurs); err != nil {
-		return nil, fmt.Errorf("Error decode XML: %w", err)
+		return nil, fmt.Errorf("frror decode XML: %w", err)
 	}
 
 	return &valCurs, nil
