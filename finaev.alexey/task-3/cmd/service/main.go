@@ -12,6 +12,7 @@ import (
 func main() {
 	configPath := flag.String("config", "config.yaml", "path to yaml file")
 	flag.Parse()
+
 	cfg, err := config.LoadConfig(*configPath)
 	if err != nil {
 		panic(err.Error())

@@ -34,6 +34,7 @@ func (c *ParseFloat64) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement
 	}
 
 	*c = ParseFloat64(value)
+
 	return nil
 }
 
