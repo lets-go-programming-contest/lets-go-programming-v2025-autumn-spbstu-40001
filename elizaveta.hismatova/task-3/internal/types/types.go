@@ -34,6 +34,7 @@ type CurrencyOutput struct {
 func (v Valute) ToOutput() (CurrencyOutput, error) {
 	cleanedValue := strings.ReplaceAll(v.Value, ",", ".")
 	value, err := strconv.ParseFloat(cleanedValue, 64)
+
 	if err != nil {
 		return CurrencyOutput{}, fmt.Errorf("failed to parse value: %w", err)
 	}
@@ -50,6 +51,7 @@ func (vc ValCurs) SortByValueDesc() []CurrencyOutput {
 
 	for _, valute := range vc.Valutes {
 		output, err := valute.ToOutput()
+
 		if err != nil {
 			continue
 		}
