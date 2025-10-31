@@ -1,6 +1,7 @@
 package xmlparser
 
 import (
+	"bytes"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -10,13 +11,12 @@ import (
 )
 
 func LoadCurrencies(inputFile string, res any) error {
-	file, err := os.Open(inputFile)
+	file, err := os.ReadFile(inputFile)
 	if err != nil {
-		return fmt.Errorf("failed open file: %w", err)
+		return fmt.Errorf("failed to read xml file: %w", err)
 	}
-	defer file.Close()
 
-	decoder := xml.NewDecoder(file)
+	decoder := xml.NewDecoder(bytes.NewReader(file))
 
 	decoder.CharsetReader = func(encoding string, input io.Reader) (io.Reader, error) {
 		return charset.NewReader(input, encoding)
