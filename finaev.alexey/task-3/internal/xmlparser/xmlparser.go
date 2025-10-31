@@ -12,35 +12,33 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
-type Currency struct {
-	NumCode  string `xml:"NumCode"`
-	CharCode string `xml:"CharCode"`
-	Value    float64
-}
+type ParseFloat64 float64
 
-func (c *Currency) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	type currencyXML struct {
-		NumCode  string `xml:"NumCode"`
-		CharCode string `xml:"CharCode"`
-		Value    string `xml:"Value"`
+func (c *ParseFloat64) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
+	var valueStr string
+
+	err := decoder.DecodeElement(&valueStr, &start)
+	if err != nil {
+		return fmt.Errorf("failed to parse value: %w", err)
 	}
 
-	var temp currencyXML
-	if err := d.DecodeElement(&temp, &start); err != nil {
-		return err
-	}
+	// Заменяем запятую на точку и убираем пробелы
+	valueStr = strings.TrimSpace(valueStr)
+	valueStr = strings.Replace(valueStr, ",", ".", 1)
 
-	c.NumCode = temp.NumCode
-	c.CharCode = temp.CharCode
-
-	valueStr := strings.Replace(temp.Value, ",", ".", -1)
 	value, err := strconv.ParseFloat(valueStr, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing value '%s': %w", temp.Value, err)
+		return fmt.Errorf("failed to parse value '%s': %w", valueStr, err)
 	}
-	c.Value = value
 
+	*c = ParseFloat64(value)
 	return nil
+}
+
+type Currency struct {
+	NumCode  string       `xml:"NumCode"`
+	CharCode string       `xml:"CharCode"`
+	Value    ParseFloat64 `xml:"Value"`
 }
 
 type ValCurs struct {
