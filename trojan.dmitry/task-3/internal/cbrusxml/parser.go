@@ -3,6 +3,7 @@ package cbrusxml
 import (
 	"bytes"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"os"
 	"strconv"
@@ -20,7 +21,7 @@ type FloatComma float64
 func (f *FloatComma) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	var value string
 	if err := d.DecodeElement(&value, &start); err != nil {
-		return err
+		return fmt.Errorf("decode element: %w", err)
 	}
 
 	value = strings.TrimSpace(value)
@@ -34,7 +35,7 @@ func (f *FloatComma) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error 
 
 	val, err := strconv.ParseFloat(value, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("parse float: %w", err)
 	}
 
 	*f = FloatComma(val)
@@ -51,9 +52,8 @@ type Valute struct {
 
 func ParseFile(path string) (*ValCurs, error) {
 	val, err := os.ReadFile(path)
-
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("read file: %w", err)
 	}
 
 	dec := xml.NewDecoder(bytes.NewReader(val))
@@ -66,12 +66,12 @@ func ParseFile(path string) (*ValCurs, error) {
 		return input, nil
 	}
 
-	var vc ValCurs
+	var valC ValCurs
 
-	err = dec.Decode(&vc)
+	err = dec.Decode(&valC)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("decode xml: %w", err)
 	}
 
-	return &vc, nil
+	return &valC, nil
 }
