@@ -28,6 +28,7 @@ func (f *FloatComma) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error 
 
 	if value == "" {
 		*f = 0
+
 		return nil
 	}
 
@@ -37,6 +38,7 @@ func (f *FloatComma) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error 
 	}
 
 	*f = FloatComma(val)
+
 	return nil
 }
 

@@ -15,18 +15,19 @@ type Result struct {
 }
 
 func Process(inputPath, outputPath string) error {
-	vc, err := cbrusxml.ParseFile(inputPath)
+	valCurs, err := cbrusxml.ParseFile(inputPath)
+
 	if err != nil {
 		return fmt.Errorf("parse xml: %w", err)
 	}
 
-	results := make([]Result, 0, len(vc.Valutes))
+	results := make([]Result, 0, len(valCurs.Valutes))
 
-	for _, v := range vc.Valutes {
+	for _, val := range valCurs.Valutes {
 		results = append(results, Result{
-			NumCode:  v.NumCode,
-			CharCode: v.CharCode,
-			Value:    float64(v.Value),
+			NumCode:  val.NumCode,
+			CharCode: val.CharCode,
+			Value:    float64(val.Value),
 		})
 	}
 
@@ -38,5 +39,6 @@ func Process(inputPath, outputPath string) error {
 	if err != nil {
 		return fmt.Errorf("save json: %w", err)
 	}
+
 	return nil
 }
