@@ -9,7 +9,7 @@ import (
 
 const permission = 0o755
 
-func WriteJson(path string, data any) error {
+func WriteJSON(path string, data any) error {
 	dir := filepath.Dir(path)
 
 	err := os.MkdirAll(dir, permission)

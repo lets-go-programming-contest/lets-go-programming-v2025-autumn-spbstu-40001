@@ -24,14 +24,14 @@ func main() {
 	}
 
 	var valCurs types.ValCurs
-	err = xmlparser.ParseXml(cfg.InputFile, &valCurs)
+	err = xmlparser.ParseXML(cfg.InputFile, &valCurs)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to parse XML: %v", err))
 	}
 
 	sortedCurrencies := valCurs.SortByValueDesc()
 
-	err = jsonwriter.WriteJson(cfg.OutputFile, sortedCurrencies)
+	err = jsonwriter.WriteJSON(cfg.OutputFile, sortedCurrencies)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to write JSON: %v", err))
 	}
