@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/xml"
+	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -46,6 +47,7 @@ func (v Valute) ToOutput() (CurrencyOutput, error) {
 
 func (vc ValCurs) SortByValueDesc() []CurrencyOutput {
 	outputs := make([]CurrencyOutput, 0, len(vc.Valutes))
+
 	for _, valute := range vc.Valutes {
 		output, err := valute.ToOutput()
 		if err != nil {
@@ -54,6 +56,7 @@ func (vc ValCurs) SortByValueDesc() []CurrencyOutput {
 
 		outputs = append(outputs, output)
 	}
+
 	sort.Slice(outputs, func(i, j int) bool {
 		return outputs[i].Value > outputs[j].Value
 	})
