@@ -1,4 +1,4 @@
-kpackage jsonwriter
+package jsonwriter
 
 import (
 	"encoding/json"
