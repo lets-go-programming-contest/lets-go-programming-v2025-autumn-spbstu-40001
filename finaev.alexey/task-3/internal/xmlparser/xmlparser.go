@@ -6,14 +6,41 @@ import (
 	"io"
 	"os"
 	"sort"
+	"strconv"
+	"strings"
 
 	"golang.org/x/net/html/charset"
 )
 
 type Currency struct {
-	NumCode  string  `xml:"NumCode"`
-	CharCode string  `xml:"CharCode"`
-	Value    float64 `xml:"Value"`
+	NumCode  string `xml:"NumCode"`
+	CharCode string `xml:"CharCode"`
+	Value    float64
+}
+
+func (c *Currency) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	type currencyXML struct {
+		NumCode  string `xml:"NumCode"`
+		CharCode string `xml:"CharCode"`
+		Value    string `xml:"Value"`
+	}
+
+	var temp currencyXML
+	if err := d.DecodeElement(&temp, &start); err != nil {
+		return err
+	}
+
+	c.NumCode = temp.NumCode
+	c.CharCode = temp.CharCode
+
+	valueStr := strings.Replace(temp.Value, ",", ".", -1)
+	value, err := strconv.ParseFloat(valueStr, 64)
+	if err != nil {
+		return fmt.Errorf("Error parsing value '%s': %w", temp.Value, err)
+	}
+	c.Value = value
+
+	return nil
 }
 
 type ValCurs struct {
