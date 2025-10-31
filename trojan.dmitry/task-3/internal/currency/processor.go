@@ -23,16 +23,10 @@ func Process(inputPath, outputPath string) error {
 	results := make([]Result, 0, len(vc.Valutes))
 
 	for _, v := range vc.Valutes {
-		value := float64(v.Value)
-
-		if v.Nominal > 1 {
-			value = value / float64(v.Nominal)
-		}
-
 		results = append(results, Result{
 			NumCode:  v.NumCode,
 			CharCode: v.CharCode,
-			Value:    value,
+			Value:    float64(v.Value),
 		})
 	}
 
