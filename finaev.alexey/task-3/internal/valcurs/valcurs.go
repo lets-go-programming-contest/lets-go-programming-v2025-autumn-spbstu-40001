@@ -13,7 +13,7 @@ type Currency struct {
 		NumCode  int          `json:"num_code"  xml:"NumCode"`
 		CharCode string       `json:"char_code" xml:"CharCode"`
 		Value    ParseFloat64 `json:"value"     xml:"Value"`
-	} `xml:"Currencies"`
+	} `xml:"Valute"`
 }
 
 type ParseFloat64 float64
