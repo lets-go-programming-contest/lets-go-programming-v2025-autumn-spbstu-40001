@@ -8,6 +8,14 @@ import (
 	"strings"
 )
 
+type Currency struct {
+	Currencies []struct {
+		NumCode  int          `json:"num_code"  xml:"NumCode"`
+		CharCode string       `json:"char_code" xml:"CharCode"`
+		Value    ParseFloat64 `json:"value"     xml:"Value"`
+	} `xml:"Currencies"`
+}
+
 type ParseFloat64 float64
 
 func (c *ParseFloat64) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
@@ -18,7 +26,6 @@ func (c *ParseFloat64) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement
 		return fmt.Errorf("failed to parse value: %w", err)
 	}
 
-	valueStr = strings.TrimSpace(valueStr)
 	valueStr = strings.Replace(valueStr, ",", ".", 1)
 
 	value, err := strconv.ParseFloat(valueStr, 64)
@@ -28,15 +35,6 @@ func (c *ParseFloat64) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement
 
 	*c = ParseFloat64(value)
 	return nil
-}
-
-type Currency struct {
-	XMLName    xml.Name `xml:"ValCurs"`
-	Currencies []struct {
-		NumCode  int          `json:"num_code"  xml:"NumCode"`
-		CharCode string       `json:"char_code" xml:"CharCode"`
-		Value    ParseFloat64 `json:"value"     xml:"Value"`
-	} `xml:"Currencies"`
 }
 
 func (v *Currency) SortCurrenciesByValueDesc() {
