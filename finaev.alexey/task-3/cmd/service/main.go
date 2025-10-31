@@ -2,10 +2,10 @@ package main
 
 import (
 	"flag"
-	"fmt"
 
 	"github.com/AlexeyFinaev02/task-3/internal/config"
 	"github.com/AlexeyFinaev02/task-3/internal/jsonwriter"
+	"github.com/AlexeyFinaev02/task-3/internal/valcurs"
 	"github.com/AlexeyFinaev02/task-3/internal/xmlparser"
 )
 
@@ -14,20 +14,24 @@ func main() {
 	flag.Parse()
 	cfg, err := config.LoadConfig(*configPath)
 	if err != nil {
-		panic(fmt.Sprintf("Error read config: %v", err))
+		panic(err.Error())
 	}
-	valCurs, err := xmlparser.LoadCurrencies(cfg.InputFile)
+
 	if err != nil {
-		panic(fmt.Sprintf("Error load currencies: %v", err))
+		panic(err.Error())
 	}
 
-	valCurs.SortCurrenciesByValueDesc()
+	var curs valcurs.Currency
 
-	err = jsonwriter.SaveJSON(cfg.OutputFile, valCurs.Currencies)
+	err = xmlparser.LoadCurrencies(cfg.InputFile, &curs)
 	if err != nil {
-		panic(fmt.Sprintf("Error saving JSON: %v", err))
+		panic(err.Error())
 	}
 
-	fmt.Printf("Successfully processed %d currencies. Result saved to: %s\n",
-		len(valCurs.Currencies), cfg.OutputFile)
+	curs.SortCurrenciesByValueDesc()
+
+	err = jsonwriter.SaveJSON(cfg.OutputFile, curs.Currencies)
+	if err != nil {
+		panic(err.Error())
+	}
 }
