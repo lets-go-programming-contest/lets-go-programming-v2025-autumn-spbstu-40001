@@ -12,7 +12,7 @@ const permission = 0o755
 func WriteJson(path string, data any) error {
 	dir := filepath.Dir(path)
 
-	err := os.MkdirAll(dir, directoryPermission)
+	err := os.MkdirAll(dir, permission)
 	if err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
