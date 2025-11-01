@@ -63,7 +63,8 @@ func main() {
 		thermostat := NewOfficeThermostat(minTemp, maxTemp)
 
 		for range staffCount {
-			var operation string, temperature int
+			var operation string
+			var temperature int
 
 			_, err := fmt.Scanf("%s %d\n", &operation, &temperature)
 			if err != nil {
