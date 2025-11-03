@@ -25,9 +25,7 @@ func main() {
 		panic(err)
 	}
 
-	valCurs := new(valcurs.ValCurs)
-
-	valCurs, err = xmlparser.ParseXML[valcurs.ValCurs](inputFile)
+	valCurs, err := xmlparser.ParseXML[valcurs.ValCurs](inputFile)
 	if err != nil {
 		panic(err)
 	}
