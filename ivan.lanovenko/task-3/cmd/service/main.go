@@ -7,6 +7,7 @@ import (
 	"github.com/Tuc0Sa1amanka/task-3/internal/config"
 	"github.com/Tuc0Sa1amanka/task-3/internal/jsonwriter"
 	"github.com/Tuc0Sa1amanka/task-3/internal/valcurs"
+	"github.com/Tuc0Sa1amanka/task-3/internal/xmlparser"
 )
 
 func main() {
@@ -26,7 +27,8 @@ func main() {
 
 	valCurs := new(valcurs.ValCurs)
 
-	if err := valCurs.ParseXML(inputFile); err != nil {
+	valCurs, err = xmlparser.ParseXML[valcurs.ValCurs](inputFile)
+	if err != nil {
 		panic(err)
 	}
 

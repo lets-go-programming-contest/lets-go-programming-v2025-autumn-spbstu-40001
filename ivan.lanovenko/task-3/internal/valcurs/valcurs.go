@@ -1,15 +1,11 @@
 package valcurs
 
 import (
-	"bytes"
 	"encoding/xml"
 	"fmt"
-	"io"
 	"sort"
 	"strconv"
 	"strings"
-
-	"golang.org/x/net/html/charset"
 )
 
 type FloatWithComma float64
@@ -36,19 +32,6 @@ func (f *FloatWithComma) UnmarshalXML(d *xml.Decoder, start xml.StartElement) er
 	}
 
 	*f = FloatWithComma(val)
-
-	return nil
-}
-
-func (v *ValCurs) ParseXML(data []byte) error {
-	decoder := xml.NewDecoder(bytes.NewReader(data))
-	decoder.CharsetReader = func(charSet string, input io.Reader) (io.Reader, error) {
-		return charset.NewReader(input, charSet)
-	}
-
-	if err := decoder.Decode(v); err != nil {
-		return fmt.Errorf("decode XML: %w", err)
-	}
 
 	return nil
 }
