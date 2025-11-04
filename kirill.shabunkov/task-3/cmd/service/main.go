@@ -1,7 +1,32 @@
 package main
 
-import "fmt"
+import (
+	"flag"
+
+	"github.com/Kirill2155/task-3/internal/config"
+	"github.com/Kirill2155/task-3/internal/json"
+	"github.com/Kirill2155/task-3/internal/xml"
+)
 
 func main() {
-	fmt.Println("Hello task-3 project")
+	configPath := flag.String("config", "config.yaml", "path to yaml file")
+	flag.Parse()
+
+	config, err := config.ReadConfig(*configPath)
+	if err != nil {
+		panic(err)
+	}
+
+	valCurs, err := xml.ParserXML(config.InputFile)
+	if err != nil {
+		panic(err)
+	}
+
+	valCurs.SortByValue()
+
+	err = json.SaveJson(config.OutputFile, valCurs.Valutes)
+	if err != nil {
+		panic(err)
+	}
+
 }
