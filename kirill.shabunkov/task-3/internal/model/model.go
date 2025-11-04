@@ -32,7 +32,8 @@ func (v *Valute) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 		return fmt.Errorf("сannot decode XML element: %w", err)
 	}
 
-	strValue := strings.Replace(t.Value, ",", ".", -1)
+	strValue := strings.ReplaceAll(t.Value, ",", ".")
+
 	value, err := strconv.ParseFloat(strValue, 64)
 	if err != nil {
 		return fmt.Errorf("cannot parse value '%s': %w", t.Value, err)
