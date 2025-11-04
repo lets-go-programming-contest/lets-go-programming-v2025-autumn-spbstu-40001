@@ -24,7 +24,7 @@ func main() {
 
 	valCurs.SortByValue()
 
-	err = json.SaveJson(config.OutputFile, valCurs.Valutes)
+	err = json.SaveJSON(config.OutputFile, valCurs.Valutes)
 	if err != nil {
 		panic(err)
 	}
