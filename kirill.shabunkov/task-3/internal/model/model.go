@@ -13,34 +13,34 @@ type ValCurs struct {
 }
 
 type Valute struct {
-	NumCode  int     `json:"num_code" xml:"NumCode"`
+	NumCode  int     `json:"num_code"  xml:"NumCode"`
 	CharCode string  `json:"char_code" xml:"CharCode"`
-	Value    float64 `json:"value" xml:"Value"`
+	Value    float64 `json:"value"     xml:"Value"`
 }
 
-func (v *Valute) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+func (v *Valute) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
 	type tempStruct struct {
 		NumCode  int    `xml:"NumCode"`
 		CharCode string `xml:"CharCode"`
 		Value    string `xml:"Value"`
 	}
 
-	var t tempStruct
+	var temp tempStruct
 
-	err := d.DecodeElement(&t, &start)
+	err := decoder.DecodeElement(&temp, &start)
 	if err != nil {
 		return fmt.Errorf("сannot decode XML element: %w", err)
 	}
 
-	strValue := strings.ReplaceAll(t.Value, ",", ".")
+	strValue := strings.ReplaceAll(temp.Value, ",", ".")
 
 	value, err := strconv.ParseFloat(strValue, 64)
 	if err != nil {
-		return fmt.Errorf("cannot parse value '%s': %w", t.Value, err)
+		return fmt.Errorf("cannot parse value '%s': %w", temp.Value, err)
 	}
 
-	v.NumCode = t.NumCode
-	v.CharCode = t.CharCode
+	v.NumCode = temp.NumCode
+	v.CharCode = temp.CharCode
 	v.Value = value
 
 	return nil
