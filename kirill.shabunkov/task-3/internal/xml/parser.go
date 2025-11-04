@@ -25,6 +25,7 @@ func ParserXML(path string) (*model.ValCurs, error) {
 	decoder.CharsetReader = charset.NewReaderLabel
 
 	var valCurs model.ValCurs
+
 	err = decoder.Decode(&valCurs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse XML: %w", err)

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-const permission = 0755
+const permission = 0o755
 
 func SaveJSON(path string, data any) error {
 	dir := filepath.Dir(path)
