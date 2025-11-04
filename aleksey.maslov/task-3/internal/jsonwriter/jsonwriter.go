@@ -7,12 +7,10 @@ import (
 	"path/filepath"
 )
 
-const permission = 0o755
-
-func SaveJSON(outputFile string, data any) error {
+func SaveJSON(outputFile string, data any, dirPermission os.FileMode) error {
 	dir := filepath.Dir(outputFile)
 
-	err := os.MkdirAll(dir, permission)
+	err := os.MkdirAll(dir, dirPermission)
 	if err != nil {
 		return fmt.Errorf("failed to creating directory: %w", err)
 	}
@@ -21,6 +19,13 @@ func SaveJSON(outputFile string, data any) error {
 	if err != nil {
 		return fmt.Errorf("failed to creating file: %w", err)
 	}
+
+	defer func() {
+		err = file.Close()
+		if err != nil {
+			panic("failed to close file in saveJSON")
+		}
+	}()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "\t")

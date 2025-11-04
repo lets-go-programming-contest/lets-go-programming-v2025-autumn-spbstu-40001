@@ -9,6 +9,8 @@ import (
 	"github.com/A1exMas1ov/task-3/internal/xmlparser"
 )
 
+const dirPermission = 0o755
+
 func main() {
 	configPath := flag.String("config", "config/config.yaml", "path to config file")
 	flag.Parse()
@@ -27,7 +29,7 @@ func main() {
 
 	valCurs.SortByValue()
 
-	err = jsonwriter.SaveJSON(config.OutputFile, valCurs.Valutes)
+	err = jsonwriter.SaveJSON(config.OutputFile, valCurs.Valutes, dirPermission)
 	if err != nil {
 		panic(err)
 	}
