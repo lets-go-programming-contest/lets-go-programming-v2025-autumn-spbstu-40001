@@ -3,6 +3,7 @@ package main
 import (
 	"container/heap"
 	"fmt"
+	"errors"
 )
 
 type IntHeap []int
@@ -13,7 +14,7 @@ func (h *IntHeap) Len() int {
 
 func (h *IntHeap) Less(i, j int) bool {
 	if i < 0 || i >= len(*h) || j < 0 || j >= len(*h) {
-		return false
+		panic("index out of range")
 	}
 
 	return (*h)[i] < (*h)[j]
@@ -21,7 +22,7 @@ func (h *IntHeap) Less(i, j int) bool {
 
 func (h *IntHeap) Swap(i, j int) {
 	if i < 0 || i >= len(*h) || j < 0 || j >= len(*h) {
-		return
+		panic("index out of range")
 	}
 
 	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
@@ -51,53 +52,59 @@ func (h *IntHeap) Pop() interface{} {
 }
 
 func main() {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Error:", r)
+		}
+	}()
+
 	var dishCount int
-	if _, err := fmt.Scan(&dishCount); err != nil {
-		fmt.Println("Error reading number of dishes:", err)
+
+	_, err := fmt.Scan(&dishCount)
+	if err != nil {
+		fmt.Println("Fail in reading dish count:", err)
 
 		return
 	}
 
-	arr := make([]int, dishCount)
-	for i := range arr {
-		if _, err := fmt.Scan(&arr[i]); err != nil {
-			fmt.Println("Error reading dish rating:", err)
+	ratings := &IntHeap{}
+	heap.Init(ratings)
+
+	for range count {
+		var rate int
+
+		_, err := fmt.Scan(&rate)
+		if err != nil {
+			fmt.Println("Fail in reading rate:", err)
 
 			return
 		}
+
+		heap.Push(ratings, rate)
 	}
 
-	var kCount int
-	if _, err := fmt.Scan(&kCount); err != nil {
-		fmt.Println("Error reading k:", err)
+	var countK int
+
+	_, err = fmt.Scan(&countK)
+	if err != nil {
+		fmt.Println("Fail in reading k:", err)
 
 		return
 	}
 
-	if kCount <= 0 || kCount > dishCount {
-		fmt.Println("Invalid k value")
+	if countK > ratings.Len() {
+		fmt.Println("No such dish")
 
 		return
 	}
 
-	heapInt := &IntHeap{}
-	heap.Init(heapInt)
-
-	*heapInt = append(*heapInt, arr[:kCount]...)
-	heap.Init(heapInt)
-
-	for _, v := range arr[:kCount] {
-		if v > (*heapInt)[0] {
-			(*heapInt)[0] = v
-			heap.Fix(heapInt, 0)
-		}
+	for range countK - 1 {
+		heap.Pop(ratings)
 	}
 
-	popped := heap.Pop(heapInt)
-	result, ok := popped.(int)
-
-	if !ok {
-		fmt.Println("Invalid result type")
+	result := heap.Pop(ratings)
+	if result == nil {
+		fmt.Println("There is no such dish")
 
 		return
 	}
