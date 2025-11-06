@@ -17,10 +17,10 @@ type TemperatureRange struct {
 	max int
 }
 
-func NewTemperatureRange() *TemperatureRange {
+func NewTemperatureRange(min, max int) *TemperatureRange {
 	return &TemperatureRange{
-		min: MinTemp,
-		max: MaxTemp,
+		min: min,
+		max: max,
 	}
 }
 
@@ -63,7 +63,7 @@ func main() {
 			return
 		}
 
-		tempRange := NewTemperatureRange()
+		tempRange := NewTemperatureRange(MinTemp, MaxTemp)
 
 		for range peopleCount {
 			var (
