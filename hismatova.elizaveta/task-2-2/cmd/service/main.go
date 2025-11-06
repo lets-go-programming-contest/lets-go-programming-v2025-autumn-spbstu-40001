@@ -3,7 +3,6 @@ package main
 import (
 	"container/heap"
 	"fmt"
-	"errors"
 )
 
 type IntHeap []int
@@ -70,7 +69,7 @@ func main() {
 	ratings := &IntHeap{}
 	heap.Init(ratings)
 
-	for range count {
+	for range dishCount {
 		var rate int
 
 		_, err := fmt.Scan(&rate)
