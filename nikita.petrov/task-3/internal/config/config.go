@@ -1,8 +1,11 @@
 package config
 
 import (
+	"fmt"
 	"io"
 	"os"
+
+	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
@@ -10,21 +13,23 @@ type Config struct {
 	OutputFile string `yaml:"output-file"`
 }
 
-func GetConfigFile(configPath *string) (*os.File, error) {
-	configFile, err := os.Open(*configPath)
+func GetConfigInfo(configPath *string) (Config, error) {
+	var configInfo Config
 
-	if err != nil && os.IsNotExist(err) {
-		return nil, os.ErrNotExist
+	configFile, err := os.Open(*configPath)
+	if err != nil {
+		return configInfo, fmt.Errorf("can't get config file descriptor: %w", err)
 	}
 
-	return configFile, nil
-}
-
-func GetConfigData(configFile *os.File) ([]byte, error) {
 	configData, err := io.ReadAll(configFile)
 	if err != nil {
-		return configData, io.EOF
+		return configInfo, fmt.Errorf("can't get config data: %w", err)
 	}
 
-	return configData, nil
+	err = yaml.Unmarshal(configData, &configInfo)
+	if err != nil {
+		return configInfo, fmt.Errorf("can't unmarshal config data: %w", err)
+	}
+
+	return configInfo, nil
 }
