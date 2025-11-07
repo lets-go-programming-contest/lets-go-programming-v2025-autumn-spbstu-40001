@@ -14,14 +14,9 @@ import (
 const accessMask = 0o777
 
 func WriteInfoFromCurrRateToOutputFile(cbCurrencyRate *currencyrate.CurrencyRate, outputFilePath string) error {
-	outputFile, err := os.OpenFile(outputFilePath, os.O_WRONLY, accessMask)
-	if err != nil {
-		return fmt.Errorf("can't open file %s: %w", path.Base(outputFilePath), err)
-	}
-
 	dir, filename := filesmanager.ParseOutputFilePath(outputFilePath)
 
-	_, err = os.Stat(outputFilePath)
+	_, err := os.Stat(outputFilePath)
 	if errors.Is(err, os.ErrNotExist) {
 		err := filesmanager.MakeDirectory(dir)
 		if err != nil {
@@ -32,6 +27,11 @@ func WriteInfoFromCurrRateToOutputFile(cbCurrencyRate *currencyrate.CurrencyRate
 		if err != nil {
 			return fmt.Errorf("%w", err)
 		}
+	}
+
+	outputFile, err := os.OpenFile(outputFilePath, os.O_WRONLY, accessMask)
+	if err != nil {
+		return fmt.Errorf("can't open file %s: %w", path.Base(outputFilePath), err)
 	}
 
 	JSONEncoder := json.NewEncoder(outputFile)
