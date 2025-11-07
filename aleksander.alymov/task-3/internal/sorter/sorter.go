@@ -19,5 +19,5 @@ func NewDescendingSorter() Sorter {
 }
 
 func (s *DescendingSorter) Sort(data Sortable) {
-	sort.Sort(sort.Reverse(data))
+	sort.Sort(data)
 }
