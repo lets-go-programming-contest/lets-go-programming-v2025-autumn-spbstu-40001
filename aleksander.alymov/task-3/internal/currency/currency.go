@@ -36,7 +36,7 @@ type CurrencyCollection []Currency
 
 func (c CurrencyCollection) Len() int           { return len(c) }
 func (c CurrencyCollection) Swap(i, j int)      { c[i], c[j] = c[j], c[i] }
-func (c CurrencyCollection) Less(i, j int) bool { return c[i].Value > c[j].Value }
+func (c CurrencyCollection) Less(i, j int) bool { return c[i].Value < c[j].Value }
 
 func (conv *CurrencyConverter) Convert(source interface{}) (interface{}, error) {
 	valCurs, ok := source.(*XMLValCurs)
@@ -58,11 +58,17 @@ func (conv *CurrencyConverter) Convert(source interface{}) (interface{}, error) 
 }
 
 func (conv *CurrencyConverter) convertValute(valute XMLValute) (Currency, error) {
-	numCode, err := strconv.Atoi(valute.NumCode)
-	if err != nil {
-		return Currency{}, fmt.Errorf("parse NumCode '%s': %w", valute.NumCode, err)
-	}
+	var numCode int
+	var err error
 
+	if valute.NumCode == "" {
+		numCode = 0
+	} else {
+		numCode, err = strconv.Atoi(valute.NumCode)
+		if err != nil {
+			return Currency{}, fmt.Errorf("parse NumCode '%s': %w", valute.NumCode, err)
+		}
+	}
 	valueStr := strings.Replace(valute.Value, ",", ".", 1)
 	value, err := strconv.ParseFloat(valueStr, 64)
 	if err != nil {
