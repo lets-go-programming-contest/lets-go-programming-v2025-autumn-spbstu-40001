@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-func SaveJSON(outputFile string, data any, dirPermission os.FileMode) error {
+func SaveJSON(outputFile string, data any, filePermission, dirPermission os.FileMode) error {
 	dir := filepath.Dir(outputFile)
 
 	err := os.MkdirAll(dir, dirPermission)
@@ -15,9 +15,9 @@ func SaveJSON(outputFile string, data any, dirPermission os.FileMode) error {
 		return fmt.Errorf("failed to creating directory: %w", err)
 	}
 
-	file, err := os.Create(outputFile)
+	file, err := os.OpenFile(outputFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, filePermission)
 	if err != nil {
-		return fmt.Errorf("failed to creating file: %w", err)
+		return fmt.Errorf("failed to create file: %w", err)
 	}
 
 	defer func() {
