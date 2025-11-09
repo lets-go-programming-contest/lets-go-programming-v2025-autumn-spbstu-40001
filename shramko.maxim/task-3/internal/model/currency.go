@@ -1,19 +1,11 @@
 package model
 
-import "sort"
-
-type CurrencyItem struct {
-	NumericCode int     `json:"num_code"`
-	Code        string  `json:"char_code"`
-	Rate        float64 `json:"value"`
+type Currency struct {
+	NumericCode int     `json:"num_code" xml:"NumCode"`
+	CharCode    string  `json:"char_code" xml:"CharCode"`
+	Value       float64 `json:"value" xml:"Value"`
 }
 
-type CurrencyList struct {
-	Items []CurrencyItem
-}
-
-func (cl *CurrencyList) OrderByValue() {
-	sort.Slice(cl.Items, func(i, j int) bool {
-		return cl.Items[i].Rate > cl.Items[j].Rate
-	})
+type CurrencyCollection struct {
+	Currencies []Currency `xml:"Valute"`
 }

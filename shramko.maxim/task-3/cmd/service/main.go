@@ -2,12 +2,11 @@ package main
 
 import (
 	"flag"
+	"log"
 	"os"
 
 	"github.com/Elektrek/task-3/internal/config"
-	"github.com/Elektrek/task-3/internal/exporter"
-	"github.com/Elektrek/task-3/internal/model"
-	"github.com/Elektrek/task-3/internal/xmlparser"
+	"github.com/Elektrek/task-3/internal/processor"
 )
 
 func main() {
@@ -16,22 +15,15 @@ func main() {
 		defaultConfig = envConfig
 	}
 
-	configFile := flag.String("config", defaultConfig, "YAML configuration file path")
+	configPath := flag.String("config", defaultConfig, "YAML configuration file path")
 	flag.Parse()
 
-	settings, err := config.LoadSettings(*configFile)
+	cfg, err := config.Load(*configPath)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	currencyData, err := xmlparser.ParseXML(settings.InputPath)
-	if err != nil {
-		panic(err)
-	}
-
-	currencyData.OrderByValue()
-
-	if err = exporter.ExportJSON(settings.OutputPath, currencyData.Items, 0o755); err != nil {
-		panic(err)
+	if err := processor.ProcessCurrencies(cfg); err != nil {
+		log.Fatalf("Failed to process currencies: %v", err)
 	}
 }
