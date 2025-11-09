@@ -9,7 +9,7 @@ import (
 
 	"github.com/Elektrek/task-3/internal/model"
 
-	"golang.org/x/net/html/charset"
+	"golang.org/x/text/encoding/charmap"
 )
 
 func ParseCurrencies(filepath string) (*model.CurrencyCollection, error) {
@@ -23,15 +23,15 @@ func ParseCurrencies(filepath string) (*model.CurrencyCollection, error) {
 
 	decoder.CharsetReader = func(charsetLabel string, input io.Reader) (io.Reader, error) {
 		encoding := strings.ToLower(charsetLabel)
-		if encoding == "" || encoding == "utf-8" || encoding == "utf8" {
+
+		switch encoding {
+		case "windows-1251":
+			return charmap.Windows1251.NewDecoder().Reader(input), nil
+		case "utf-8", "utf8", "":
+			return input, nil
+		default:
 			return input, nil
 		}
-
-		if encodingHandler, found := charset.Lookup(encoding); found {
-			return encodingHandler.NewDecoder().Reader(input), nil
-		}
-
-		return input, nil
 	}
 
 	var result struct {
