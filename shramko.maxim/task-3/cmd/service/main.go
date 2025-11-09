@@ -2,30 +2,36 @@ package main
 
 import (
 	"flag"
+	"os"
 
-	"github.com/Elektrek/task-3/internal/config"
-	"github.com/Elektrek/task-3/internal/iocurrency"
+	"task-3/internal/config"
+	"task-3/internal/exporter"
+	"task-3/internal/model"
+	"task-3/internal/xmlparser"
 )
 
 func main() {
-	configFile := flag.String("config", "", "YAML configuration file path")
-	flag.Parse()
-
-	if *configFile == "" {
-		panic("Configuration file not specified")
+	defaultConfig := "config.yaml"
+	if envConfig := os.Getenv("APP_CONFIG"); envConfig != "" {
+		defaultConfig = envConfig
 	}
+
+	configFile := flag.String("config", defaultConfig, "YAML configuration file path")
+	flag.Parse()
 
 	settings, err := config.LoadSettings(*configFile)
 	if err != nil {
 		panic(err)
 	}
 
-	var currencyData iocurrency.CurrencyList
+	currencyData, err := xmlparser.ParseXML(settings.InputPath)
+	if err != nil {
+		panic(err)
+	}
 
-	currencyData.ParseXML(settings.InputPath)
 	currencyData.OrderByValue()
 
-	if err = iocurrency.ExportJSON(settings.OutputPath, currencyData.Items); err != nil {
+	if err = exporter.ExportJSON(settings.OutputPath, currencyData.Items, 0o755); err != nil {
 		panic(err)
 	}
 }
