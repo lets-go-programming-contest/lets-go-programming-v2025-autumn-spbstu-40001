@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"task-3/internal/model"
+	"github.com/Elektrek/task-3/internal/model"
 
 	"golang.org/x/net/html/charset"
 )

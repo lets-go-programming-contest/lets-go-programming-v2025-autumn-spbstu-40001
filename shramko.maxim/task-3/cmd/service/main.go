@@ -4,10 +4,10 @@ import (
 	"flag"
 	"os"
 
-	"task-3/internal/config"
-	"task-3/internal/exporter"
-	"task-3/internal/model"
-	"task-3/internal/xmlparser"
+	"github.com/Elektrek/task-3/internal/config"
+	"github.com/Elektrek/task-3/internal/exporter"
+	"github.com/Elektrek/task-3/internal/model"
+	"github.com/Elektrek/task-3/internal/xmlparser"
 )
 
 func main() {
