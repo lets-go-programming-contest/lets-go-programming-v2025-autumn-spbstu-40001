@@ -6,8 +6,8 @@ import (
 	"github.com/Elektrek/task-3/internal/model"
 )
 
-func SortByValueDescending(currencies []model.Currency) {
-	sort.Slice(currencies, func(i, j int) bool {
-		return currencies[i].Value > currencies[j].Value
+func SortByValueDescending(currencyItems []model.Currency) {
+	sort.Slice(currencyItems, func(i, j int) bool {
+		return currencyItems[i].Value > currencyItems[j].Value
 	})
 }

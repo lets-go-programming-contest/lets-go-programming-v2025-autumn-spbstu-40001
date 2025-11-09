@@ -8,41 +8,41 @@ import (
 	"os"
 	"strings"
 
-	"golang.org/x/text/encoding/charmap"
-
 	"github.com/Elektrek/task-3/internal/model"
+
+	"golang.org/x/text/encoding/charmap"
 )
 
-func ParseCurrencies(filepath string) (*model.CurrencyCollection, error) {
-	data, err := os.ReadFile(filepath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read file: %w", err)
+func ParseCurrencies(filePath string) (*model.CurrencyCollection, error) {
+	fileContent, readErr := os.ReadFile(filePath)
+	if readErr != nil {
+		return nil, fmt.Errorf("failed to read file: %w", readErr)
 	}
 
-	reader := bytes.NewReader(bytes.ReplaceAll(data, []byte(","), []byte(".")))
-	decoder := xml.NewDecoder(reader)
+	dataReader := bytes.NewReader(bytes.ReplaceAll(fileContent, []byte(","), []byte(".")))
+	xmlDecoder := xml.NewDecoder(dataReader)
 
-	decoder.CharsetReader = func(charsetLabel string, input io.Reader) (io.Reader, error) {
-		encoding := strings.ToLower(charsetLabel)
+	xmlDecoder.CharsetReader = func(encodingName string, stream io.Reader) (io.Reader, error) {
+		enc := strings.ToLower(encodingName)
 
-		switch encoding {
+		switch enc {
 		case "windows-1251":
-			return charmap.Windows1251.NewDecoder().Reader(input), nil
+			return charmap.Windows1251.NewDecoder().Reader(stream), nil
 		case "utf-8", "utf8", "":
-			return input, nil
+			return stream, nil
 		default:
-			return input, nil
+			return stream, nil
 		}
 	}
 
-	var result struct {
+	var parsedData struct {
 		XMLName    xml.Name         `xml:"ValCurs"`
 		Currencies []model.Currency `xml:"Valute"`
 	}
 
-	if err := decoder.Decode(&result); err != nil {
-		return nil, fmt.Errorf("failed to decode XML: %w", err)
+	if decodeErr := xmlDecoder.Decode(&parsedData); decodeErr != nil {
+		return nil, fmt.Errorf("failed to decode XML: %w", decodeErr)
 	}
 
-	return &model.CurrencyCollection{Currencies: result.Currencies}, nil
+	return &model.CurrencyCollection{CurrencyItems: parsedData.Currencies}, nil
 }

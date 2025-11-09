@@ -10,15 +10,15 @@ import (
 )
 
 func ProcessCurrencies(cfg *config.Config) error {
-	collection, err := parser.ParseCurrencies(cfg.InputFile)
-	if err != nil {
-		return fmt.Errorf("failed to parse currencies: %w", err)
+	currencyCollection, parseErr := parser.ParseCurrencies(cfg.InputFile)
+	if parseErr != nil {
+		return fmt.Errorf("failed to parse currencies: %w", parseErr)
 	}
 
-	sorter.SortByValueDescending(collection.Currencies)
+	sorter.SortByValueDescending(currencyCollection.CurrencyItems)
 
-	if err := writer.WriteJSON(cfg.OutputFile, collection.Currencies); err != nil {
-		return fmt.Errorf("failed to write JSON: %w", err)
+	if writeErr := writer.WriteJSON(cfg.OutputFile, currencyCollection.CurrencyItems); writeErr != nil {
+		return fmt.Errorf("failed to write JSON: %w", writeErr)
 	}
 
 	return nil

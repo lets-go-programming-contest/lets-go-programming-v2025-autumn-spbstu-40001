@@ -7,5 +7,5 @@ type Currency struct {
 }
 
 type CurrencyCollection struct {
-	Currencies []Currency `xml:"Valute"`
+	CurrencyItems []Currency `xml:"Valute"`
 }
