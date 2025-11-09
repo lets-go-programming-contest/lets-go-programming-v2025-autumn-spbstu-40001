@@ -8,9 +8,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Elektrek/task-3/internal/model"
-
 	"golang.org/x/text/encoding/charmap"
+
+	"github.com/Elektrek/task-3/internal/model"
 )
 
 func ParseCurrencies(filePath string) (*model.CurrencyCollection, error) {
