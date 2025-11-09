@@ -27,7 +27,8 @@ func ParseCurrencies(filepath string) (*model.CurrencyCollection, error) {
 			return input, nil
 		}
 
-		if encodingHandler, found := charset.Lookup(encoding); found {
+		encodingHandler, found := charset.Lookup(encoding)
+		if found {
 			return encodingHandler.NewDecoder().Reader(input), nil
 		}
 
