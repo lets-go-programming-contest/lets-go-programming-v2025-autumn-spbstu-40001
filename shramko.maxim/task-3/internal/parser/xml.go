@@ -3,19 +3,20 @@ package parser
 import (
 	"bytes"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"os"
 	"strings"
 
-	"github.com/Elektrek/task-3/internal/model"
-
 	"golang.org/x/text/encoding/charmap"
+
+	"github.com/Elektrek/task-3/internal/model"
 )
 
 func ParseCurrencies(filepath string) (*model.CurrencyCollection, error) {
 	data, err := os.ReadFile(filepath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read file: %w", err)
 	}
 
 	reader := bytes.NewReader(bytes.ReplaceAll(data, []byte(","), []byte(".")))
@@ -40,7 +41,7 @@ func ParseCurrencies(filepath string) (*model.CurrencyCollection, error) {
 	}
 
 	if err := decoder.Decode(&result); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to decode XML: %w", err)
 	}
 
 	return &model.CurrencyCollection{Currencies: result.Currencies}, nil
