@@ -1,4 +1,4 @@
-package xml
+package read
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
-func Unmarshall(path string, obj any) error {
+func XML(path string, obj any) error {
 	input, err := os.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("failed to read file: %w", err)
@@ -20,7 +20,7 @@ func Unmarshall(path string, obj any) error {
 
 	err = decoder.Decode(&obj)
 	if err != nil {
-		return fmt.Errorf("unmarshalling failed: %w", err)
+		return fmt.Errorf("xml unmarshalling failed: %w", err)
 	}
 
 	return nil

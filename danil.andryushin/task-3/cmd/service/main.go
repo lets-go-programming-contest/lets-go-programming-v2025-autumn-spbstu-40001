@@ -5,9 +5,8 @@ import (
 	"sort"
 
 	"github.com/atroxxxxxx/task-3/internal/config"
-	"github.com/atroxxxxxx/task-3/internal/parsing/json"
-	"github.com/atroxxxxxx/task-3/internal/parsing/xml"
-	"github.com/atroxxxxxx/task-3/internal/parsing/yaml"
+	"github.com/atroxxxxxx/task-3/internal/parsing/read"
+	"github.com/atroxxxxxx/task-3/internal/parsing/write"
 	"github.com/atroxxxxxx/task-3/internal/valute"
 )
 
@@ -19,14 +18,14 @@ func main() {
 
 	var data config.Config
 
-	err := yaml.Unmarshall(*path, &data)
+	err := read.YAML(*path, &data)
 	if err != nil {
 		panic(err)
 	}
 
 	var valuteSlice valute.ValuteSlice
 
-	err = xml.Unmarshall(data.InputFile, &valuteSlice)
+	err = read.XML(data.InputFile, &valuteSlice)
 	if err != nil {
 		panic(err)
 	}
@@ -35,7 +34,7 @@ func main() {
 		return valuteSlice.Valutes[i].Value > valuteSlice.Valutes[j].Value
 	})
 
-	err = json.WriteToFile(data.OutputFile, valuteSlice.Valutes, Permission)
+	err = write.ToJSON(data.OutputFile, valuteSlice.Valutes, Permission)
 	if err != nil {
 		panic(err)
 	}
