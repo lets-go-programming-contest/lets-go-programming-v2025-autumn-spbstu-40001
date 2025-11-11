@@ -2,11 +2,17 @@ package main
 
 import (
 	"flag"
+	"os"
 
 	"github.com/AlexeyFinaev02/task-3/internal/config"
 	"github.com/AlexeyFinaev02/task-3/internal/jsonwriter"
 	"github.com/AlexeyFinaev02/task-3/internal/valcurs"
 	"github.com/AlexeyFinaev02/task-3/internal/xmlparser"
+)
+
+const (
+	DirPerm  os.FileMode = 0o755
+	FilePerm os.FileMode = 0o644
 )
 
 func main() {
@@ -27,7 +33,7 @@ func main() {
 
 	curs.SortCurrenciesByValueDesc()
 
-	err = jsonwriter.SaveJSON(cfg.OutputFile, curs.Currencies)
+	err = jsonwriter.SaveJSON(cfg.OutputFile, curs.Currencies, DirPerm, FilePerm)
 	if err != nil {
 		panic(err.Error())
 	}
