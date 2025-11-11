@@ -23,6 +23,7 @@ func main() {
 	if err := xml.ReadXML(config.InputFile, &valutes); err != nil {
 		panic(err)
 	}
+
 	valutes.Sort()
 
 	if err := json.SaveJSON(config.OutputFile, valutes.Valutes); err != nil {

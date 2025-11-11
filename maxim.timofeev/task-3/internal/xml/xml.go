@@ -28,17 +28,22 @@ func NewDecoder(r io.Reader) *xml.Decoder {
 			return input, nil
 		}
 	}
+
 	return decoder
 }
 
 func ReadXML(path string, out any) error {
 	file, err := os.ReadFile(path)
+
 	if err != nil {
 		return fmt.Errorf("read XML file: %w", err)
 	}
+
 	decoder := NewDecoder(bytes.NewReader(file))
+
 	if err := decoder.Decode(out); err != nil {
 		return fmt.Errorf("decode XML: %w", err)
 	}
+
 	return nil
 }
