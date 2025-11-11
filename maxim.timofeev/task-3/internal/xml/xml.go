@@ -34,7 +34,6 @@ func NewDecoder(r io.Reader) *xml.Decoder {
 
 func ReadXML(path string, out any) error {
 	file, err := os.ReadFile(path)
-
 	if err != nil {
 		return fmt.Errorf("read XML file: %w", err)
 	}
