@@ -12,6 +12,7 @@ type UserFloat float64
 func (f *UserFloat) UnmarshalText(text []byte) error {
 	str := strings.ReplaceAll(string(text), ",", ".")
 	val, err := strconv.ParseFloat(str, 64)
+
 	if err != nil {
 		return fmt.Errorf("parse float %q: %w", text, err)
 	}
