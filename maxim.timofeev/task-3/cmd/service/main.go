@@ -20,7 +20,7 @@ func main() {
 
 	var valutes iocurrency.ValCurs
 
-	xml.ReadXML(config.InputFile, valutes)
+	xml.ReadXML(config.InputFile, &valutes)
 	valutes.Sort()
 
 	if err := json.SaveJSON(config.OutputFile, valutes.Valutes); err != nil {
