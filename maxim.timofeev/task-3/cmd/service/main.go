@@ -5,15 +5,13 @@ import (
 
 	"github.com/PigoDog/task-3/internal/config"
 	"github.com/PigoDog/task-3/internal/iocurrency"
+	"github.com/PigoDog/task-3/internal/json"
+	"github.com/PigoDog/task-3/internal/xml"
 )
 
 func main() {
-	configPath := flag.String("config", "", "Path to YAML config")
+	configPath := flag.String("config", "config.yaml", "Path to YAML config")
 	flag.Parse()
-
-	if *configPath == "" {
-		panic("flag --config is empty")
-	}
 
 	config, err := config.ReadConfig(*configPath)
 	if err != nil {
@@ -22,10 +20,10 @@ func main() {
 
 	var valutes iocurrency.ValCurs
 
-	valutes.ReadXML(config.InputFile)
+	xml.ReadXML(config.InputFile, valutes)
 	valutes.Sort()
 
-	if err = iocurrency.SaveJSON(config.OutputFile, valutes.Valutes); err != nil {
+	if err := json.SaveJSON(config.OutputFile, valutes.Valutes); err != nil {
 		panic(err.Error())
 	}
 }
