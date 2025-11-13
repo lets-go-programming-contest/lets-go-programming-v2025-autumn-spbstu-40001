@@ -31,7 +31,7 @@ func main() {
 
 	sort.Sort(valutessorter.ByValue(CBCurrencyRate))
 
-	err = jsonparser.WriteInfoFromCurrRateToOutputFile(&CBCurrencyRate, configInfo.OutputFile)
+	err = jsonparser.WriteInfoFromCurrRateToOutputFile(&CBCurrencyRate.Valutes, configInfo.OutputFile, 0o777)
 	if err != nil {
 		panic(err)
 	}

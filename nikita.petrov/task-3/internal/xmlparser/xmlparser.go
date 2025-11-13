@@ -6,11 +6,10 @@ import (
 	"os"
 	"path"
 
-	"github.com/Nekich06/task-3/internal/currencyrate"
 	"github.com/paulrosania/go-charset/charset"
 )
 
-func WriteInfoFromInputFileToCurrRate(inputFilePath string, cbCurrencyRate *currencyrate.CurrencyRate) error {
+func WriteInfoFromInputFileToCurrRate[T any](inputFilePath string, cbCurrencyRate *T) error {
 	inputFile, err := os.Open(inputFilePath)
 	if err != nil {
 		return fmt.Errorf("can't open file %s: %w", path.Base(inputFilePath), err)
@@ -21,6 +20,10 @@ func WriteInfoFromInputFileToCurrRate(inputFilePath string, cbCurrencyRate *curr
 
 	if err := XMLDecoder.Decode(&cbCurrencyRate); err != nil {
 		return fmt.Errorf("failed to decode file %s: %w", inputFile.Name(), err)
+	}
+
+	if err = inputFile.Close(); err != nil {
+		return fmt.Errorf("failed to close file %s: %w", inputFile.Name(), err)
 	}
 
 	return nil
