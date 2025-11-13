@@ -14,7 +14,7 @@ func WriteInfoFromCurrRateToOutputFile[T any](cbCurrencyRate *T, outputFilePath 
 		return fmt.Errorf("can't make directories of path %s: %w", outputFilePath, err)
 	}
 
-	outputFile, err := os.OpenFile(outputFilePath, os.O_CREATE|os.O_WRONLY, 0o777)
+	outputFile, err := os.OpenFile(outputFilePath, os.O_CREATE|os.O_WRONLY, accessMask)
 	if err != nil {
 		return fmt.Errorf("can't open file %s: %w", path.Base(outputFilePath), err)
 	}

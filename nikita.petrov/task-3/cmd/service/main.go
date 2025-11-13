@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"os"
 	"sort"
 
 	"github.com/Nekich06/task-3/internal/config"
@@ -31,7 +32,7 @@ func main() {
 
 	sort.Sort(valutessorter.ByValue(CBCurrencyRate))
 
-	err = jsonparser.WriteInfoFromCurrRateToOutputFile(&CBCurrencyRate.Valutes, configInfo.OutputFile, 0o777)
+	err = jsonparser.WriteInfoFromCurrRateToOutputFile(&CBCurrencyRate.Valutes, configInfo.OutputFile, os.FileMode(0o777))
 	if err != nil {
 		panic(err)
 	}
