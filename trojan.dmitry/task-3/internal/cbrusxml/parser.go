@@ -44,9 +44,9 @@ func (f *FloatComma) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error 
 }
 
 type Valute struct {
-	NumCode  int        `xml:"NumCode" json:"num_code"`
-	CharCode string     `xml:"CharCode" json:"char_code"`
-	Value    FloatComma `xml:"Value" json:"value"`
+	NumCode  int        `json:"num_code"  xml:"NumCode"`
+	CharCode string     `json:"char_code" xml:"CharCode"`
+	Value    FloatComma `json:"value"     xml:"Value"`
 }
 
 func ParseFile(path string) (*ValCurs, error) {
