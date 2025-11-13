@@ -9,12 +9,8 @@ import (
 )
 
 func main() {
-	path := flag.String("config", "", "path to yaml config file")
+	path := flag.String("config", "config.yaml", "path to yaml config file (default: config.yaml)")
 	flag.Parse()
-
-	if path == nil || *path == "" {
-		panic("config flag error")
-	}
 
 	config, err := config.LoadConfig(*path)
 	if err != nil {
@@ -26,5 +22,5 @@ func main() {
 		panic(fmt.Errorf("process currency: %w", err))
 	}
 
-	fmt.Println("End")
+	fmt.Println("Processing completed successfully")
 }
