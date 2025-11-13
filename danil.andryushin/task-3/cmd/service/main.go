@@ -10,7 +10,7 @@ import (
 	"github.com/atroxxxxxx/task-3/internal/valute"
 )
 
-const Permission = 0o666
+const DefaultPermission = 0o666
 
 func main() {
 	path := flag.String("config", "config.yaml", "config path")
@@ -18,14 +18,14 @@ func main() {
 
 	var data config.Config
 
-	err := read.YAML(*path, &data)
+	err := read.ParseYAML(*path, &data)
 	if err != nil {
 		panic(err)
 	}
 
 	var valuteSlice valute.ValuteSlice
 
-	err = read.XML(data.InputFile, &valuteSlice)
+	err = read.ParseXML(data.InputFile, &valuteSlice)
 	if err != nil {
 		panic(err)
 	}
@@ -34,7 +34,7 @@ func main() {
 		return valuteSlice.Valutes[i].Value > valuteSlice.Valutes[j].Value
 	})
 
-	err = write.ToJSON(data.OutputFile, valuteSlice.Valutes, Permission)
+	err = write.SerializeToJSON(data.OutputFile, valuteSlice.Valutes, DefaultPermission, DefaultPermission)
 	if err != nil {
 		panic(err)
 	}

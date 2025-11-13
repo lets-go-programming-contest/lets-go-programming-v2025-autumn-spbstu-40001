@@ -7,7 +7,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func YAML(path string, obj any) error {
+func ParseYAML(path string, obj any) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("cannot read config file: %w", err)
