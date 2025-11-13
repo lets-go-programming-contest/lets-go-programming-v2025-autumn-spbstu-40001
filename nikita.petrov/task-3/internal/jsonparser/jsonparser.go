@@ -10,7 +10,7 @@ import (
 func WriteInfoFromCurrRateToOutputFile[T any](cbCurrencyRate *T, outputFilePath string, accessMask os.FileMode) error {
 	dirAll := path.Dir(outputFilePath)
 
-	if err := os.MkdirAll(dirAll, 0o777); err != nil {
+	if err := os.MkdirAll(dirAll, accessMask); err != nil {
 		return fmt.Errorf("can't make directories of path %s: %w", outputFilePath, err)
 	}
 
