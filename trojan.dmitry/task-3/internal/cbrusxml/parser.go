@@ -44,10 +44,9 @@ func (f *FloatComma) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error 
 }
 
 type Valute struct {
-	NumCode  int        `xml:"NumCode"`
-	CharCode string     `xml:"CharCode"`
-	Nominal  int        `xml:"Nominal"`
-	Value    FloatComma `xml:"Value"`
+	NumCode  int        `xml:"NumCode" json:"num_code"`
+	CharCode string     `xml:"CharCode" json:"char_code"`
+	Value    FloatComma `xml:"Value" json:"value"`
 }
 
 func ParseFile(path string) (*ValCurs, error) {
@@ -59,11 +58,14 @@ func ParseFile(path string) (*ValCurs, error) {
 	dec := xml.NewDecoder(bytes.NewReader(val))
 
 	dec.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
-		if strings.ToLower(charset) == "windows-1251" {
+		switch strings.ToLower(charset) {
+		case "windows-1251":
 			return charmap.Windows1251.NewDecoder().Reader(input), nil
+		case "utf-8":
+			return input, nil
+		default:
+			return input, nil
 		}
-
-		return input, nil
 	}
 
 	var valC ValCurs

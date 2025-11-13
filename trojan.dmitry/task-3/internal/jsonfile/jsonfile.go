@@ -22,8 +22,8 @@ func Save(path string, data any) error {
 
 	defer func() {
 		closeErr := file.Close()
-		if closeErr != nil {
-			_ = closeErr
+		if closeErr != nil && err == nil {
+			err = fmt.Errorf("close file %w", closeErr)
 		}
 	}()
 
