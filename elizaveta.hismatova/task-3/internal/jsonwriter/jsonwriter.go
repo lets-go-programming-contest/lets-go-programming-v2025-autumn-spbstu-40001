@@ -7,31 +7,19 @@ import (
 	"path/filepath"
 )
 
-const permission = 0o755
-
-func WriteJSON(path string, data any) error {
-	dir := filepath.Dir(path)
-
-	err := os.MkdirAll(dir, permission)
+func ParseJSON(path string, data interface{}, dirPerm, filePerm os.FileMode) error {
+	jsonData, err := json.MarshalIndent(data, "", "\t")
 	if err != nil {
-		return fmt.Errorf("failed to create directory: %w", err)
+		return fmt.Errorf("serialize to JSON: %w", err)
 	}
 
-	file, err := os.Create(path)
-	if err != nil {
-		return fmt.Errorf("failed to create file: %w", err)
+	directory := filepath.Dir(path)
+	if err := os.MkdirAll(directory, dirPerm); err != nil {
+		return fmt.Errorf("cant create directory '%s': %w", directory, err)
 	}
 
-	defer func() {
-		_ = file.Close()
-	}()
-
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "\t")
-
-	err = encoder.Encode(data)
-	if err != nil {
-		return fmt.Errorf("failed to encode JSON: %w", err)
+	if err := os.WriteFile(path, jsonData, filePerm); err != nil {
+		return fmt.Errorf("cant write to file '%s': %w", path, err)
 	}
 
 	return nil

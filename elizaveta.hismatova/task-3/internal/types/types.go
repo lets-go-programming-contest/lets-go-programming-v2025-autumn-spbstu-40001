@@ -3,72 +3,38 @@ package types
 import (
 	"encoding/xml"
 	"fmt"
-	"sort"
 	"strconv"
 	"strings"
 )
 
-type ValCurs struct {
-	XMLName xml.Name `xml:"ValCurs"`
-	Date    string   `xml:"Date,attr"`
-	Name    string   `xml:"name,attr"`
-	Valutes []Valute `xml:"Valute"`
+type Rates struct {
+	Data []Types `xml:"Valute"`
 }
 
-type Valute struct {
-	XMLName  xml.Name `xml:"Valute"`
-	ID       string   `xml:"ID,attr"`
-	NumCode  int      `xml:"NumCode"`
-	CharCode string   `xml:"CharCode"`
-	Nominal  int      `xml:"Nominal"`
-	Name     string   `xml:"Name"`
-	Value    string   `xml:"Value"`
+type Types struct {
+	NumCode  int         `json:"num_code"  xml:"NumCode"`
+	CharCode string      `json:"char_code" xml:"CharCode"`
+	Value    FloatforCur `json:"value"     xml:"Value"`
 }
 
-type CurrencyOutput struct {
-	NumCode  int     `json:"num_code"`
-	CharCode string  `json:"char_code"`
-	Value    float64 `json:"value"`
-}
+type FloatTypes float64
 
-func (v Valute) ToOutput() (CurrencyOutput, error) {
-	cleanedValue := strings.ReplaceAll(v.Value, ",", ".")
+func (cf *FloatTypes) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
+	var valueStr string
 
-	var (
-		value float64
-		err   error
-	)
-
-	if value, err = strconv.ParseFloat(cleanedValue, 64); err != nil {
-		return CurrencyOutput{}, fmt.Errorf("failed to parse value: %w", err)
+	err := decoder.DecodeElement(&valueStr, &start)
+	if err != nil {
+		return fmt.Errorf("failed to parse value: %w", err)
 	}
 
-	return CurrencyOutput{
-		NumCode:  v.NumCode,
-		CharCode: v.CharCode,
-		Value:    value,
-	}, nil
-}
+	fixed := strings.Replace(valueStr, ",", ".", 1)
 
-func (vc ValCurs) SortByValueDesc() []CurrencyOutput {
-	outputs := make([]CurrencyOutput, 0, len(vc.Valutes))
-
-	for _, valute := range vc.Valutes {
-		var (
-			output CurrencyOutput
-			err    error
-		)
-
-		if output, err = valute.ToOutput(); err != nil {
-			continue
-		}
-
-		outputs = append(outputs, output)
+	value, err := strconv.ParseFloat(fixed, 64)
+	if err != nil {
+		return fmt.Errorf("invalid number %q: %w", valueStr, err)
 	}
 
-	sort.Slice(outputs, func(i, j int) bool {
-		return outputs[i].Value > outputs[j].Value
-	})
+	*cf = FloatTypes(value)
 
-	return outputs
+	return nil
 }
