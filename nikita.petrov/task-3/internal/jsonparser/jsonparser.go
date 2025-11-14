@@ -7,6 +7,12 @@ import (
 	"path"
 )
 
+func panicIfErr(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
 func WriteInfoFromCurrRateToOutputFile[T any](cbCurrencyRate *T, outputFilePath string, accessMask os.FileMode) error {
 	dirAll := path.Dir(outputFilePath)
 
@@ -19,15 +25,16 @@ func WriteInfoFromCurrRateToOutputFile[T any](cbCurrencyRate *T, outputFilePath 
 		return fmt.Errorf("can't open file %s: %w", path.Base(outputFilePath), err)
 	}
 
+	defer func() {
+		err := outputFile.Close()
+		panicIfErr(err)
+	}()
+
 	JSONEncoder := json.NewEncoder(outputFile)
 	JSONEncoder.SetIndent("", "\t")
 
 	if err := JSONEncoder.Encode(&cbCurrencyRate); err != nil {
 		return fmt.Errorf("failed to encode currency rate to file %s: %w", outputFile.Name(), err)
-	}
-
-	if err = outputFile.Close(); err != nil {
-		return fmt.Errorf("failed to close file %s: %w", outputFile.Name(), err)
 	}
 
 	return nil
