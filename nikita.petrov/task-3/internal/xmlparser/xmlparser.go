@@ -33,9 +33,5 @@ func WriteInfoFromInputFileToCurrRate[T any](inputFilePath string, cbCurrencyRat
 		return fmt.Errorf("failed to decode file %s: %w", inputFile.Name(), err)
 	}
 
-	if err = inputFile.Close(); err != nil {
-		return fmt.Errorf("failed to close file %s: %w", inputFile.Name(), err)
-	}
-
 	return nil
 }
