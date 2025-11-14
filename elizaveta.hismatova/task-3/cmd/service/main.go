@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	dirPermission = 0o755
+	dirPermission  = 0o755
 	filePermission = 0o600
 )
 
