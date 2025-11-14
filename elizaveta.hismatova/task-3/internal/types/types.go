@@ -14,7 +14,7 @@ type Rates struct {
 type Types struct {
 	NumCode  int         `json:"num_code"  xml:"NumCode"`
 	CharCode string      `json:"char_code" xml:"CharCode"`
-	Value    FloatforCur `json:"value"     xml:"Value"`
+	Value    FloatTypes `json:"value"     xml:"Value"`
 }
 
 type FloatTypes float64
