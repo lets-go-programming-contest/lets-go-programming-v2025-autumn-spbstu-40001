@@ -8,22 +8,22 @@ import (
 )
 
 type Config struct {
-	InputFile  string `yaml:"input-file"`
-	OutputFile string `yaml:"output-file"`
+	InputFilePath  string `yaml:"input-file"`
+	OutputFilePath string `yaml:"output-file"`
 }
 
-func LoadConfig(configPath string) (*Config, error) {
+func ParseYaml(configPath string) (*Config, error) {
+	var result Config
+
 	file, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}
 
-	var config Config
-
-	err = yaml.Unmarshal(file, &config)
+	err = yaml.Unmarshal(file, &result)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse YAML config: %w", err)
+		return nil, fmt.Errorf("failde to unmarshal file: %w", err)
 	}
 
-	return &config, nil
+	return &result, nil
 }

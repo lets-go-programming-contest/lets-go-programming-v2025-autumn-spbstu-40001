@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	"sort"
 
 	"github.com/LeeLisssa/task-3/internal/config"
 	"github.com/LeeLisssa/task-3/internal/jsonwriter"
@@ -10,31 +10,33 @@ import (
 	"github.com/LeeLisssa/task-3/internal/xmlparser"
 )
 
+const (
+	dirPermission = 0o755
+	filePermission = 0o600
+)
+
 func main() {
-	configPath := flag.String("config", "", "Path to configuration file")
+	configPath := flag.String("config", "config.yaml", "Path to configuration file")
 	flag.Parse()
 
-	if *configPath == "" {
-		panic("config flag is required")
+	cfg, err := config.ParseYaml(*configPath)
+	if err != nil {
+		panic(err)
 	}
 
-	var (
-		cfg *config.Config
-		err error
-	)
+	var typesList types.Rates
 
-	if cfg, err = config.LoadConfig(*configPath); err != nil {
-		panic(fmt.Sprintf("Failed to load config: %v", err))
+	err = xmlparser.ParseXML(cfg.InputFilePath, &typesList)
+	if err != nil {
+		panic(err)
 	}
 
-	var valCurs types.ValCurs
-	if err := xmlparser.ParseXML(cfg.InputFile, &valCurs); err != nil {
-		panic(fmt.Sprintf("Failed to parse XML: %v", err))
-	}
+	sort.Slice(typesList.Data, func(i, j int) bool {
+		return typesList.Data[i].Value > typesList.Data[j].Value
+	})
 
-	sortedCurrencies := valCurs.SortByValueDesc()
-
-	if err := jsonwriter.WriteJSON(cfg.OutputFile, sortedCurrencies); err != nil {
-		panic(fmt.Sprintf("Failed to write JSON: %v", err))
+	err = jsonwriter.ParseJSON(cfg.OutputFilePath, typesList.Data, dirPermission, filePermission)
+	if err != nil {
+		panic(err)
 	}
 }
