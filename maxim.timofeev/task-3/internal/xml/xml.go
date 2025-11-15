@@ -13,6 +13,7 @@ import (
 func NewDecoder(r io.Reader) *xml.Decoder {
 	decoder := xml.NewDecoder(r)
 	decoder.CharsetReader = charset.NewReaderLabel
+
 	return decoder
 }
 
