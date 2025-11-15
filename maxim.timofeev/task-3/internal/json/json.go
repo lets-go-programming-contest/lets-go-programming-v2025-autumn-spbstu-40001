@@ -18,7 +18,9 @@ func SaveJSON(path string, data any) error {
 	}
 
 	defer func() {
-		_ = file.Close()
+		if err := file.Close(); err != nil {
+			panic(err)
+		}
 	}()
 
 	enc := json.NewEncoder(file)

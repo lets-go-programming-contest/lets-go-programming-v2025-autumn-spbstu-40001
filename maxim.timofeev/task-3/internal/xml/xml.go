@@ -6,29 +6,13 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
 
-	"golang.org/x/text/encoding/charmap"
+	"golang.org/x/net/html/charset"
 )
 
 func NewDecoder(r io.Reader) *xml.Decoder {
 	decoder := xml.NewDecoder(r)
-	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
-		cs := strings.ToLower(strings.TrimSpace(charset))
-		switch cs {
-		case "utf-8", "utf8":
-			return input, nil
-		case "windows-1251", "cp1251":
-			return charmap.Windows1251.NewDecoder().Reader(input), nil
-		case "koi8-r":
-			return charmap.KOI8R.NewDecoder().Reader(input), nil
-		case "iso-8859-5":
-			return charmap.ISO8859_5.NewDecoder().Reader(input), nil
-		default:
-			return input, nil
-		}
-	}
-
+	decoder.CharsetReader = charset.NewReaderLabel
 	return decoder
 }
 

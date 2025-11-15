@@ -22,14 +22,6 @@ func (f *UserFloat) UnmarshalText(text []byte) error {
 	return nil
 }
 
-type ValCurs struct {
-	Valutes []struct {
-		NumCode  int       `json:"num_code"  xml:"NumCode"`
-		CharCode string    `json:"char_code" xml:"CharCode"`
-		ValueStr UserFloat `json:"value"     xml:"Value"`
-	} `xml:"Valute"`
-}
-
 func (v *ValCurs) Sort() {
 	sort.Slice(v.Valutes, func(i, j int) bool {
 		return v.Valutes[i].ValueStr > v.Valutes[j].ValueStr
