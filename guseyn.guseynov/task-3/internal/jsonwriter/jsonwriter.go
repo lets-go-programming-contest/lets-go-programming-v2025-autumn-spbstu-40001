@@ -2,28 +2,27 @@ package jsonwriter
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 )
 
-const directoryPermission = 0o755
-
-func Write(path string, data any) error {
+func Write(path string, data any, dirPerm os.FileMode, filePerm os.FileMode) {
 	dir := filepath.Dir(path)
 
-	err := os.MkdirAll(dir, directoryPermission)
+	err := os.MkdirAll(dir, dirPerm)
 	if err != nil {
-		return fmt.Errorf("failed to create directory: %w", err)
+		panic(err)
 	}
 
 	file, err := os.Create(path)
 	if err != nil {
-		return fmt.Errorf("failed to create file: %w", err)
+		panic(err)
 	}
 
 	defer func() {
-		_ = file.Close()
+		if err := file.Close(); err != nil {
+			panic(err)
+		}
 	}()
 
 	encoder := json.NewEncoder(file)
@@ -31,8 +30,6 @@ func Write(path string, data any) error {
 
 	err = encoder.Encode(data)
 	if err != nil {
-		return fmt.Errorf("failed to encode JSON: %w", err)
+		panic(err)
 	}
-
-	return nil
 }

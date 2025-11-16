@@ -10,6 +10,11 @@ import (
 	"github.com/GuseynovGuseynGG/task-3/internal/xmlparser"
 )
 
+const (
+	dirPermission  = 0o755
+	filePermission = 0o644
+)
+
 func main() {
 	configPath := flag.String("config", "config.yaml", "path to config file")
 	flag.Parse()
@@ -30,8 +35,5 @@ func main() {
 		return valCurs.Valutes[i].Value > valCurs.Valutes[j].Value
 	})
 
-	err = jsonwriter.Write(cfg.OutputFile, valCurs.Valutes)
-	if err != nil {
-		panic(err)
-	}
+	jsonwriter.Write(cfg.OutputFile, valCurs.Valutes, dirPermission, filePermission)
 }
