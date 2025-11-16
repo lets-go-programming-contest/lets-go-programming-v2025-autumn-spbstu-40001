@@ -17,14 +17,24 @@ type Valute struct {
 }
 
 func (v *Valute) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
-	var valueStr string
+	type valuteAlias struct {
+		NumCode  int    `xml:"NumCode"`
+		CharCode string `xml:"CharCode"`
+		Value    string `xml:"Value"`
+	}
 
-	err := decoder.DecodeElement(&valueStr, &start)
+	var alias valuteAlias
+
+	err := decoder.DecodeElement(&alias, &start)
 	if err != nil {
 		panic(err)
 	}
 
-	normalized := strings.Replace(valueStr, ",", ".", 1)
+	v.NumCode = alias.NumCode
+	v.CharCode = alias.CharCode
+
+	normalized := strings.Replace(strings.TrimSpace(alias.Value), ",", ".", 1)
+
 	v.Value, err = strconv.ParseFloat(normalized, 64)
 	if err != nil {
 		panic(err)
