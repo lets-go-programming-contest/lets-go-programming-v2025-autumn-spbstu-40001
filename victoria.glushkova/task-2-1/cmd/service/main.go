@@ -23,29 +23,31 @@ func NewOfficeThermostat(minTemp, maxTemp int) *OfficeThermostat {
 	}
 }
 
-func (ot *OfficeThermostat) Process(operation string, temperature int) bool {
+func (ot *OfficeThermostat) Process(operation string, temperature int) int {
 	switch operation {
 	case ">=":
 		if temperature > ot.max {
-			return false
+			return -1
 		}
-
 		if temperature > ot.min {
 			ot.min = temperature
 		}
 	case "<=":
 		if temperature < ot.min {
-			return false
+			return -1
 		}
-
 		if temperature < ot.max {
 			ot.max = temperature
 		}
 	default:
-		return false
+		return -1
 	}
 
-	return ot.min <= ot.max
+	if ot.min > ot.max {
+		return -1
+	}
+
+	return ot.min
 }
 
 func main() {
@@ -67,7 +69,7 @@ func main() {
 		}
 
 		thermostat := NewOfficeThermostat(minTemp, maxTemp)
-		valid := true
+		hasError := false
 
 		for range staffCount {
 			var (
@@ -81,15 +83,17 @@ func main() {
 				os.Exit(1)
 			}
 
-			if valid {
-				valid = thermostat.Process(operation, temperature)
+			if hasError {
+				fmt.Println(-1)
+				continue
 			}
-		}
 
-		if valid {
-			fmt.Println(thermostat.min)
-		} else {
-			fmt.Println(-1)
+			result := thermostat.Process(operation, temperature)
+			fmt.Println(result)
+
+			if result == -1 {
+				hasError = true
+			}
 		}
 	}
 }
