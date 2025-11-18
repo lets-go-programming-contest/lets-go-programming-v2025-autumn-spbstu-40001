@@ -29,6 +29,7 @@ func (ot *OfficeThermostat) Process(operation string, temperature int) int {
 		if temperature > ot.max {
 			return -1
 		}
+
 		if temperature > ot.min {
 			ot.min = temperature
 		}
@@ -36,6 +37,7 @@ func (ot *OfficeThermostat) Process(operation string, temperature int) int {
 		if temperature < ot.min {
 			return -1
 		}
+
 		if temperature < ot.max {
 			ot.max = temperature
 		}
@@ -85,6 +87,7 @@ func main() {
 
 			if hasError {
 				fmt.Println(-1)
+
 				continue
 			}
 
