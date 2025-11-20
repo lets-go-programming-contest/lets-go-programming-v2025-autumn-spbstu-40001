@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sort"
 
 	"golang.org/x/net/html/charset"
 )
@@ -40,4 +41,15 @@ func ParseXMLFile(inputFile string) (*ValCurs, error) {
 	}
 
 	return &valCurs, nil
+}
+
+func ConvertAndSort(valCurs *ValCurs) []Valute {
+	currencies := make([]Valute, len(valCurs.Valutes))
+	copy(currencies, valCurs.Valutes)
+
+	sort.Slice(currencies, func(i, j int) bool {
+		return currencies[i].Value > currencies[j].Value
+	})
+
+	return currencies
 }

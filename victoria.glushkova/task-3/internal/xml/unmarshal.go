@@ -28,22 +28,3 @@ func (cv *currencyValue) UnmarshalXML(decoder *xml.Decoder, start xml.StartEleme
 
 	return nil
 }
-
-func (v *Valute) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
-	type alias Valute
-
-	var temp struct {
-		alias
-		Value currencyValue `xml:"Value"`
-	}
-
-	err := decoder.DecodeElement(&temp, &start)
-	if err != nil {
-		return fmt.Errorf("decode element: %w", err)
-	}
-
-	*v = Valute(temp.alias)
-	v.Value = float64(temp.Value)
-
-	return nil
-}
