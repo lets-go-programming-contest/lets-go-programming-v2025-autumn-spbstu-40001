@@ -9,8 +9,8 @@ type Conveyer[T any] struct {
 	nodes []func(c context.Context) error;
 }
 
-const ErrorChannelNotFound = Errors.New("chan not found");
-const ErrorClosedChanelEmpty = Errors.New("requested channel was closed and is empty");
+var ErrorChannelNotFound = errors.New("chan not found");
+var ErrorClosedChanelEmpty = errors.New("requested channel was closed and is empty");
 
 func New[T any](channelCapacity int) Conveyer[T] {
 	return Conveyer[T]{channelCapacity, make(map[string] chan T), []func(c context.Context) error{}};
@@ -30,6 +30,7 @@ func (obj *Conveyer[T]) Run(c context.Context) error {
 	for _, fn := range(obj.nodes) {
 		go fn(c);
 	}
+	return nil;
 }
 func (obj *Conveyer[T]) Send(inChName string, data T) error {
 	ch, exists := obj.pipes[inChName];
@@ -40,7 +41,16 @@ func (obj *Conveyer[T]) Send(inChName string, data T) error {
 	return nil;
 }
 func (obj *Conveyer[T]) Recv(outChName string) (T, error) {
-	
+	ch, exists := obj.pipes[outChName];
+	if (!exists) {
+		var res T;
+		return res, ErrorChannelNotFound;
+	}
+	res, ok := <- ch;
+	if (!ok) {
+		return res, ErrorClosedChanelEmpty;
+	}
+	return res, nil;
 }
 
 func (obj *Conveyer[T]) RegisterDecorator(
