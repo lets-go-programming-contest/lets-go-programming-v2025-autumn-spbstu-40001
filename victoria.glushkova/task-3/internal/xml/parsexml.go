@@ -17,9 +17,9 @@ type ValCurs struct {
 }
 
 type Valute struct {
-	NumCode  int     `xml:"NumCode"`
-	CharCode string  `xml:"CharCode"`
-	Value    float64 `xml:"Value"`
+	NumCode  int          `xml:"NumCode"`
+	CharCode string       `xml:"CharCode"`
+	Value    currencyValue `xml:"Value"`
 }
 
 func ParseXMLFile(inputFile string) (*ValCurs, error) {
@@ -48,7 +48,7 @@ func ConvertAndSort(valCurs *ValCurs) []Valute {
 	copy(currencies, valCurs.Valutes)
 
 	sort.Slice(currencies, func(i, j int) bool {
-		return currencies[i].Value > currencies[j].Value
+		return float64(currencies[i].Value) > float64(currencies[j].Value)
 	})
 
 	return currencies
