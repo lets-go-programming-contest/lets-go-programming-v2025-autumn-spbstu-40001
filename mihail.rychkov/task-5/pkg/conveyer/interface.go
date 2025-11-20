@@ -1,5 +1,7 @@
 package conveyer;
 
+import "context";
+
 type Interface[T any] interface {
 	RegisterDecorator(
 		fn func(
