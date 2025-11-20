@@ -6,26 +6,28 @@ import "context";
 import "github.com/stretchr/testify/assert";
 import "github.com/Rychmick/task-5/pkg/conveyer"
 
+func assertGoodResult(t *testing.T, conv *conveyer.Conveyer[string], inName, outName, send, expected string) {
+	err := conv.Send(inName, send);
+	assert.Nil(t, err, "no error expected");
+	res, err := conv.Recv(outName);
+	assert.Nil(t, err, "no error expected");
+	assert.Equal(t, expected, res);
+}
+
 func TestDecoratorConveyer(t *testing.T) {
 	var conv = conveyer.New[string](5);
 	conv.RegisterDecorator(PrefixDecoratorFunc, "in", "mid");
 	conv.RegisterDecorator(PrefixDecoratorFunc, "mid", "out");
 
-	err := conv.Send("in", "allo");
-	assert.Nil(t, err, "no error expected");
-	err = conv.Send("in", "does it works?");
-	assert.Nil(t, err, "no error expected");
 	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second * 1);
-	defer cancelFunc();
-	err = conv.Run(ctx);
-	assert.Nil(t, err, "no error expected");
+	go func() {
+		assertGoodResult(t, &conv, "in", "out", "1", "decorated: decorated: 1");
+		assertGoodResult(t, &conv, "in", "out", "2", "decorated: decorated: 2");
 
-	res, err := conv.Recv("out");
+		cancelFunc();
+	}();
+	err := conv.Run(ctx);
 	assert.Nil(t, err, "no error expected");
-	assert.Equal(t, "decorated: decorated: allo", res);
-	res, err = conv.Recv("out");
-	assert.Nil(t, err, "no error expected");
-	assert.Equal(t, "decorated: decorated: does it works?", res);
 }
 func TestDecoratorFailConveyer(t *testing.T) {
 	var conv = conveyer.New[string](5);
@@ -43,33 +45,35 @@ func TestDecoratorFailConveyer(t *testing.T) {
 	assert.Nil(t, err, "no error expected");
 	assert.Equal(t, "undefined", res);
 }
-func TestMuxConveyer(t *testing.T) {
+func TestDMuxConveyer(t *testing.T) {
 	var conv = conveyer.New[string](5);
 	conv.RegisterSeparator(SeparatorFunc, "in", []string{"out1", "out2", "out3"});
 
-	err := conv.Send("in", "1");
-	assert.Nil(t, err, "no error expected");
-	err = conv.Send("in", "2");
-	assert.Nil(t, err, "no error expected");
-	err = conv.Send("in", "3");
-	assert.Nil(t, err, "no error expected");
-	err = conv.Send("in", "4");
-	assert.Nil(t, err, "no error expected");
 	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second * 1);
-	defer cancelFunc();
-	err = conv.Run(ctx);
-	assert.Nil(t, err, "no error expected");
+	go func() {
+		assertGoodResult(t, &conv, "in", "out1", "1", "1");
+		assertGoodResult(t, &conv, "in", "out2", "2", "2");
+		assertGoodResult(t, &conv, "in", "out3", "3", "3");
+		assertGoodResult(t, &conv, "in", "out1", "4", "4");
 
-	res, err := conv.Recv("out1");
+		cancelFunc();
+	}();
+	err := conv.Run(ctx);
 	assert.Nil(t, err, "no error expected");
-	assert.Equal(t, "1", res);
-	res, err = conv.Recv("out1");
+}
+func TestMuxConveyer(t *testing.T) {
+	var conv = conveyer.New[string](5);
+	conv.RegisterMultiplexer(MultiplexerFunc, []string{"in1", "in2", "in3"}, "out");
+
+	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second * 1);
+	go func() {
+		assertGoodResult(t, &conv, "in1", "out", "1", "1");
+		assertGoodResult(t, &conv, "in2", "out", "2", "2");
+		assertGoodResult(t, &conv, "in3", "out", "3", "3");
+		assertGoodResult(t, &conv, "in1", "out", "4", "4");
+
+		cancelFunc();
+	}();
+	err := conv.Run(ctx);
 	assert.Nil(t, err, "no error expected");
-	assert.Equal(t, "4", res);
-	res, err = conv.Recv("out2");
-	assert.Nil(t, err, "no error expected");
-	assert.Equal(t, "2", res);
-	res, err = conv.Recv("out3");
-	assert.Nil(t, err, "no error expected");
-	assert.Equal(t, "3", res);
 }
