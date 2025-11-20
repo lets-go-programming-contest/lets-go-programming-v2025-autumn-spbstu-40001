@@ -6,7 +6,7 @@ import "context";
 import "github.com/stretchr/testify/assert";
 import "github.com/Rychmick/task-5/pkg/conveyer"
 
-func assertGoodResult(t *testing.T, conv *conveyer.Conveyer[string], inName, outName, send, expected string) {
+func assertGoodResult(t *testing.T, conv *conveyer.StringConveyer, inName, outName, send, expected string) {
 	err := conv.Send(inName, send);
 	assert.Nil(t, err, "no error expected");
 	res, err := conv.Recv(outName);
@@ -15,7 +15,7 @@ func assertGoodResult(t *testing.T, conv *conveyer.Conveyer[string], inName, out
 }
 
 func TestDecoratorConveyer(t *testing.T) {
-	var conv = conveyer.New[string](5);
+	var conv = conveyer.New(5);
 	conv.RegisterDecorator(PrefixDecoratorFunc, "in", "mid");
 	conv.RegisterDecorator(PrefixDecoratorFunc, "mid", "out");
 
@@ -30,7 +30,7 @@ func TestDecoratorConveyer(t *testing.T) {
 	assert.Nil(t, err, "no error expected");
 }
 func TestDecoratorFailConveyer(t *testing.T) {
-	var conv = conveyer.New[string](5);
+	var conv = conveyer.New(5);
 	conv.RegisterDecorator(PrefixDecoratorFunc, "in", "mid");
 	conv.RegisterDecorator(PrefixDecoratorFunc, "mid", "out");
 
@@ -46,7 +46,7 @@ func TestDecoratorFailConveyer(t *testing.T) {
 	assert.Equal(t, "undefined", res);
 }
 func TestDMuxConveyer(t *testing.T) {
-	var conv = conveyer.New[string](5);
+	var conv = conveyer.New(5);
 	conv.RegisterSeparator(SeparatorFunc, "in", []string{"out1", "out2", "out3"});
 
 	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second * 1);
@@ -62,7 +62,7 @@ func TestDMuxConveyer(t *testing.T) {
 	assert.Nil(t, err, "no error expected");
 }
 func TestMuxConveyer(t *testing.T) {
-	var conv = conveyer.New[string](5);
+	var conv = conveyer.New(5);
 	conv.RegisterMultiplexer(MultiplexerFunc, []string{"in1", "in2", "in3"}, "out");
 
 	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second * 1);
