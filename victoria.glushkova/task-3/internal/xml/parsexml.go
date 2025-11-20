@@ -19,7 +19,7 @@ type ValCurs struct {
 type Valute struct {
 	NumCode  int          `xml:"NumCode"`
 	CharCode string       `xml:"CharCode"`
-	Value    currencyValue `xml:"Value"`
+	Value    CurrencyValue `xml:"Value"`
 }
 
 func ParseXMLFile(inputFile string) (*ValCurs, error) {

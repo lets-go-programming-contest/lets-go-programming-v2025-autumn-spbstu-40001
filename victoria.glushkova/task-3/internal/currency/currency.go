@@ -19,7 +19,7 @@ func ConvertAndSort(valCurs *xml.ValCurs) []Currency {
 		currencies[i] = Currency{
 			NumCode:  valute.NumCode,
 			CharCode: valute.CharCode,
-			Value:    valute.Value,
+			Value:    float64(valute.Value),
 		}
 	}
 

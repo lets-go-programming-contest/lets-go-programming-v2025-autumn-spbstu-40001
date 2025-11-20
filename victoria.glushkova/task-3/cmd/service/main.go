@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/vikaglushkova/task-3/internal/config"
+	"github.com/vikaglushkova/task-3/internal/currency"
 	"github.com/vikaglushkova/task-3/internal/json"
 	"github.com/vikaglushkova/task-3/internal/xml"
 )
@@ -26,7 +27,7 @@ func main() {
 		log.Fatalf("Error reading XML data: %v", err)
 	}
 
-	currencies := xml.ConvertAndSort(valCurs)
+	currencies := currency.ConvertAndSort(valCurs)
 
 	err = json.WriteToFile(cfg.OutputFile, currencies, 0o755)
 	if err != nil {
