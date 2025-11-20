@@ -84,6 +84,7 @@ func main() {
 
 			if operation != ">=" && operation != "<=" {
 				fmt.Println(-1)
+
 				continue
 			}
 
