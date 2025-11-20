@@ -23,21 +23,23 @@ func main() {
 		log.Fatal("Config file path is required. Use --config to specify the path.")
 	}
 
-	inputFile, outputFile, err := files.ReadYAMLConfigFile(configPath)
+	var settings models.Settings
+
+	settings, err := files.ReadYAMLConfigFile(configPath)
 	if err != nil {
 		log.Fatalf("Failed to read config file: %v", err)
 	}
 
 	var valCurs models.ValCurs
 
-	valCurs, err = files.ReadAndParseXML(inputFile)
+	valCurs, err = files.ReadAndParseXML(settings.InputFileSetting)
 	if err != nil {
 		log.Fatalf("Failed to read and parse XML file: %v", err)
 	}
 
 	valCurs = sorts.SortDataByValue(valCurs)
 
-	err = files.WriteDataToJSON(valCurs, outputFile)
+	err = files.WriteDataToJSON(valCurs, settings.OutputFileSetting)
 	if err != nil {
 		log.Fatalf("Failed to write JSON file: %v", err)
 	}
