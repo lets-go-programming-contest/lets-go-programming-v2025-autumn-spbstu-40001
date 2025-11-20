@@ -3,6 +3,7 @@ package handlers;
 import "context";
 import "strings";
 import "errors";
+import "sync";
 
 var ErrorNoDecorator = errors.New("can't be decorated");
 var ErrorEmptyChannelList = errors.New("channels slice is empty");
@@ -52,5 +53,36 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			return nil;
 		}
 	}
+	return nil;
+}
+func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
+	if (len(inputs) == 0) {
+		return ErrorEmptyChannelList;
+	}
+
+	var group sync.WaitGroup;
+	for idx := range(len(inputs)) {
+		group.Go(func(){
+			for {
+				select
+				{
+				case str, ok := <- inputs[idx]:
+					if (!ok) {
+						return;
+					}
+					if (!strings.Contains(str, "no multiplexer")) {
+						select {
+						case output <- str:
+						case <- ctx.Done():
+							return;
+						}
+					}
+				case <- ctx.Done():
+					return;
+				}
+			}
+		})
+	}
+	group.Wait();
 	return nil;
 }
