@@ -63,3 +63,29 @@ func (obj *Conveyer[T]) RegisterDecorator(
 		return fn(c, in, out);
 	});
 }
+func (obj *Conveyer[T]) RegisterMultiplexer(
+		fn func(c context.Context, input []chan T, output chan T) error,
+		input []string, output string,
+	) {
+	inputs := make([]chan T, len(input));
+	for idx, name := range(input) {
+		inputs[idx] = obj.reserveChannel(name);
+	}
+	out := obj.reserveChannel(output);
+	obj.nodes = append(obj.nodes, func(c context.Context) error {
+		return fn(c, inputs, out);
+	});
+}
+func (obj *Conveyer[T]) RegisterSeparator(
+		fn func(c context.Context, input chan T, output []chan T) error,
+		input string, output []string,
+	) {
+	in := obj.reserveChannel(input);
+	outputs := make([]chan T, len(input));
+	for idx, name := range(output) {
+		outputs[idx] = obj.reserveChannel(name);
+	}
+	obj.nodes = append(obj.nodes, func(c context.Context) error {
+		return fn(c, in, outputs);
+	});
+}
