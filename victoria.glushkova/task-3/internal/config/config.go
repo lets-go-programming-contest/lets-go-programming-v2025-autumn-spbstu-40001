@@ -16,21 +16,27 @@ type Config struct {
 
 var ErrConfigFieldsRequired = errors.New("config file must contain both input-file and output-file fields")
 
+func (c *Config) Validate() error {
+	if c.InputFile == "" || c.OutputFile == "" {
+		return ErrConfigFieldsRequired
+	}
+	return nil
+}
+
 func ReadConfig(configPath string) (*Config, error) {
 	file, err := os.Open(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("cannot open config file: %w", err)
 	}
+	defer func() {
+		if err := file.Close(); err != nil {
+			panic(fmt.Sprintf("cannot close config file: %v", err))
+		}
+	}()
 
 	data, err := io.ReadAll(file)
 	if err != nil {
-		_ = file.Close()
-
 		return nil, fmt.Errorf("cannot read config file: %w", err)
-	}
-
-	if err := file.Close(); err != nil {
-		return nil, fmt.Errorf("cannot close config file: %w", err)
 	}
 
 	var config Config
@@ -38,8 +44,8 @@ func ReadConfig(configPath string) (*Config, error) {
 		return nil, fmt.Errorf("cannot parse YAML config: %w", err)
 	}
 
-	if config.InputFile == "" || config.OutputFile == "" {
-		return nil, ErrConfigFieldsRequired
+	if err := config.Validate(); err != nil {
+		return nil, err
 	}
 
 	return &config, nil

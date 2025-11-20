@@ -4,9 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/vikaglushkova/task-3/internal/config"
-	"github.com/vikaglushkova/task-3/internal/currency"
 	"github.com/vikaglushkova/task-3/internal/json"
 	"github.com/vikaglushkova/task-3/internal/xml"
 )
@@ -27,9 +27,9 @@ func main() {
 		log.Fatalf("Error reading XML data: %v", err)
 	}
 
-	currencies := currency.ConvertAndSort(valCurs)
+	currencies := xml.ConvertAndSort(valCurs)
 
-	err = json.WriteToFile(cfg.OutputFile, currencies)
+	err = json.WriteToFile(cfg.OutputFile, currencies, 0o755)
 	if err != nil {
 		log.Fatalf("Error saving results: %v", err)
 	}

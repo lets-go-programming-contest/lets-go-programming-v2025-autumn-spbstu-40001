@@ -7,9 +7,7 @@ import (
 	"path/filepath"
 )
 
-const dirPermissions = 0o755
-
-func WriteToFile(outputFile string, data interface{}) error {
+func WriteToFile(outputFile string, data interface{}, dirPermissions os.FileMode) error {
 	outputDir := filepath.Dir(outputFile)
 
 	err := os.MkdirAll(outputDir, dirPermissions)
@@ -21,20 +19,18 @@ func WriteToFile(outputFile string, data interface{}) error {
 	if err != nil {
 		return fmt.Errorf("cannot create output file: %w", err)
 	}
+	defer func() {
+		if err := file.Close(); err != nil {
+			panic(fmt.Sprintf("cannot close output file: %v", err))
+		}
+	}()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "    ")
 
 	err = encoder.Encode(data)
 	if err != nil {
-		_ = file.Close()
-
 		return fmt.Errorf("cannot encode JSON data: %w", err)
-	}
-
-	err = file.Close()
-	if err != nil {
-		return fmt.Errorf("cannot close output file: %w", err)
 	}
 
 	return nil
