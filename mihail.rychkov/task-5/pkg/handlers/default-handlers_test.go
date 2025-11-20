@@ -1,5 +1,6 @@
 package handlers;
 
+import "time";
 import "testing";
 import "context";
 import "github.com/stretchr/testify/assert";
@@ -14,7 +15,9 @@ func TestDecoratorConveyer(t *testing.T) {
 	assert.Nil(t, err, "no error expected");
 	err = conv.Send("in", "does it works?");
 	assert.Nil(t, err, "no error expected");
-	err = conv.Run(context.Background());
+	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second * 1);
+	defer cancelFunc();
+	err = conv.Run(ctx);
 	assert.Nil(t, err, "no error expected");
 
 	res, err := conv.Recv("out");
@@ -31,7 +34,9 @@ func TestDecoratorFailConveyer(t *testing.T) {
 
 	err := conv.Send("in", "text no decorator contains");
 	assert.Nil(t, err, "no error expected");
-	err = conv.Run(context.Background());
+	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second * 1);
+	defer cancelFunc();
+	err = conv.Run(ctx);
 	assert.ErrorIs(t, err, ErrorNoDecorator, "expected decorator cancel message");
 
 	res, err := conv.Recv("out");
@@ -50,7 +55,9 @@ func TestMuxConveyer(t *testing.T) {
 	assert.Nil(t, err, "no error expected");
 	err = conv.Send("in", "4");
 	assert.Nil(t, err, "no error expected");
-	err = conv.Run(context.Background());
+	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second * 1);
+	defer cancelFunc();
+	err = conv.Run(ctx);
 	assert.Nil(t, err, "no error expected");
 
 	res, err := conv.Recv("out1");
