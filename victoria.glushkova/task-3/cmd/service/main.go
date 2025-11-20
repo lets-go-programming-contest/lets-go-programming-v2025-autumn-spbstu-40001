@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/vikaglushkova/task-3/internal/config"
 	"github.com/vikaglushkova/task-3/internal/currency"
@@ -11,7 +12,10 @@ import (
 	"github.com/vikaglushkova/task-3/internal/xml"
 )
 
-const defaultConfigPath = "config.yaml"
+const (
+	defaultConfigPath = "config.yaml"
+	dirPermissions    = 0o755
+)
 
 func main() {
 	configPath := flag.String("config", defaultConfigPath, "Path to configuration file")
@@ -29,7 +33,7 @@ func main() {
 
 	currencies := currency.ConvertAndSort(valCurs)
 
-	err = json.WriteToFile(cfg.OutputFile, currencies, 0o755)
+	err = json.WriteToFile(cfg.OutputFile, currencies, dirPermissions)
 	if err != nil {
 		log.Fatalf("Error saving results: %v", err)
 	}

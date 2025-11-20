@@ -19,6 +19,7 @@ func WriteToFile(outputFile string, data interface{}, dirPermissions os.FileMode
 	if err != nil {
 		return fmt.Errorf("cannot create output file: %w", err)
 	}
+
 	defer func() {
 		if err := file.Close(); err != nil {
 			panic(fmt.Sprintf("cannot close output file: %v", err))
