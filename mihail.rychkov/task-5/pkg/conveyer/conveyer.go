@@ -13,8 +13,8 @@ type Conveyer[T any] struct {
 var ErrorChannelNotFound = errors.New("chan not found");
 var ErrorClosedChanelEmpty = errors.New("requested channel was closed and is empty");
 
-func New[T any](channelCapacity int) Conveyer[T] {
-	return Conveyer[T]{channelCapacity, make(map[string] chan T), []func(c context.Context) error{}};
+func NewConveyer[T any](channelCapacity int) Conveyer[T] {
+	return Conveyer[T]{channelCapacity, make(map[string] chan T), []func(ctx context.Context) error{}};
 }
 
 func (obj *Conveyer[T]) reserveChannel(name string) chan T {
