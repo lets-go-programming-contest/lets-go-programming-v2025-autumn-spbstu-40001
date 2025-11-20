@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/vikaglushkova/task-3/internal/config"
 	"github.com/vikaglushkova/task-3/internal/currency"
