@@ -46,8 +46,8 @@ func TestDecoratorConveyer(t *testing.T) {
 	var runErr error
 
 	go func() {
-		assertGoodResult(t, &runErr, &conv, "in", "out", "1", "decorated: "+"decorated: "+"1")
-		assertGoodResult(t, &runErr, &conv, "in", "out", "2", "decorated: "+"decorated: "+"2")
+		assertGoodResult(t, &runErr, &conv, "in", "out", "1", "decorated: "+"1")
+		assertGoodResult(t, &runErr, &conv, "in", "out", "2", "decorated: "+"2")
 
 		cancelFunc()
 	}()
