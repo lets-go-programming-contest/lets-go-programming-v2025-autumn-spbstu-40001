@@ -30,7 +30,7 @@ type Interface[T any] interface {
 		inputChannelName string,
 		outputChannelsNames []string,
 	);
-	Run(c context.Context) error;
+	Run(ctx context.Context) error;
 	Send(inputChannelName string, data T) error;
 	Recv(outputChannelName string) (T, error);
 }

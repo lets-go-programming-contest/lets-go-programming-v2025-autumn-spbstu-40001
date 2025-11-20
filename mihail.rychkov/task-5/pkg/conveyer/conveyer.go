@@ -1,7 +1,8 @@
 package conveyer;
 
 import "context";
-import "errors"
+import "errors";
+import _ "golang.org/x/sync/errgroup";
 
 type Conveyer[T any] struct {
 	channelCapacity int;
@@ -81,7 +82,7 @@ func (obj *Conveyer[T]) RegisterSeparator(
 		input string, output []string,
 	) {
 	in := obj.reserveChannel(input);
-	outputs := make([]chan T, len(input));
+	outputs := make([]chan T, len(output));
 	for idx, name := range(output) {
 		outputs[idx] = obj.reserveChannel(name);
 	}
