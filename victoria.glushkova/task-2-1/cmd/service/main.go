@@ -69,6 +69,7 @@ func main() {
 		}
 
 		thermostat := NewOfficeThermostat(minTemp, maxTemp)
+		hasError := false
 
 		for range staffCount {
 			var (
@@ -82,14 +83,25 @@ func main() {
 				os.Exit(1)
 			}
 
+			if hasError {
+				fmt.Println(-1)
+
+				continue
+			}
+
 			if operation != ">=" && operation != "<=" {
 				fmt.Println(-1)
+				hasError = true
 
 				continue
 			}
 
 			result := thermostat.Process(operation, temperature)
 			fmt.Println(result)
+
+			if result == -1 {
+				hasError = true
+			}
 		}
 	}
 }
