@@ -2,7 +2,7 @@ package conveyer;
 
 import "context";
 import "errors";
-import _ "golang.org/x/sync/errgroup";
+import "golang.org/x/sync/errgroup";
 
 type Conveyer[T any] struct {
 	channelCapacity int;
@@ -27,11 +27,18 @@ func (obj *Conveyer[T]) reserveChannel(name string) chan T {
 	return ch;
 }
 
-func (obj *Conveyer[T]) Run(c context.Context) error {
+func (obj *Conveyer[T]) Run(ctx context.Context) error {
+	defer func() {
+		for _, ch := range(obj.pipes) {
+			close(ch);
+		}
+	}();
+
+	group, ctx := errgroup.WithContext(ctx);
 	for _, fn := range(obj.nodes) {
-		go fn(c);
+		group.Go(func() error { return fn(ctx); });
 	}
-	return nil;
+	return group.Wait();
 }
 func (obj *Conveyer[T]) Send(inChName string, data T) error {
 	ch, exists := obj.pipes[inChName];
