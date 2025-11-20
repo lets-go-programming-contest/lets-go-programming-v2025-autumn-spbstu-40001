@@ -1,34 +1,34 @@
 package conveyer;
 
-type Interface interface {
+type Interface[T any] interface {
 	RegisterDecorator(
 		fn func(
 			ctx context.Context,
-			input chan string,
-			output chan string,
+			input chan T,
+			output chan T,
 		) error,
-		input string,
-		output string,
+		inputChannelName string,
+		outputChannelName string,
 	);
 	RegisterMultiplexer(
 		fn func(
 			ctx context.Context,
-			inputs []chan string,
-			output chan string,
+			inputs []chan T,
+			output chan T,
 		) error,
-		inputs []string,
-		output string,
+		inputChannelsNames []string,
+		outputChannelName string,
 	);
 	RegisterSeparator(
 		fn func(
 			ctx context.Context,
-			input chan string,
-			outputs []chan string,
+			input chan T,
+			outputs []chan T,
 		) error,
-		input string,
-		outputs []string,
+		inputChannelName string,
+		outputChannelsNames []string,
 	);
-	Run(ctx context.Context) error;
-	Send(input string, data string) error;
-	Recv(output string) (string, error);
+	Run(c context.Context) error;
+	Send(inputChannelName string, data T) error;
+	Recv(outputChannelName string) (T, error);
 }
