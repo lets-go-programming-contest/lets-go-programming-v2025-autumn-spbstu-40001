@@ -17,8 +17,8 @@ type ValCurs struct {
 }
 
 type Valute struct {
-	NumCode  int         `xml:"NumCode"`
-	CharCode string      `xml:"CharCode"`
+	NumCode  int          `xml:"NumCode"`
+	CharCode string       `xml:"CharCode"`
 	Value    CurrencyValue `xml:"Value"`
 }
 
