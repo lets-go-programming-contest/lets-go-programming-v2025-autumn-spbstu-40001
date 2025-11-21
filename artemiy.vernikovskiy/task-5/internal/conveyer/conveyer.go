@@ -1,0 +1,157 @@
+package conveyer
+
+import (
+	"context"
+	"errors"
+	"sync"
+)
+
+var (
+	ErrChanNotFound     = errors.New("channel not found")
+	ErrPipelineCanceled = errors.New("pipeline run canceled")
+)
+
+type pipeline struct {
+	mu       sync.RWMutex
+	channels map[string]chan string
+	handlers []func(ctx context.Context) error
+	size     int
+}
+
+func New(size int) *pipeline {
+	return &pipeline{
+		mu:       sync.RWMutex{},
+		channels: make(map[string]chan string),
+		handlers: make([]func(ctx context.Context) error, 0),
+		size:     size,
+	}
+}
+
+func (p *pipeline) RegisterDecorator(
+	workingFunc func(ctx context.Context, input chan string, output chan string) error,
+	input string,
+	output string,
+) {
+	inCh := p.ensureChannel(input)
+	outCh := p.ensureChannel(output)
+	p.handlers = append(p.handlers, func(ctx context.Context) error {
+		return workingFunc(ctx, inCh, outCh)
+	})
+}
+
+func (p *pipeline) RegisterMultiplexer(
+	workingFunc func(ctx context.Context, inputs []chan string, output chan string) error,
+	inputs []string,
+	output string,
+) {
+	inChans := make([]chan string, 0, len(inputs))
+	for _, name := range inputs {
+		inChans = append(inChans, p.ensureChannel(name))
+	}
+
+	outCh := p.ensureChannel(output)
+	p.handlers = append(p.handlers, func(ctx context.Context) error {
+		return workingFunc(ctx, inChans, outCh)
+	})
+}
+
+func (p *pipeline) RegisterSeparator(
+	workingFunc func(ctx context.Context, input chan string, outputs []chan string) error,
+	input string,
+	outputs []string,
+) {
+	inCh := p.ensureChannel(input)
+
+	outChans := make([]chan string, 0, len(outputs))
+	for _, name := range outputs {
+		outChans = append(outChans, p.ensureChannel(name))
+	}
+
+	p.handlers = append(p.handlers, func(ctx context.Context) error {
+		return workingFunc(ctx, inCh, outChans)
+	})
+}
+
+func (p *pipeline) Run(ctx context.Context) error {
+	var pipelineWaitGroup sync.WaitGroup
+
+	errCh := make(chan error, len(p.handlers))
+
+	for _, handler := range p.handlers {
+		pipelineWaitGroup.Add(1)
+
+		go func(h func(ctx context.Context) error) {
+			defer pipelineWaitGroup.Done()
+
+			err := h(ctx)
+			if err != nil {
+				select {
+				case errCh <- err:
+				case <-ctx.Done():
+				}
+			}
+		}(handler)
+	}
+
+	done := make(chan struct{})
+
+	go func() {
+		pipelineWaitGroup.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-ctx.Done():
+		return errors.Join(ErrPipelineCanceled, ctx.Err())
+	case err := <-errCh:
+		return err
+	case <-done:
+		return nil
+	}
+}
+
+func (p *pipeline) Send(name string, data string) error {
+	p.mu.RLock()
+	channel, ok := p.channels[name]
+	p.mu.RUnlock()
+
+	if !ok {
+		return ErrChanNotFound
+	}
+
+	channel <- data
+
+	return nil
+}
+
+func (p *pipeline) Recv(name string) (string, error) {
+	p.mu.RLock()
+	channel, ok := p.channels[name]
+	p.mu.RUnlock()
+
+	if !ok {
+		return "", ErrChanNotFound
+	}
+
+	select {
+	case val, ok := <-channel:
+		if !ok {
+			return "undefined", nil
+		}
+
+		return val, nil
+	default:
+		return "undefined", nil
+	}
+}
+
+func (p *pipeline) ensureChannel(name string) chan string {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	if _, ok := p.channels[name]; !ok {
+		p.channels[name] = make(chan string, p.size)
+	}
+
+	return p.channels[name]
+}
