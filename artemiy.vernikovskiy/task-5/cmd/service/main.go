@@ -5,16 +5,20 @@ import (
 	"log"
 	"time"
 
-	"github.com/Aapng-cmd/task-5/internal/conveyer"
-	"github.com/Aapng-cmd/task-5/internal/handlers"
+	"github.com/Aapng-cmd/task-5/pkg/conveyer"
+	"github.com/Aapng-cmd/task-5/pkg/handlers"
 )
 
 // Oh wow, a main!
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	const contextTimeCheck = 5
+
+	ctx, cancel := context.WithTimeout(context.Background(), contextTimeCheck*time.Second)
 	defer cancel()
 
-	conveyerPipeline := conveyer.New(10)
+	const tmpTest = 10
+
+	conveyerPipeline := conveyer.New(tmpTest)
 
 	conveyerPipeline.RegisterDecorator(handlers.PrefixDecoratorFunc, "in", "out1")
 	conveyerPipeline.RegisterSeparator(handlers.SeparatorFunc, "out1", []string{"sep1", "sep2"})
