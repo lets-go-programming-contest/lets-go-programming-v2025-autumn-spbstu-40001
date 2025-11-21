@@ -9,7 +9,7 @@ import (
 
 // Errors.
 var (
-	ErrCannotDecorate      = errors.New("cannot decorate value")
+	ErrCannotDecorate      = errors.New("can't be decorated")
 	ErrSeparatorCanceled   = errors.New("separator canceled")
 	ErrMultiplexerCanceled = errors.New("multiplexer canceled")
 )

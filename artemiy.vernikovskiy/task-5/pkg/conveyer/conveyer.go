@@ -8,7 +8,7 @@ import (
 
 // Errors. Simple enough.
 var (
-	ErrChanNotFound     = errors.New("channel not found")
+	ErrChanNotFound     = errors.New("chan not found")
 	ErrPipelineCanceled = errors.New("pipeline run canceled")
 )
 
