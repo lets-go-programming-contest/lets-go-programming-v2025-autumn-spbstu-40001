@@ -3,5 +3,5 @@ module github.com/Aapng-cmd/task-5
 go 1.22.7
 
 require (
-	golang.org/x/sync v0.13.0
+	golang.org/x/sync v0.9.0
 )
