@@ -7,12 +7,15 @@ import (
 	"sync"
 )
 
+// Errors.
 var (
 	ErrCannotDecorate      = errors.New("cannot decorate value")
 	ErrSeparatorCanceled   = errors.New("separator canceled")
 	ErrMultiplexerCanceled = errors.New("multiplexer canceled")
 )
 
+// Funcs with business logic.
+// Decorator.
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
 	for {
 		select {
@@ -40,6 +43,8 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 	}
 }
 
+// Funcs with business logic.
+// Separator.
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	currentIndex := 0
 
@@ -63,6 +68,8 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	}
 }
 
+// Funcs with business logic.
+// Multiplexer.
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	var waitGroup sync.WaitGroup
 

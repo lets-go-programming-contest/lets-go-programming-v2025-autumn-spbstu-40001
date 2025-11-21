@@ -6,11 +6,13 @@ import (
 	"sync"
 )
 
+// Errors. Simple enough.
 var (
 	ErrChanNotFound     = errors.New("channel not found")
 	ErrPipelineCanceled = errors.New("pipeline run canceled")
 )
 
+// The whole basis structure. Used for gorutines, you know.
 type pipeline struct {
 	mu       sync.RWMutex
 	channels map[string]chan string
@@ -18,6 +20,7 @@ type pipeline struct {
 	size     int
 }
 
+// Construct (god famn this golang without classes).
 func New(size int) *pipeline {
 	return &pipeline{
 		mu:       sync.RWMutex{},
@@ -27,6 +30,7 @@ func New(size int) *pipeline {
 	}
 }
 
+// Registrate Decorator (because task needs it).
 func (p *pipeline) RegisterDecorator(
 	workingFunc func(ctx context.Context, input chan string, output chan string) error,
 	input string,
@@ -39,6 +43,7 @@ func (p *pipeline) RegisterDecorator(
 	})
 }
 
+// Registrate Multiplexer (because task needs it).
 func (p *pipeline) RegisterMultiplexer(
 	workingFunc func(ctx context.Context, inputs []chan string, output chan string) error,
 	inputs []string,
@@ -55,6 +60,7 @@ func (p *pipeline) RegisterMultiplexer(
 	})
 }
 
+// Registrate Separator (because task needs it).
 func (p *pipeline) RegisterSeparator(
 	workingFunc func(ctx context.Context, input chan string, outputs []chan string) error,
 	input string,
@@ -72,6 +78,7 @@ func (p *pipeline) RegisterSeparator(
 	})
 }
 
+// Here we run pipeline with gorutines. Main logic.
 func (p *pipeline) Run(ctx context.Context) error {
 	var pipelineWaitGroup sync.WaitGroup
 
@@ -110,6 +117,7 @@ func (p *pipeline) Run(ctx context.Context) error {
 	}
 }
 
+// Work with pipeline indirectly.
 func (p *pipeline) Send(name string, data string) error {
 	p.mu.RLock()
 	channel, ok := p.channels[name]
@@ -124,6 +132,7 @@ func (p *pipeline) Send(name string, data string) error {
 	return nil
 }
 
+// Get pipeline info indirectly.
 func (p *pipeline) Recv(name string) (string, error) {
 	p.mu.RLock()
 	channel, ok := p.channels[name]
@@ -145,6 +154,7 @@ func (p *pipeline) Recv(name string) (string, error) {
 	}
 }
 
+// Healthcheck or smth, cannot remember.
 func (p *pipeline) ensureChannel(name string) chan string {
 	p.mu.Lock()
 	defer p.mu.Unlock()

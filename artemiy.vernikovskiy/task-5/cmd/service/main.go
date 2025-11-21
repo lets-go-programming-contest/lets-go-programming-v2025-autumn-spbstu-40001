@@ -9,6 +9,7 @@ import (
 	"github.com/Aapng-cmd/task-5/internal/handlers"
 )
 
+// Oh wow, a main!
 func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
