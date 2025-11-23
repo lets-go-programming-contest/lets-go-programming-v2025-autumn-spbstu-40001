@@ -9,6 +9,8 @@ import (
 	"github.com/DimasFantomasA/task-3/internal/xmlparser"
 )
 
+const defaultFilePerm = 0o755
+
 func Process(inputPath, outputPath string) error {
 	valCurs, err := LoadValutes(inputPath)
 	if err != nil {
@@ -45,7 +47,8 @@ func SortValutes(valutes []cbrusxml.Valute) {
 }
 
 func StoreValutes(path string, valutes []cbrusxml.Valute) error {
-	if err := jsonfile.Save(path, valutes, 0o755); err != nil {
+	err := jsonfile.Save(path, valutes, defaultFilePerm)
+	if err != nil {
 		return fmt.Errorf("save json: %w", err)
 	}
 
