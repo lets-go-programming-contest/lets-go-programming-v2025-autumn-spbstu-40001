@@ -8,8 +8,6 @@ import (
 	"path/filepath"
 )
 
-const defaultDirPerm = 0o755
-
 func Save(path string, data any, perm fs.FileMode) error {
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, perm); err != nil {

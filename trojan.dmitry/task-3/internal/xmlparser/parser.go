@@ -3,6 +3,7 @@ package xmlparser
 import (
 	"bytes"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -15,10 +16,11 @@ func ParseXMLFile[T any](path string) (*T, error) {
 	if err := ParseXMLFileInto(path, &dest); err != nil {
 		return nil, err
 	}
+
 	return &dest, nil
 }
 
-func ParseXMLFileInto(path string, v any) error {
+func ParseXMLFileInto(path string, val any) error {
 	raw, err := os.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("read file %s: %w", path, err)
@@ -28,7 +30,8 @@ func ParseXMLFileInto(path string, v any) error {
 
 	dec.CharsetReader = charset.NewReaderLabel
 
-	if err := dec.Decode(v); err != nil && err != io.EOF {
+	err = dec.Decode(val)
+	if err != nil && !errors.Is(err, io.EOF) {
 		return fmt.Errorf("decode xml: %w", err)
 	}
 	return nil
