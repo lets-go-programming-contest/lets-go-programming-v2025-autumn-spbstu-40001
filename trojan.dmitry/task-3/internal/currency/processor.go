@@ -33,6 +33,7 @@ func LoadValutes(path string) (*cbrusxml.ValCurs, error) {
 	if err != nil {
 		return nil, fmt.Errorf("parse xml: %w", err)
 	}
+
 	return valCurs, nil
 }
 
