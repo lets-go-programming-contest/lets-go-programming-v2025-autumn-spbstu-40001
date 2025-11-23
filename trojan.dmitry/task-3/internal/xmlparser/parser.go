@@ -34,5 +34,6 @@ func ParseXMLFileInto(path string, val any) error {
 	if err != nil && !errors.Is(err, io.EOF) {
 		return fmt.Errorf("decode xml: %w", err)
 	}
+
 	return nil
 }
