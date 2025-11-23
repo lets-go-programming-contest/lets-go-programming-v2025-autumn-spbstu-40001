@@ -3,36 +3,45 @@ package jsonfile
 import (
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 )
 
 const defaultDirPerm = 0o755
 
-func Save(path string, data any) error {
-	err := os.MkdirAll(filepath.Dir(path), defaultDirPerm)
-	if err != nil {
-		return fmt.Errorf("create directory: %w", err)
+func Save(path string, data any, perm fs.FileMode) error {
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, perm); err != nil {
+		return fmt.Errorf("mkdir %s: %w", dir, err)
 	}
 
-	file, err := os.Create(path)
+	content, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
-		return fmt.Errorf("create file: %w", err)
+		return fmt.Errorf("marshal json: %w", err)
+	}
+
+	tmpFile, err := os.CreateTemp(dir, "tmp-*.json")
+	if err != nil {
+		return fmt.Errorf("create temp file: %w", err)
 	}
 
 	defer func() {
-		closeErr := file.Close()
-		if closeErr != nil && err == nil {
-			err = fmt.Errorf("close file %w", closeErr)
+		if cerr := tmpFile.Close(); cerr != nil {
+			panic(fmt.Errorf("close temp file: %w", cerr))
 		}
 	}()
 
-	enc := json.NewEncoder(file)
-	enc.SetIndent("", "    ")
+	if _, err := tmpFile.Write(content); err != nil {
+		return fmt.Errorf("write temp file: %w", err)
+	}
 
-	err = enc.Encode(data)
-	if err != nil {
-		return fmt.Errorf("encode json: %w", err)
+	if err := os.Rename(tmpFile.Name(), path); err != nil {
+		return fmt.Errorf("rename temp file: %w", err)
+	}
+
+	if err := os.Chmod(path, perm); err != nil {
+		return fmt.Errorf("chmod: %w", err)
 	}
 
 	return nil
