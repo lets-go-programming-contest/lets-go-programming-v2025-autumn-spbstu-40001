@@ -34,5 +34,6 @@ func (fv *FloatValue) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement)
 	}
 
 	*fv = FloatValue(value)
+
 	return nil
 }
