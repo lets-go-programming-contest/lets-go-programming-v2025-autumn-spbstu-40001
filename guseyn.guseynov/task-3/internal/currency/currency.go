@@ -11,34 +11,28 @@ type ValCurs struct {
 }
 
 type Valute struct {
-	NumCode  int     `json:"num_code"  xml:"NumCode"`
-	CharCode string  `json:"char_code" xml:"CharCode"`
-	Value    float64 `json:"value"     xml:"Value"`
+	NumCode  int        `json:"num_code"  xml:"NumCode"`
+	CharCode string     `json:"char_code" xml:"CharCode"`
+	Value    FloatValue `json:"value"     xml:"Value"`
 }
 
-func (v *Valute) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
-	type valuteAlias struct {
-		NumCode  int    `xml:"NumCode"`
-		CharCode string `xml:"CharCode"`
-		Value    string `xml:"Value"`
-	}
+type FloatValue float64
 
-	var alias valuteAlias
+func (fv *FloatValue) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
+	var valueStr string
 
-	err := decoder.DecodeElement(&alias, &start)
+	err := decoder.DecodeElement(&valueStr, &start)
 	if err != nil {
 		panic(err)
 	}
 
-	v.NumCode = alias.NumCode
-	v.CharCode = alias.CharCode
+	normalized := strings.Replace(strings.TrimSpace(valueStr), ",", ".", 1)
 
-	normalized := strings.Replace(strings.TrimSpace(alias.Value), ",", ".", 1)
-
-	v.Value, err = strconv.ParseFloat(normalized, 64)
+	value, err := strconv.ParseFloat(normalized, 64)
 	if err != nil {
 		panic(err)
 	}
 
+	*fv = FloatValue(value)
 	return nil
 }
