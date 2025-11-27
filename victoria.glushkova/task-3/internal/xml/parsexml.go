@@ -13,7 +13,7 @@ import (
 )
 
 type ValCurs struct {
-	XMLName xml.Name            `xml:"ValCurs"`
+	XMLName xml.Name           `xml:"ValCurs"`
 	Valutes []currency.Currency `xml:"Valute"`
 }
 
