@@ -6,20 +6,14 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"sort"
 
 	"golang.org/x/net/html/charset"
+	"github.com/vikaglushkova/task-3/internal/currency"
 )
 
 type ValCurs struct {
-	XMLName xml.Name `xml:"ValCurs"`
-	Valutes []Valute `xml:"Valute"`
-}
-
-type Valute struct {
-	NumCode  int           `json:"num_code"  xml:"NumCode"`
-	CharCode string        `json:"char_code" xml:"CharCode"`
-	Value    CurrencyValue `json:"value"     xml:"Value"`
+	XMLName xml.Name           `xml:"ValCurs"`
+	Valutes []currency.Currency `xml:"Valute"`
 }
 
 func ParseXMLFile(inputFile string) (*ValCurs, error) {
@@ -41,15 +35,4 @@ func ParseXMLFile(inputFile string) (*ValCurs, error) {
 	}
 
 	return &valCurs, nil
-}
-
-func ConvertAndSort(valCurs *ValCurs) []Valute {
-	currencies := make([]Valute, len(valCurs.Valutes))
-	copy(currencies, valCurs.Valutes)
-
-	sort.Slice(currencies, func(i, j int) bool {
-		return float64(currencies[i].Value) > float64(currencies[j].Value)
-	})
-
-	return currencies
 }

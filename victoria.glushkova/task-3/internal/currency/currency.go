@@ -1,31 +1,95 @@
 package currency
 
 import (
+	"encoding/xml"
+	"fmt"
 	"sort"
-
-	"github.com/vikaglushkova/task-3/internal/xml"
+	"strconv"
+	"strings"
 )
 
 type Currency struct {
-	NumCode  int     `json:"num_code"`
-	CharCode string  `json:"char_code"`
-	Value    float64 `json:"value"`
+	NumCode  int          `json:"num_code" xml:"NumCode"`
+	CharCode string       `json:"char_code" xml:"CharCode"`
+	Value    CurrencyValue `json:"value" xml:"Value"`
 }
 
-func ConvertAndSort(valCurs *xml.ValCurs) []Currency {
-	currencies := make([]Currency, len(valCurs.Valutes))
+type CurrencyValue float64
 
-	for i, valute := range valCurs.Valutes {
-		currencies[i] = Currency{
-			NumCode:  valute.NumCode,
-			CharCode: valute.CharCode,
-			Value:    float64(valute.Value),
-		}
+func (cv *CurrencyValue) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
+	var valueString string
+
+	err := decoder.DecodeElement(&valueString, &start)
+	if err != nil {
+		return fmt.Errorf("decode element: %w", err)
 	}
 
-	sort.Slice(currencies, func(i, j int) bool {
-		return currencies[i].Value > currencies[j].Value
+	valueString = strings.Replace(valueString, ",", ".", 1)
+
+	value, err := strconv.ParseFloat(valueString, 64)
+	if err != nil {
+		return fmt.Errorf("parse float %q: %w", valueString, err)
+	}
+
+	*cv = CurrencyValue(value)
+
+	return nil
+}
+
+func ConvertAndSort(currencies []Currency) []Currency {
+	result := make([]Currency, len(currencies))
+	copy(result, currencies)
+
+	sort.Slice(result, func(i, j int) bool {
+		return float64(result[i].Value) > float64(result[j].Value)
 	})
 
-	return currencies
+	return result
+}package currency
+
+import (
+	"encoding/xml"
+	"fmt"
+	"sort"
+	"strconv"
+	"strings"
+)
+
+type Currency struct {
+	NumCode  int          `json:"num_code" xml:"NumCode"`
+	CharCode string       `json:"char_code" xml:"CharCode"`
+	Value    CurrencyValue `json:"value" xml:"Value"`
+}
+
+type CurrencyValue float64
+
+func (cv *CurrencyValue) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
+	var valueString string
+
+	err := decoder.DecodeElement(&valueString, &start)
+	if err != nil {
+		return fmt.Errorf("decode element: %w", err)
+	}
+
+	valueString = strings.Replace(valueString, ",", ".", 1)
+
+	value, err := strconv.ParseFloat(valueString, 64)
+	if err != nil {
+		return fmt.Errorf("parse float %q: %w", valueString, err)
+	}
+
+	*cv = CurrencyValue(value)
+
+	return nil
+}
+
+func ConvertAndSort(currencies []Currency) []Currency {
+	result := make([]Currency, len(currencies))
+	copy(result, currencies)
+
+	sort.Slice(result, func(i, j int) bool {
+		return float64(result[i].Value) > float64(result[j].Value)
+	})
+
+	return result
 }
