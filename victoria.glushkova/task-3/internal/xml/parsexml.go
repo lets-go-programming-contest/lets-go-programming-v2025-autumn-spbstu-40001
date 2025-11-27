@@ -7,9 +7,8 @@ import (
 	"io"
 	"os"
 
-	"golang.org/x/net/html/charset"
-
 	"github.com/vikaglushkova/task-3/internal/currency"
+	"golang.org/x/net/html/charset"
 )
 
 type ValCurs struct {
