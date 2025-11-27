@@ -12,7 +12,6 @@ import (
 )
 
 type ValCurs struct {
-	XMLName xml.Name           `xml:"ValCurs"`
 	Valutes []currency.Currency `xml:"Valute"`
 }
 
@@ -28,7 +27,6 @@ func ParseXMLFile(inputFile string) (*ValCurs, error) {
 	}
 
 	var valCurs ValCurs
-
 	err = decoder.Decode(&valCurs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse XML: %w", err)
