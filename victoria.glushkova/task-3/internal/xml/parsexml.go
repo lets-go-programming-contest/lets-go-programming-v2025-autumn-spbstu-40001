@@ -7,12 +7,13 @@ import (
 	"io"
 	"os"
 
-	"github.com/vikaglushkova/task-3/internal/currency"
 	"golang.org/x/net/html/charset"
+
+	"github.com/vikaglushkova/task-3/internal/currency"
 )
 
 type ValCurs struct {
-	XMLName xml.Name           `xml:"ValCurs"`
+	XMLName xml.Name            `xml:"ValCurs"`
 	Valutes []currency.Currency `xml:"Valute"`
 }
 
