@@ -30,7 +30,7 @@ func main() {
 		log.Fatalf("Error reading XML data: %v", err)
 	}
 
-	currencies := currency.ConvertAndSort(valCurs)
+	currencies := currency.ConvertAndSort(valCurs.Valutes)
 
 	err = json.WriteToFile(cfg.OutputFile, currencies, dirPermissions)
 	if err != nil {
