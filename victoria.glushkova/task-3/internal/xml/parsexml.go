@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"golang.org/x/net/html/charset"
+
 	"github.com/vikaglushkova/task-3/internal/currency"
 )
 
