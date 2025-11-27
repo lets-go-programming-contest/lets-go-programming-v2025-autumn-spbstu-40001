@@ -34,6 +34,7 @@ func (ot *OfficeThermostat) Process(operation string, temperature int) int {
 	case ">=":
 		if temperature > ot.max {
 			ot.hasError = true
+
 			return -1
 		}
 
@@ -43,6 +44,7 @@ func (ot *OfficeThermostat) Process(operation string, temperature int) int {
 	case "<=":
 		if temperature < ot.min {
 			ot.hasError = true
+
 			return -1
 		}
 
@@ -53,6 +55,7 @@ func (ot *OfficeThermostat) Process(operation string, temperature int) int {
 
 	if ot.min > ot.max {
 		ot.hasError = true
+
 		return -1
 	}
 
