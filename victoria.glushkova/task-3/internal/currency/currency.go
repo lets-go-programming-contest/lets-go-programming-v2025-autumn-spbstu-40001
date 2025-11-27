@@ -16,6 +16,7 @@ type Currency struct {
 
 func (c *Currency) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
 	type alias Currency
+
 	var temp struct {
 		alias
 		Value string `xml:"Value"`
@@ -35,6 +36,7 @@ func (c *Currency) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) er
 	}
 
 	c.Value = value
+
 	return nil
 }
 
