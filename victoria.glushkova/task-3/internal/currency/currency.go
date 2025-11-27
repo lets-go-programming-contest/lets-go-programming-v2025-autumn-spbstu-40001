@@ -9,9 +9,9 @@ import (
 )
 
 type Currency struct {
-	NumCode  int          `json:"num_code" xml:"NumCode"`
+	NumCode  int          `json:"num_code"  xml:"NumCode"`
 	CharCode string       `json:"char_code" xml:"CharCode"`
-	Value    CurrencyValue `json:"value" xml:"Value"`
+	Value    CurrencyValue `json:"value"     xml:"Value"`
 }
 
 type CurrencyValue float64
