@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -12,6 +13,7 @@ type Conveyer[T any] struct {
 	channelCapacity int
 	pipes           map[string]chan T
 	nodes           []func(c context.Context) error
+	mutex           sync.Mutex
 }
 
 var (
@@ -20,7 +22,7 @@ var (
 )
 
 func NewConveyer[T any](channelCapacity int) Conveyer[T] {
-	return Conveyer[T]{channelCapacity, make(map[string]chan T), []func(ctx context.Context) error{}}
+	return Conveyer[T]{channelCapacity, make(map[string]chan T), []func(ctx context.Context) error{}, sync.Mutex{}}
 }
 
 func (obj *Conveyer[T]) reserveChannel(name string) chan T {
@@ -41,6 +43,9 @@ func (obj *Conveyer[T]) Run(ctx context.Context) error {
 			close(channel)
 		}
 	}()
+
+	obj.mutex.Lock()
+	defer obj.mutex.Unlock()
 
 	group, ctx := errgroup.WithContext(ctx)
 	for _, functor := range obj.nodes {
@@ -86,6 +91,9 @@ func (obj *Conveyer[T]) RegisterDecorator(
 	functor func(c context.Context, input chan T, output chan T) error,
 	input string, output string,
 ) {
+	obj.mutex.Lock()
+	defer obj.mutex.Unlock()
+
 	in := obj.reserveChannel(input)
 	out := obj.reserveChannel(output)
 	obj.nodes = append(obj.nodes, func(c context.Context) error {
@@ -97,6 +105,9 @@ func (obj *Conveyer[T]) RegisterMultiplexer(
 	functor func(c context.Context, input []chan T, output chan T) error,
 	input []string, output string,
 ) {
+	obj.mutex.Lock()
+	defer obj.mutex.Unlock()
+
 	inputs := make([]chan T, len(input))
 	for idx, name := range input {
 		inputs[idx] = obj.reserveChannel(name)
@@ -112,6 +123,9 @@ func (obj *Conveyer[T]) RegisterSeparator(
 	functor func(c context.Context, input chan T, output []chan T) error,
 	input string, output []string,
 ) {
+	obj.mutex.Lock()
+	defer obj.mutex.Unlock()
+
 	inCh := obj.reserveChannel(input)
 
 	outputs := make([]chan T, len(output))
