@@ -45,12 +45,13 @@ func (obj *Conveyer[T]) Run(ctx context.Context) error {
 	}()
 
 	obj.mutex.Lock()
-	defer obj.mutex.Unlock()
 
 	group, ctx := errgroup.WithContext(ctx)
 	for _, functor := range obj.nodes {
 		group.Go(func() error { return functor(ctx) })
 	}
+
+	obj.mutex.Unlock()
 
 	err := group.Wait()
 	if err != nil {
@@ -61,7 +62,10 @@ func (obj *Conveyer[T]) Run(ctx context.Context) error {
 }
 
 func (obj *Conveyer[T]) Send(inChName string, data T) error {
+	obj.mutex.Lock()
 	channel, exists := obj.pipes[inChName]
+	obj.mutex.Unlock()
+
 	if !exists {
 		return ErrChannelNotFound
 	}
@@ -72,7 +76,10 @@ func (obj *Conveyer[T]) Send(inChName string, data T) error {
 }
 
 func (obj *Conveyer[T]) Recv(outChName string) (T, error) {
+	obj.mutex.Lock()
 	channel, exists := obj.pipes[outChName]
+	obj.mutex.Unlock()
+
 	if !exists {
 		var res T
 
