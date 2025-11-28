@@ -15,6 +15,12 @@ var (
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
 	for {
 		select {
+		case <-ctx.Done():
+			return nil
+		default:
+		}
+
+		select {
 		case str, ok := <-input:
 			if !ok {
 				return nil
@@ -48,6 +54,12 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 	for {
 		select {
+		case <-ctx.Done():
+			return nil
+		default:
+		}
+
+		select {
 		case str, ok := <-input:
 			if !ok {
 				return nil
@@ -80,6 +92,12 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 			defer group.Done()
 
 			for {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+				}
+
 				select {
 				case str, ok := <-inputs[idx]:
 					if !ok {
