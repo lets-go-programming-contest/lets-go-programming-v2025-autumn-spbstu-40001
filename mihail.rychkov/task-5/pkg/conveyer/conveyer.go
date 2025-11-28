@@ -13,7 +13,7 @@ type Conveyer[T any] struct {
 	channelCapacity int
 	pipes           map[string]chan T
 	nodes           []func(c context.Context) error
-	mutex           sync.Mutex
+	mutex           sync.RWMutex
 }
 
 var (
@@ -22,7 +22,7 @@ var (
 )
 
 func NewConveyer[T any](channelCapacity int) Conveyer[T] {
-	return Conveyer[T]{channelCapacity, make(map[string]chan T), []func(ctx context.Context) error{}, sync.Mutex{}}
+	return Conveyer[T]{channelCapacity, make(map[string]chan T), []func(ctx context.Context) error{}, sync.RWMutex{}}
 }
 
 func (obj *Conveyer[T]) reserveChannel(name string) chan T {
@@ -39,19 +39,22 @@ func (obj *Conveyer[T]) reserveChannel(name string) chan T {
 
 func (obj *Conveyer[T]) Run(ctx context.Context) error {
 	defer func() {
+		obj.mutex.RLock()
+		defer obj.mutex.RUnlock()
+
 		for _, channel := range obj.pipes {
 			close(channel)
 		}
 	}()
 
-	obj.mutex.Lock()
+	obj.mutex.RLock()
 
 	group, ctx := errgroup.WithContext(ctx)
 	for _, functor := range obj.nodes {
 		group.Go(func() error { return functor(ctx) })
 	}
 
-	obj.mutex.Unlock()
+	obj.mutex.RUnlock()
 
 	err := group.Wait()
 	if err != nil {
@@ -62,9 +65,9 @@ func (obj *Conveyer[T]) Run(ctx context.Context) error {
 }
 
 func (obj *Conveyer[T]) Send(inChName string, data T) error {
-	obj.mutex.Lock()
+	obj.mutex.RLock()
 	channel, exists := obj.pipes[inChName]
-	obj.mutex.Unlock()
+	obj.mutex.RUnlock()
 
 	if !exists {
 		return ErrChannelNotFound
@@ -76,9 +79,9 @@ func (obj *Conveyer[T]) Send(inChName string, data T) error {
 }
 
 func (obj *Conveyer[T]) Recv(outChName string) (T, error) {
-	obj.mutex.Lock()
+	obj.mutex.RLock()
 	channel, exists := obj.pipes[outChName]
-	obj.mutex.Unlock()
+	obj.mutex.RUnlock()
 
 	if !exists {
 		var res T
