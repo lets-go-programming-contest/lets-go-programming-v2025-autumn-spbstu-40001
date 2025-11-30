@@ -35,3 +35,32 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 		}
 	}
 }
+
+func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
+	var count int
+
+	numOutputs := len(outputs)
+	if numOutputs == 0 {
+		return nil
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case data, ok := <-input:
+			if !ok {
+				return nil
+			}
+
+			targetIndex := count % numOutputs
+			count++
+
+			select {
+			case outputs[targetIndex] <- data:
+			case <-ctx.Done():
+				return nil
+			}
+		}
+	}
+}
