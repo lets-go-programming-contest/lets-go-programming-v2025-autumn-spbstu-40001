@@ -95,9 +95,11 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	}
 
 	for _, chn := range inputs {
+		ch := chn
+
 		wgr.Add(1)
-		localCh := chn
-		go multiplex(localCh)
+
+		go multiplex(ch)
 	}
 
 	wgr.Wait()
