@@ -47,57 +47,87 @@ func New(size int) *conveyor {
 	}
 }
 
-func (c *conveyor) ensure(name string) chan string {
+func (c *conveyor) ensureChannel(name string) chan string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-
-	if ch, ok := c.chans[name]; ok {
-		return ch
+	ch, ok := c.chans[name]
+	if !ok {
+		ch = make(chan string, c.size)
+		c.chans[name] = ch
 	}
-
-	ch := make(chan string, c.size)
-	c.chans[name] = ch
 	return ch
 }
 
-func (c *conveyor) get(name string) (chan string, bool) {
+func (c *conveyor) getChannel(name string) (chan string, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	ch, ok := c.chans[name]
 	return ch, ok
 }
 
-func (c *conveyor) RegisterDecorator(fn func(context.Context, chan string, chan string) error, input, output string) {
-	c.ensure(input)
-	c.ensure(output)
-	c.decorators = append(c.decorators, decoratorReg{fn, input, output})
+func (c *conveyor) RegisterDecorator(
+	fn func(ctx context.Context, input chan string, output chan string) error,
+	input string,
+	output string,
+) {
+
+	c.ensureChannel(input)
+	c.ensureChannel(output)
+	c.decorators = append(c.decorators, decoratorReg{
+		fn:      fn,
+		inName:  input,
+		outName: output,
+	})
 }
 
-func (c *conveyor) RegisterMultiplexer(fn func(context.Context, []chan string, chan string) error, inputs []string, output string) {
-	for _, n := range inputs {
-		c.ensure(n)
+func (c *conveyor) RegisterMultiplexer(
+	fn func(ctx context.Context, inputs []chan string, output chan string) error,
+	inputs []string,
+	output string,
+) {
+	for _, in := range inputs {
+		c.ensureChannel(in)
 	}
-	c.ensure(output)
-	c.multiplexers = append(c.multiplexers, multiplexerReg{fn, inputs, output})
+	c.ensureChannel(output)
+	c.multiplexers = append(c.multiplexers, multiplexerReg{
+		fn:      fn,
+		inNames: inputs,
+		outName: output,
+	})
 }
 
-func (c *conveyor) RegisterSeparator(fn func(context.Context, chan string, []chan string) error, input string, outputs []string) {
-	c.ensure(input)
-	for _, n := range outputs {
-		c.ensure(n)
+func (c *conveyor) RegisterSeparator(
+	fn func(ctx context.Context, input chan string, outputs []chan string) error,
+	input string,
+	outputs []string,
+) {
+	c.ensureChannel(input)
+
+	for _, o := range outputs {
+		c.ensureChannel(o)
 	}
-	c.separators = append(c.separators, separatorReg{fn, input, outputs})
+
+	c.separators = append(c.separators, separatorReg{
+		fn:       fn,
+		inName:   input,
+		outNames: outputs,
+	})
 }
 
 func (c *conveyor) Run(ctx context.Context) error {
+	// don't shadow caller ctx; we may still cancel locally on error
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	var wg sync.WaitGroup
 	errCh := make(chan error, 1)
 
-	run := func(f func(context.Context) error) {
+	runHandler := func(fn func(ctx context.Context) error) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			if err := f(ctx); err != nil {
+			if err := fn(ctx); err != nil {
+				// send first error non-blocking
 				select {
 				case errCh <- err:
 				default:
@@ -106,11 +136,12 @@ func (c *conveyor) Run(ctx context.Context) error {
 		}()
 	}
 
+	// start handlers
 	for _, d := range c.decorators {
-		in, _ := c.get(d.inName)
-		out, _ := c.get(d.outName)
+		in, _ := c.getChannel(d.inName)
+		out, _ := c.getChannel(d.outName)
 		fn := d.fn
-		run(func(ctx context.Context) error {
+		runHandler(func(ctx context.Context) error {
 			return fn(ctx, in, out)
 		})
 	}
@@ -118,51 +149,69 @@ func (c *conveyor) Run(ctx context.Context) error {
 	for _, m := range c.multiplexers {
 		inputs := make([]chan string, 0, len(m.inNames))
 		for _, n := range m.inNames {
-			ch, _ := c.get(n)
+			ch, _ := c.getChannel(n)
 			inputs = append(inputs, ch)
 		}
-		out, _ := c.get(m.outName)
+		out, _ := c.getChannel(m.outName)
 		fn := m.fn
-		run(func(ctx context.Context) error {
+		runHandler(func(ctx context.Context) error {
 			return fn(ctx, inputs, out)
 		})
 	}
 
 	for _, s := range c.separators {
-		in, _ := c.get(s.inName)
-		outs := make([]chan string, 0, len(s.outNames))
+		in, _ := c.getChannel(s.inName)
+		outputs := make([]chan string, 0, len(s.outNames))
 		for _, n := range s.outNames {
-			ch, _ := c.get(n)
-			outs = append(outs, ch)
+			ch, _ := c.getChannel(n)
+			outputs = append(outputs, ch)
 		}
 		fn := s.fn
-		run(func(ctx context.Context) error {
-			return fn(ctx, in, outs)
+		runHandler(func(ctx context.Context) error {
+			return fn(ctx, in, outputs)
 		})
 	}
 
-	var err error
+	// wait for all handlers to finish in a non-blocking way
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	// wait for either: external ctx cancel, first handler error, or all handlers done
+	var retErr error
 	select {
-	case err = <-errCh:
 	case <-ctx.Done():
-		err = ctx.Err()
+		retErr = ctx.Err()
+	case e := <-errCh:
+		// got an error from handler -> cancel others
+		retErr = e
+		cancel()
+	case <-done:
+		retErr = nil
 	}
 
-	wg.Wait()
-	return err
+	// ensure all goroutines finished
+	<-done
+
+	// IMPORTANT: do NOT close channels here — handlers are responsible for closing their own outputs.
+	// Closing here may result in double-close panics (even if recovered).
+	return retErr
 }
 
 func (c *conveyor) Send(input string, data string) error {
-	ch, ok := c.get(input)
+	ch, ok := c.getChannel(input)
 	if !ok {
 		return ErrChanNotFound
 	}
+	// no recover: tests expect simple behavior; sending to closed channel is a user error in tests
 	ch <- data
 	return nil
 }
 
 func (c *conveyor) Recv(output string) (string, error) {
-	ch, ok := c.get(output)
+	ch, ok := c.getChannel(output)
 	if !ok {
 		return "", ErrChanNotFound
 	}
