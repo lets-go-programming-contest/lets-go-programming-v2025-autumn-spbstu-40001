@@ -85,7 +85,6 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			return ctx.Err()
 		case v, ok := <-input:
 			if !ok {
-				// вход закрыт — завершаем работу
 				return nil
 			}
 			outCh := outputs[idx%len(outputs)]
