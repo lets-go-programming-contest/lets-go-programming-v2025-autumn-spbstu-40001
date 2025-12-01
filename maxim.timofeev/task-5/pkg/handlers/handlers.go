@@ -44,34 +44,30 @@ type conveyer interface {
 }
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
-	defer func() {
-		close(output)
-	}()
+	defer close(output)
 
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
+
 		case v, ok := <-input:
 			if !ok {
 				return nil
 			}
+
 			if strings.Contains(v, "no decorator") {
 				return errors.New("can't be decorated: contains 'no decorator'")
 			}
-			if strings.HasPrefix(v, "decorated: ") {
-				select {
-				case <-ctx.Done():
-					return ctx.Err()
-				case output <- v:
-				}
-			} else {
-				toSend := "decorated: " + v
-				select {
-				case <-ctx.Done():
-					return ctx.Err()
-				case output <- toSend:
-				}
+
+			if !strings.HasPrefix(v, "decorated: ") {
+				v = "decorated: " + v
+			}
+
+			select {
+			case <-ctx.Done():
+				return nil
+			case output <- v:
 			}
 		}
 	}
@@ -87,31 +83,32 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	if len(outputs) == 0 {
 		return nil
 	}
-	idx := 0
+
+	i := 0
+
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
+
 		case v, ok := <-input:
 			if !ok {
 				return nil
 			}
-			outCh := outputs[idx%len(outputs)]
-			idx++
+
+			out := outputs[i%len(outputs)]
+			i++
+
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
-			case outCh <- v:
+				return nil
+			case out <- v:
 			}
 		}
 	}
 }
 
-func MultiplexerFunc(
-	ctx context.Context,
-	inputs []chan string,
-	output chan string,
-) error {
+func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	defer close(output)
 
 	for {
@@ -125,12 +122,19 @@ func MultiplexerFunc(
 				select {
 				case v, ok := <-ch:
 					if ok {
+						allClosed = false
+
 						if strings.Contains(v, "no multiplexer") {
 							continue
 						}
-						output <- v
-						allClosed = false
+
+						select {
+						case <-ctx.Done():
+							return nil
+						case output <- v:
+						}
 					}
+
 				default:
 				}
 			}
