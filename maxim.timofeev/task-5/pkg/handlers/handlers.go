@@ -51,6 +51,8 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 			return ctx.Err()
 		case v, ok := <-input:
 			if !ok {
+				close(output)
+
 				return nil
 			}
 			if strings.Contains(v, "no decorator") {
