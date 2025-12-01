@@ -206,6 +206,11 @@ func (c *conveyor) Send(input string, data string) error {
 		return ErrChanNotFound
 	}
 	// no recover: tests expect simple behavior; sending to closed channel is a user error in tests
+
+	defer func() {
+		_ = recover()
+	}()
+
 	ch <- data
 	return nil
 }
