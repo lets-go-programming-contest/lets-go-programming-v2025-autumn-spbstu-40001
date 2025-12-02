@@ -44,7 +44,6 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	}
 
 	var counter int
-	var mu sync.Mutex
 
 	for {
 		select {
@@ -55,10 +54,8 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 				return nil
 			}
 
-			mu.Lock()
 			targetIndex := counter % len(outputs)
 			counter++
-			mu.Unlock()
 
 			select {
 			case outputs[targetIndex] <- data:
@@ -70,23 +67,26 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 }
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
+	// Используем горутину для каждого входного канала
 	var wg sync.WaitGroup
+	done := make(chan struct{})
 
-	for _, chn := range inputs {
+	for _, inputCh := range inputs {
 		wg.Add(1)
 
-		go func(ch chan string) {
+		go func(in chan string) {
 			defer wg.Done()
 
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case data, ok := <-ch:
+				case data, ok := <-in:
 					if !ok {
 						return
 					}
 
+					// Фильтрация
 					if strings.Contains(data, "no multiplexer") {
 						continue
 					}
@@ -98,10 +98,20 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					}
 				}
 			}
-		}(chn)
+		}(inputCh)
 	}
 
 	// Ждем завершения всех горутин
-	wg.Wait()
-	return nil
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	// Ждем либо завершения контекста, либо всех горутин
+	select {
+	case <-ctx.Done():
+		return nil
+	case <-done:
+		return nil
+	}
 }
