@@ -101,5 +101,6 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, out chan string)
 	}
 
 	waitGroup.Wait()
+
 	return nil
 }

@@ -167,6 +167,7 @@ func (p *Conveyer) Recv(name string) (string, error) {
 		if !ok {
 			return Undefined, nil
 		}
+
 		return val, nil
 	default:
 		return Undefined, nil
