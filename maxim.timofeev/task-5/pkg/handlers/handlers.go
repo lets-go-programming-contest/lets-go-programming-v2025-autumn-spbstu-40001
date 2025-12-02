@@ -4,10 +4,14 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"sync"
 )
 
-// PrefixDecoratorFunc - модификатор данных с префиксом
+var ErrNoDecorator = errors.New("can't be decorated")
+
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
+	const prefix = "decorated: "
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -18,29 +22,29 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 			}
 
 			if strings.Contains(data, "no decorator") {
-				return errors.New("can't be decorated")
+				return ErrNoDecorator
 			}
 
-			if !strings.HasPrefix(data, "decorated: ") {
-				data = "decorated: " + data
+			if !strings.HasPrefix(data, prefix) {
+				data = prefix + data
 			}
 
 			select {
+			case output <- data:
 			case <-ctx.Done():
 				return nil
-			case output <- data:
 			}
 		}
 	}
 }
 
-// SeparatorFunc - сепаратор по порядковому номеру
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	if len(outputs) == 0 {
 		return nil
 	}
 
-	counter := 0
+	var counter int
+	var mu sync.Mutex
 
 	for {
 		select {
@@ -51,57 +55,53 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 				return nil
 			}
 
-			idx := counter % len(outputs)
+			mu.Lock()
+			targetIndex := counter % len(outputs)
 			counter++
+			mu.Unlock()
 
 			select {
+			case outputs[targetIndex] <- data:
 			case <-ctx.Done():
 				return nil
-			case outputs[idx] <- data:
 			}
 		}
 	}
 }
 
-// MultiplexerFunc - мультиплексор с фильтрацией
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	// Простая реализация - читаем из каналов по очереди
-	for {
-		dataReceived := false
+	var wg sync.WaitGroup
 
-		for _, input := range inputs {
-			select {
-			case <-ctx.Done():
-				return nil
-			case data, ok := <-input:
-				if !ok {
-					continue
-				}
+	for _, chn := range inputs {
+		wg.Add(1)
 
-				dataReceived = true
+		go func(ch chan string) {
+			defer wg.Done()
 
-				if strings.Contains(data, "no multiplexer") {
-					continue
-				}
-
+			for {
 				select {
 				case <-ctx.Done():
-					return nil
-				case output <- data:
-				}
-			default:
-				// Нет данных в этом канале
-			}
-		}
+					return
+				case data, ok := <-ch:
+					if !ok {
+						return
+					}
 
-		// Если ни один канал не дал данных, продолжаем цикл
-		if !dataReceived {
-			select {
-			case <-ctx.Done():
-				return nil
-			default:
-				// Продолжаем цикл
+					if strings.Contains(data, "no multiplexer") {
+						continue
+					}
+
+					select {
+					case output <- data:
+					case <-ctx.Done():
+						return
+					}
+				}
 			}
-		}
+		}(chn)
 	}
+
+	// Ждем завершения всех горутин
+	wg.Wait()
+	return nil
 }
