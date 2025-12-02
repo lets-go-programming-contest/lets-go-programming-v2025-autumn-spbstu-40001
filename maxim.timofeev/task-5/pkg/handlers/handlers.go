@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"sync"
 )
 
 type conveyer interface {
@@ -111,36 +112,53 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	defer close(output)
 
+	merged := make(chan string)
+	var wg sync.WaitGroup
+
+	for _, in := range inputs {
+		wg.Add(1)
+		go func(ch chan string) {
+			defer wg.Done()
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case v, ok := <-ch:
+					if !ok {
+						return
+					}
+					select {
+					case <-ctx.Done():
+						return
+					case merged <- v:
+					}
+				}
+			}
+		}(in)
+	}
+
+	go func() {
+		wg.Wait()
+		close(merged)
+	}()
+
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-		default:
-			allClosed := true
-
-			for _, ch := range inputs {
-				select {
-				case v, ok := <-ch:
-					if ok {
-						allClosed = false
-
-						if strings.Contains(v, "no multiplexer") {
-							continue
-						}
-
-						select {
-						case <-ctx.Done():
-							return nil
-						case output <- v:
-						}
-					}
-
-				default:
-				}
+		case v, ok := <-merged:
+			if !ok {
+				return nil
 			}
 
-			if allClosed {
+			if strings.Contains(v, "no multiplexer") {
+				continue
+			}
+
+			select {
+			case <-ctx.Done():
 				return nil
+			case output <- v:
 			}
 		}
 	}
