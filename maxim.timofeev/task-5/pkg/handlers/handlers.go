@@ -7,30 +7,30 @@ import (
 	"sync"
 )
 
-var ErrNoDecorator = errors.New("can't be decorated")
+var ErrCannotDecorate = errors.New("can't be decorated")
 
-func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
+func PrefixDecoratorFunc(ctx context.Context, src chan string, dst chan string) error {
 	const prefix = "decorated: "
 
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-		case data, ok := <-input:
+		case val, ok := <-src:
 			if !ok {
 				return nil
 			}
 
-			if strings.Contains(data, "no decorator") {
-				return ErrNoDecorator
+			if strings.Contains(val, "no decorator") {
+				return ErrCannotDecorate
 			}
 
-			if !strings.HasPrefix(data, prefix) {
-				data = prefix + data
+			if !strings.HasPrefix(val, prefix) {
+				val = prefix + val
 			}
 
 			select {
-			case output <- data:
+			case dst <- val:
 			case <-ctx.Done():
 				return nil
 			}
@@ -43,22 +43,22 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 		return nil
 	}
 
-	var counter int
+	counter := 0
 
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-		case data, ok := <-input:
+		case val, ok := <-input:
 			if !ok {
 				return nil
 			}
 
-			targetIndex := counter % len(outputs)
+			target := counter % len(outputs)
 			counter++
 
 			select {
-			case outputs[targetIndex] <- data:
+			case outputs[target] <- val:
 			case <-ctx.Done():
 				return nil
 			}
@@ -66,52 +66,39 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	}
 }
 
-func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	// Используем горутину для каждого входного канала
+func MultiplexerFunc(ctx context.Context, inputs []chan string, out chan string) error {
 	var wg sync.WaitGroup
-	done := make(chan struct{})
 
-	for _, inputCh := range inputs {
-		wg.Add(1)
+	worker := func(ch chan string) {
+		defer wg.Done()
 
-		go func(in chan string) {
-			defer wg.Done()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case val, ok := <-ch:
+				if !ok {
+					return
+				}
 
-			for {
+				if strings.Contains(val, "no multiplexer") {
+					continue
+				}
+
 				select {
+				case out <- val:
 				case <-ctx.Done():
 					return
-				case data, ok := <-in:
-					if !ok {
-						return
-					}
-
-					// Фильтрация
-					if strings.Contains(data, "no multiplexer") {
-						continue
-					}
-
-					select {
-					case output <- data:
-					case <-ctx.Done():
-						return
-					}
 				}
 			}
-		}(inputCh)
+		}
 	}
 
-	// Ждем завершения всех горутин
-	go func() {
-		wg.Wait()
-		close(done)
-	}()
-
-	// Ждем либо завершения контекста, либо всех горутин
-	select {
-	case <-ctx.Done():
-		return nil
-	case <-done:
-		return nil
+	for _, ch := range inputs {
+		wg.Add(1)
+		go worker(ch)
 	}
+
+	wg.Wait()
+	return nil
 }

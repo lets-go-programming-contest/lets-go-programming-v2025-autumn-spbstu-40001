@@ -3,204 +3,162 @@ package conveyer
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
+
+	"golang.org/x/sync/errgroup"
 )
 
-// Типы обработчиков
-type DecoratorFunc func(ctx context.Context, input chan string, output chan string) error
-type MultiplexerFunc func(ctx context.Context, inputs []chan string, output chan string) error
-type SeparatorFunc func(ctx context.Context, input chan string, outputs []chan string) error
+const Undefined = "undefined"
 
-// Интерфейс конвейера
-type Conveyer interface {
-	RegisterDecorator(fn DecoratorFunc, input string, output string)
-	RegisterMultiplexer(fn MultiplexerFunc, inputs []string, output string)
-	RegisterSeparator(fn SeparatorFunc, input string, outputs []string)
-	Run(ctx context.Context) error
-	Send(input string, data string) error
-	Recv(output string) (string, error)
+var ErrChannelMissing = errors.New("chan not found")
+
+type Pipeline struct {
+	lock            sync.Mutex
+	chans           map[string]chan string
+	jobs            []func(context.Context) error
+	channelCapacity int
 }
 
-// Реализация конвейера
-type conveyerImpl struct {
-	mu       sync.RWMutex
-	size     int
-	channels map[string]chan string
-	tasks    []func(context.Context) error
-	started  bool
-	wg       sync.WaitGroup
-}
-
-// New создает новый конвейер
-func New(size int) Conveyer {
-	return &conveyerImpl{
-		size:     size,
-		channels: make(map[string]chan string),
-		tasks:    make([]func(context.Context) error, 0),
+func New(capacity int) *Pipeline {
+	return &Pipeline{
+		chans:           make(map[string]chan string),
+		jobs:            []func(context.Context) error{},
+		channelCapacity: capacity,
 	}
 }
 
-// getOrCreateChannel получает или создает канал с указанным именем
-func (c *conveyerImpl) getOrCreateChannel(name string) chan string {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+func (p *Pipeline) getOrCreateChan(name string) chan string {
+	p.lock.Lock()
+	defer p.lock.Unlock()
 
-	if ch, ok := c.channels[name]; ok {
+	if ch, exists := p.chans[name]; exists {
 		return ch
 	}
 
-	ch := make(chan string, c.size)
-	c.channels[name] = ch
+	ch := make(chan string, p.channelCapacity)
+	p.chans[name] = ch
 	return ch
 }
 
-// getChannel получает канал по имени
-func (c *conveyerImpl) getChannel(name string) (chan string, error) {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
+func (p *Pipeline) getChan(name string) (chan string, bool) {
+	p.lock.Lock()
+	defer p.lock.Unlock()
 
-	ch, ok := c.channels[name]
-	if !ok {
-		return nil, errors.New("chan not found")
-	}
-	return ch, nil
+	ch, exists := p.chans[name]
+	return ch, exists
 }
 
-// RegisterDecorator регистрирует модификатор данных
-func (c *conveyerImpl) RegisterDecorator(fn DecoratorFunc, input string, output string) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+func (p *Pipeline) RegisterDecorator(
+	fn func(ctx context.Context, input chan string, output chan string) error,
+	inputName, outputName string,
+) {
+	inCh := p.getOrCreateChan(inputName)
+	outCh := p.getOrCreateChan(outputName)
 
-	inputCh := c.getOrCreateChannel(input)
-	outputCh := c.getOrCreateChannel(output)
-
-	task := func(ctx context.Context) error {
-		defer close(outputCh)
-		return fn(ctx, inputCh, outputCh)
+	job := func(ctx context.Context) error {
+		defer close(outCh)
+		return fn(ctx, inCh, outCh)
 	}
 
-	c.tasks = append(c.tasks, task)
+	p.lock.Lock()
+	p.jobs = append(p.jobs, job)
+	p.lock.Unlock()
 }
 
-// RegisterMultiplexer регистрирует мультиплексор
-func (c *conveyerImpl) RegisterMultiplexer(fn MultiplexerFunc, inputs []string, output string) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	inputChannels := make([]chan string, len(inputs))
-	for i, name := range inputs {
-		inputChannels[i] = c.getOrCreateChannel(name)
-	}
-	outputCh := c.getOrCreateChannel(output)
-
-	task := func(ctx context.Context) error {
-		defer close(outputCh)
-		return fn(ctx, inputChannels, outputCh)
+func (p *Pipeline) RegisterMultiplexer(
+	fn func(ctx context.Context, inputs []chan string, output chan string) error,
+	inputNames []string,
+	outputName string,
+) {
+	inChans := make([]chan string, 0, len(inputNames))
+	for _, n := range inputNames {
+		inChans = append(inChans, p.getOrCreateChan(n))
 	}
 
-	c.tasks = append(c.tasks, task)
+	outCh := p.getOrCreateChan(outputName)
+
+	job := func(ctx context.Context) error {
+		defer close(outCh)
+		return fn(ctx, inChans, outCh)
+	}
+
+	p.lock.Lock()
+	p.jobs = append(p.jobs, job)
+	p.lock.Unlock()
 }
 
-// RegisterSeparator регистрирует сепаратор
-func (c *conveyerImpl) RegisterSeparator(fn SeparatorFunc, input string, outputs []string) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	inputCh := c.getOrCreateChannel(input)
-	outputChannels := make([]chan string, len(outputs))
-	for i, name := range outputs {
-		outputChannels[i] = c.getOrCreateChannel(name)
+func (p *Pipeline) RegisterSeparator(
+	fn func(ctx context.Context, input chan string, outputs []chan string) error,
+	inputName string,
+	outputNames []string,
+) {
+	inCh := p.getOrCreateChan(inputName)
+	outChans := make([]chan string, 0, len(outputNames))
+	for _, n := range outputNames {
+		outChans = append(outChans, p.getOrCreateChan(n))
 	}
 
-	task := func(ctx context.Context) error {
+	job := func(ctx context.Context) error {
 		defer func() {
-			for _, ch := range outputChannels {
+			for _, ch := range outChans {
 				close(ch)
 			}
 		}()
-		return fn(ctx, inputCh, outputChannels)
+		return fn(ctx, inCh, outChans)
 	}
 
-	c.tasks = append(c.tasks, task)
+	p.lock.Lock()
+	p.jobs = append(p.jobs, job)
+	p.lock.Unlock()
 }
 
-// Run запускает конвейер
-func (c *conveyerImpl) Run(ctx context.Context) error {
-	c.mu.Lock()
-	if c.started {
-		c.mu.Unlock()
-		return errors.New("conveyer already started")
-	}
-	c.started = true
-	tasks := make([]func(context.Context) error, len(c.tasks))
-	copy(tasks, c.tasks)
-	c.mu.Unlock()
+func (p *Pipeline) Run(ctx context.Context) error {
+	p.lock.Lock()
+	copiedJobs := make([]func(context.Context) error, len(p.jobs))
+	copy(copiedJobs, p.jobs)
+	p.lock.Unlock()
 
-	// Создаем канал для ошибок
-	errChan := make(chan error, len(tasks))
+	group, gCtx := errgroup.WithContext(ctx)
 
-	// Запускаем все задачи
-	for _, task := range tasks {
-		c.wg.Add(1)
-		go func(t func(context.Context) error) {
-			defer c.wg.Done()
-
-			if err := t(ctx); err != nil {
-				select {
-				case errChan <- err:
-				default:
-				}
-			}
-		}(task)
+	for _, j := range copiedJobs {
+		job := j
+		group.Go(func() error {
+			return job(gCtx)
+		})
 	}
 
-	// Ждем завершения всех задач или ошибки
-	go func() {
-		c.wg.Wait()
-		close(errChan)
-	}()
-
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case err := <-errChan:
-		return err
+	if err := group.Wait(); err != nil {
+		return fmt.Errorf("conveyer finished with error: %w", err)
 	}
+	return nil
 }
 
-// Send отправляет данные в канал
-func (c *conveyerImpl) Send(input string, data string) error {
-	ch, err := c.getChannel(input)
-	if err != nil {
-		return err
+func (p *Pipeline) Send(name, value string) error {
+	ch, ok := p.getChan(name)
+	if !ok {
+		return ErrChannelMissing
 	}
 
-	// Потокобезопасная отправка с recover
-	select {
-	case ch <- data:
-		return nil
-	default:
-		// Буфер заполнен
-		return errors.New("channel buffer full")
-	}
+	defer func() { _ = recover() }()
+
+	ch <- value
+	return nil
 }
 
-// Recv получает данные из канала
-func (c *conveyerImpl) Recv(output string) (string, error) {
-	ch, err := c.getChannel(output)
-	if err != nil {
-		return "", err
+func (p *Pipeline) Recv(name string) (string, error) {
+	ch, ok := p.getChan(name)
+	if !ok {
+		return "", ErrChannelMissing
 	}
 
-	// Потокобезопасное чтение
 	select {
-	case value, ok := <-ch:
+	case val, ok := <-ch:
 		if !ok {
-			return "undefined", nil
+			return Undefined, nil
 		}
-		return value, nil
+		return val, nil
 	default:
-		// Нет данных в канале
-		return "", errors.New("no data available")
+		return Undefined, nil
 	}
 }
