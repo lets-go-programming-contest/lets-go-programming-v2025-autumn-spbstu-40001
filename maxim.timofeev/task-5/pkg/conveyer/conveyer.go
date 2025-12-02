@@ -26,15 +26,14 @@ type conveyerImpl struct {
 	mu           sync.RWMutex
 	size         int
 	channels     map[string]chan string
-	decorators   []*decoratorInfo
-	multiplexers []*multiplexerInfo
-	separators   []*separatorInfo
+	decorators   []decoratorInfo
+	multiplexers []multiplexerInfo
+	separators   []separatorInfo
 	ctx          context.Context
 	cancel       context.CancelFunc
 	wg           sync.WaitGroup
 	errChan      chan error
 	running      bool
-	runOnce      sync.Once
 }
 
 type decoratorInfo struct {
@@ -69,7 +68,7 @@ func (c *conveyerImpl) RegisterDecorator(fn DecoratorFunc, input string, output 
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.decorators = append(c.decorators, &decoratorInfo{
+	c.decorators = append(c.decorators, decoratorInfo{
 		fn:     fn,
 		input:  input,
 		output: output,
@@ -81,7 +80,7 @@ func (c *conveyerImpl) RegisterMultiplexer(fn MultiplexerFunc, inputs []string, 
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.multiplexers = append(c.multiplexers, &multiplexerInfo{
+	c.multiplexers = append(c.multiplexers, multiplexerInfo{
 		fn:     fn,
 		inputs: inputs,
 		output: output,
@@ -93,7 +92,7 @@ func (c *conveyerImpl) RegisterSeparator(fn SeparatorFunc, input string, outputs
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.separators = append(c.separators, &separatorInfo{
+	c.separators = append(c.separators, separatorInfo{
 		fn:      fn,
 		input:   input,
 		outputs: outputs,
@@ -126,107 +125,7 @@ func (c *conveyerImpl) getChannel(name string) (chan string, error) {
 	return ch, nil
 }
 
-// Run запускает конвейер
-func (c *conveyerImpl) Run(ctx context.Context) error {
-	var runErr error
-	c.runOnce.Do(func() {
-		runErr = c.run(ctx)
-	})
-	return runErr
-}
-
-func (c *conveyerImpl) run(ctx context.Context) error {
-	c.mu.Lock()
-	if c.running {
-		c.mu.Unlock()
-		return errors.New("conveyer already running")
-	}
-	c.running = true
-	c.ctx, c.cancel = context.WithCancel(ctx)
-	c.mu.Unlock()
-
-	// Создаем все каналы заранее
-	c.createAllChannels()
-
-	// Запускаем декораторы
-	for _, d := range c.decorators {
-		c.wg.Add(1)
-		go func(d *decoratorInfo) {
-			defer c.wg.Done()
-
-			inputCh, _ := c.getChannel(d.input)
-			outputCh, _ := c.getChannel(d.output)
-
-			if err := d.fn(c.ctx, inputCh, outputCh); err != nil {
-				select {
-				case c.errChan <- err:
-				default:
-				}
-			}
-		}(d)
-	}
-
-	// Запускаем сепараторы
-	for _, s := range c.separators {
-		c.wg.Add(1)
-		go func(s *separatorInfo) {
-			defer c.wg.Done()
-
-			inputCh, _ := c.getChannel(s.input)
-			outputs := make([]chan string, len(s.outputs))
-			for i, name := range s.outputs {
-				outputs[i], _ = c.getChannel(name)
-			}
-
-			if err := s.fn(c.ctx, inputCh, outputs); err != nil {
-				select {
-				case c.errChan <- err:
-				default:
-				}
-			}
-		}(s)
-	}
-
-	// Запускаем мультиплексоры
-	for _, m := range c.multiplexers {
-		c.wg.Add(1)
-		go func(m *multiplexerInfo) {
-			defer c.wg.Done()
-
-			inputs := make([]chan string, len(m.inputs))
-			for i, name := range m.inputs {
-				inputs[i], _ = c.getChannel(name)
-			}
-			outputCh, _ := c.getChannel(m.output)
-
-			if err := m.fn(c.ctx, inputs, outputCh); err != nil {
-				select {
-				case c.errChan <- err:
-				default:
-				}
-			}
-		}(m)
-	}
-
-	// Горутина для ожидания завершения всех обработчиков
-	go func() {
-		c.wg.Wait()
-		c.closeAllChannels()
-		close(c.errChan)
-	}()
-
-	// Ждем завершения или ошибки
-	select {
-	case <-c.ctx.Done():
-		c.stop()
-		return c.ctx.Err()
-	case err := <-c.errChan:
-		c.stop()
-		return err
-	}
-}
-
-// createAllChannels создает все необходимые каналы
+// createAllChannels создает все каналы, которые еще не созданы
 func (c *conveyerImpl) createAllChannels() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -266,21 +165,110 @@ func (c *conveyerImpl) createAllChannels() {
 	}
 }
 
+// Run запускает конвейер
+func (c *conveyerImpl) Run(ctx context.Context) error {
+	c.mu.Lock()
+	if c.running {
+		c.mu.Unlock()
+		return errors.New("conveyer already running")
+	}
+	c.running = true
+	c.ctx, c.cancel = context.WithCancel(ctx)
+	c.mu.Unlock()
+
+	// Создаем все необходимые каналы
+	c.createAllChannels()
+
+	// Запускаем декораторы
+	for _, d := range c.decorators {
+		c.wg.Add(1)
+		go func(d decoratorInfo) {
+			defer c.wg.Done()
+
+			inputCh, _ := c.getChannel(d.input)
+			outputCh, _ := c.getChannel(d.output)
+
+			if err := d.fn(c.ctx, inputCh, outputCh); err != nil {
+				select {
+				case c.errChan <- err:
+				default:
+				}
+			}
+		}(d)
+	}
+
+	// Запускаем сепараторы
+	for _, s := range c.separators {
+		c.wg.Add(1)
+		go func(s separatorInfo) {
+			defer c.wg.Done()
+
+			inputCh, _ := c.getChannel(s.input)
+			outputs := make([]chan string, len(s.outputs))
+			for i, name := range s.outputs {
+				outputs[i], _ = c.getChannel(name)
+			}
+
+			if err := s.fn(c.ctx, inputCh, outputs); err != nil {
+				select {
+				case c.errChan <- err:
+				default:
+				}
+			}
+		}(s)
+	}
+
+	// Запускаем мультиплексоры
+	for _, m := range c.multiplexers {
+		c.wg.Add(1)
+		go func(m multiplexerInfo) {
+			defer c.wg.Done()
+
+			inputs := make([]chan string, len(m.inputs))
+			for i, name := range m.inputs {
+				inputs[i], _ = c.getChannel(name)
+			}
+			outputCh, _ := c.getChannel(m.output)
+
+			if err := m.fn(c.ctx, inputs, outputCh); err != nil {
+				select {
+				case c.errChan <- err:
+				default:
+				}
+			}
+		}(m)
+	}
+
+	// Ждем завершения или ошибки
+	go func() {
+		c.wg.Wait()
+		c.closeAllChannels()
+		close(c.errChan)
+	}()
+
+	select {
+	case <-c.ctx.Done():
+		c.stop()
+		return c.ctx.Err()
+	case err := <-c.errChan:
+		c.stop()
+		return err
+	}
+}
+
 // closeAllChannels закрывает все каналы
 func (c *conveyerImpl) closeAllChannels() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	for _, ch := range c.channels {
+	for name, ch := range c.channels {
 		close(ch)
+		delete(c.channels, name)
 	}
 }
 
 // stop останавливает конвейер
 func (c *conveyerImpl) stop() {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
 	if c.cancel != nil {
 		c.cancel()
 	}
@@ -288,6 +276,13 @@ func (c *conveyerImpl) stop() {
 
 // Send отправляет данные в канал
 func (c *conveyerImpl) Send(input string, data string) error {
+	// Если конвейер не запущен, создаем канал на лету
+	if !c.isRunning() {
+		ch := c.getOrCreateChannel(input)
+		ch <- data
+		return nil
+	}
+
 	ch, err := c.getChannel(input)
 	if err != nil {
 		return err
@@ -317,4 +312,11 @@ func (c *conveyerImpl) Recv(output string) (string, error) {
 		}
 		return data, nil
 	}
+}
+
+// isRunning проверяет, запущен ли конвейер
+func (c *conveyerImpl) isRunning() bool {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.running
 }
