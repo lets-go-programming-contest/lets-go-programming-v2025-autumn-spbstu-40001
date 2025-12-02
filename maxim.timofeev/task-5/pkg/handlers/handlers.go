@@ -26,9 +26,9 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 			}
 
 			select {
-			case output <- data:
 			case <-ctx.Done():
 				return nil
+			case output <- data:
 			}
 		}
 	}
@@ -55,9 +55,9 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			counter++
 
 			select {
-			case outputs[idx] <- data:
 			case <-ctx.Done():
 				return nil
+			case outputs[idx] <- data:
 			}
 		}
 	}
@@ -65,29 +65,20 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 // MultiplexerFunc - мультиплексор с фильтрацией
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	// Создаем канал для слияния данных
-	merged := make(chan string, len(inputs)*10)
-
-	// Запускаем горутину для каждого входа
-	done := make(chan struct{})
-	defer close(done)
-
-	for _, input := range inputs {
-		go func(in chan string) {
-			defer func() {
-				select {
-				case done <- struct{}{}:
-				case <-ctx.Done():
-				}
-			}()
-
-			for {
+	// Используем простой подход - читаем из всех каналов по очереди
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+			// Проверяем каждый входной канал
+			for _, input := range inputs {
 				select {
 				case <-ctx.Done():
-					return
-				case data, ok := <-in:
+					return nil
+				case data, ok := <-input:
 					if !ok {
-						return
+						continue
 					}
 
 					// Фильтрация
@@ -96,41 +87,13 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					}
 
 					select {
-					case merged <- data:
 					case <-ctx.Done():
-						return
+						return nil
+					case output <- data:
 					}
+				default:
+					// Нет данных в этом канале, продолжаем
 				}
-			}
-		}(input)
-	}
-
-	// Закрываем merged после завершения всех горутин
-	go func() {
-		for i := 0; i < len(inputs); i++ {
-			select {
-			case <-done:
-			case <-ctx.Done():
-				return
-			}
-		}
-		close(merged)
-	}()
-
-	// Отправляем данные в выходной канал
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		case data, ok := <-merged:
-			if !ok {
-				return nil
-			}
-
-			select {
-			case output <- data:
-			case <-ctx.Done():
-				return nil
 			}
 		}
 	}
