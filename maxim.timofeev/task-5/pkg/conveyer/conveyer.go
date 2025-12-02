@@ -37,10 +37,10 @@ func (p *Conveyer) getOrCreateChan(name string) chan string {
 		return ch
 	}
 
-	ch := make(chan string, p.channelCapacity)
-	p.chans[name] = ch
+	channel := make(chan string, p.channelCapacity)
+	p.chans[name] = channel
 
-	return ch
+	return channel
 }
 
 func (p *Conveyer) getChan(name string) (chan string, bool) {
