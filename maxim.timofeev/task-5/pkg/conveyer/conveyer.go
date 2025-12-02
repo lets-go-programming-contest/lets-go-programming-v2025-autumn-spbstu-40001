@@ -134,10 +134,40 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 	}
 	c.running = true
 	c.ctx, c.cancel = context.WithCancel(ctx)
-	c.mu.Unlock()
 
 	// Создаем все необходимые каналы
-	c.createAllChannels()
+	for _, d := range c.decorators {
+		if _, ok := c.channels[d.input]; !ok {
+			c.channels[d.input] = make(chan string, c.size)
+		}
+		if _, ok := c.channels[d.output]; !ok {
+			c.channels[d.output] = make(chan string, c.size)
+		}
+	}
+
+	for _, s := range c.separators {
+		if _, ok := c.channels[s.input]; !ok {
+			c.channels[s.input] = make(chan string, c.size)
+		}
+		for _, output := range s.outputs {
+			if _, ok := c.channels[output]; !ok {
+				c.channels[output] = make(chan string, c.size)
+			}
+		}
+	}
+
+	for _, m := range c.multiplexers {
+		for _, input := range m.inputs {
+			if _, ok := c.channels[input]; !ok {
+				c.channels[input] = make(chan string, c.size)
+			}
+		}
+		if _, ok := c.channels[m.output]; !ok {
+			c.channels[m.output] = make(chan string, c.size)
+		}
+	}
+
+	c.mu.Unlock()
 
 	// Запускаем декораторы
 	for _, d := range c.decorators {
@@ -199,7 +229,7 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 		}(m)
 	}
 
-	// Горутина для закрытия каналов после завершения всех обработчиков
+	// Горутина для закрытия каналов после завершения
 	go func() {
 		c.wg.Wait()
 		c.closeAllChannels()
@@ -209,51 +239,10 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 	// Ждем завершения или ошибки
 	select {
 	case <-c.ctx.Done():
-		c.stop()
 		return c.ctx.Err()
 	case err := <-c.errChan:
 		c.stop()
 		return err
-	}
-}
-
-// createAllChannels создает все необходимые каналы
-func (c *conveyerImpl) createAllChannels() {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	// Создаем каналы для декораторов
-	for _, d := range c.decorators {
-		if _, ok := c.channels[d.input]; !ok {
-			c.channels[d.input] = make(chan string, c.size)
-		}
-		if _, ok := c.channels[d.output]; !ok {
-			c.channels[d.output] = make(chan string, c.size)
-		}
-	}
-
-	// Создаем каналы для сепараторов
-	for _, s := range c.separators {
-		if _, ok := c.channels[s.input]; !ok {
-			c.channels[s.input] = make(chan string, c.size)
-		}
-		for _, output := range s.outputs {
-			if _, ok := c.channels[output]; !ok {
-				c.channels[output] = make(chan string, c.size)
-			}
-		}
-	}
-
-	// Создаем каналы для мультиплексоров
-	for _, m := range c.multiplexers {
-		for _, input := range m.inputs {
-			if _, ok := c.channels[input]; !ok {
-				c.channels[input] = make(chan string, c.size)
-			}
-		}
-		if _, ok := c.channels[m.output]; !ok {
-			c.channels[m.output] = make(chan string, c.size)
-		}
 	}
 }
 
@@ -276,10 +265,9 @@ func (c *conveyerImpl) stop() {
 
 // Send отправляет данные в канал
 func (c *conveyerImpl) Send(input string, data string) error {
-	// Важно: если конвейер не запущен, проверяем существование канала
+	// Если конвейер не запущен, каналы не созданы
 	if !c.isRunning() {
-		_, err := c.getChannel(input)
-		return err
+		return errors.New("chan not found")
 	}
 
 	ch, err := c.getChannel(input)
@@ -297,6 +285,11 @@ func (c *conveyerImpl) Send(input string, data string) error {
 
 // Recv получает данные из канала
 func (c *conveyerImpl) Recv(output string) (string, error) {
+	// Если конвейер не запущен, каналы не созданы
+	if !c.isRunning() {
+		return "", errors.New("chan not found")
+	}
+
 	ch, err := c.getChannel(output)
 	if err != nil {
 		return "", err
