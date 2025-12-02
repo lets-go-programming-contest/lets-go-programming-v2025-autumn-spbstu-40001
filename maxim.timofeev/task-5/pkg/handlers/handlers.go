@@ -8,12 +8,10 @@ import (
 
 // PrefixDecoratorFunc - модификатор данных с префиксом
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
-	const prefix = "decorated: "
-
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
 		case data, ok := <-input:
 			if !ok {
 				return nil
@@ -23,14 +21,14 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 				return errors.New("can't be decorated")
 			}
 
-			if !strings.HasPrefix(data, prefix) {
-				data = prefix + data
+			if !strings.HasPrefix(data, "decorated: ") {
+				data = "decorated: " + data
 			}
 
 			select {
 			case output <- data:
 			case <-ctx.Done():
-				return ctx.Err()
+				return nil
 			}
 		}
 	}
@@ -47,7 +45,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
 		case data, ok := <-input:
 			if !ok {
 				return nil
@@ -59,7 +57,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			select {
 			case outputs[idx] <- data:
 			case <-ctx.Done():
-				return ctx.Err()
+				return nil
 			}
 		}
 	}
@@ -67,41 +65,72 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 // MultiplexerFunc - мультиплексор с фильтрацией
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	// Простая реализация - обрабатываем входы по очереди
-	for {
-		dataReceived := false
+	// Создаем канал для слияния данных
+	merged := make(chan string, len(inputs)*10)
 
-		for _, input := range inputs {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case data, ok := <-input:
-				if !ok {
-					continue
-				}
-				dataReceived = true
+	// Запускаем горутину для каждого входа
+	done := make(chan struct{})
+	defer close(done)
 
-				if strings.Contains(data, "no multiplexer") {
-					continue
-				}
-
+	for _, input := range inputs {
+		go func(in chan string) {
+			defer func() {
 				select {
-				case output <- data:
+				case done <- struct{}{}:
 				case <-ctx.Done():
-					return ctx.Err()
 				}
-			default:
-				// Пропускаем если нет данных
+			}()
+
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case data, ok := <-in:
+					if !ok {
+						return
+					}
+
+					// Фильтрация
+					if strings.Contains(data, "no multiplexer") {
+						continue
+					}
+
+					select {
+					case merged <- data:
+					case <-ctx.Done():
+						return
+					}
+				}
+			}
+		}(input)
+	}
+
+	// Закрываем merged после завершения всех горутин
+	go func() {
+		for i := 0; i < len(inputs); i++ {
+			select {
+			case <-done:
+			case <-ctx.Done():
+				return
 			}
 		}
+		close(merged)
+	}()
 
-		// Если ни один канал не дал данных, делаем небольшую паузу
-		if !dataReceived {
+	// Отправляем данные в выходной канал
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case data, ok := <-merged:
+			if !ok {
+				return nil
+			}
+
 			select {
+			case output <- data:
 			case <-ctx.Done():
-				return ctx.Err()
-			default:
-				// Продолжаем цикл
+				return nil
 			}
 		}
 	}
