@@ -38,6 +38,7 @@ func (p *Pipeline) getOrCreateChan(name string) chan string {
 
 	ch := make(chan string, p.channelCapacity)
 	p.chans[name] = ch
+
 	return ch
 }
 
@@ -46,11 +47,12 @@ func (p *Pipeline) getChan(name string) (chan string, bool) {
 	defer p.lock.Unlock()
 
 	ch, exists := p.chans[name]
+
 	return ch, exists
 }
 
 func (p *Pipeline) RegisterDecorator(
-	fn func(ctx context.Context, input chan string, output chan string) error,
+	funct func(ctx context.Context, input chan string, output chan string) error,
 	inputName, outputName string,
 ) {
 	inCh := p.getOrCreateChan(inputName)
@@ -58,7 +60,8 @@ func (p *Pipeline) RegisterDecorator(
 
 	job := func(ctx context.Context) error {
 		defer close(outCh)
-		return fn(ctx, inCh, outCh)
+
+		return funct(ctx, inCh, outCh)
 	}
 
 	p.lock.Lock()
@@ -67,7 +70,7 @@ func (p *Pipeline) RegisterDecorator(
 }
 
 func (p *Pipeline) RegisterMultiplexer(
-	fn func(ctx context.Context, inputs []chan string, output chan string) error,
+	funct func(ctx context.Context, inputs []chan string, output chan string) error,
 	inputNames []string,
 	outputName string,
 ) {
@@ -80,7 +83,8 @@ func (p *Pipeline) RegisterMultiplexer(
 
 	job := func(ctx context.Context) error {
 		defer close(outCh)
-		return fn(ctx, inChans, outCh)
+
+		return funct(ctx, inChans, outCh)
 	}
 
 	p.lock.Lock()
@@ -89,12 +93,13 @@ func (p *Pipeline) RegisterMultiplexer(
 }
 
 func (p *Pipeline) RegisterSeparator(
-	fn func(ctx context.Context, input chan string, outputs []chan string) error,
+	funct func(ctx context.Context, input chan string, outputs []chan string) error,
 	inputName string,
 	outputNames []string,
 ) {
 	inCh := p.getOrCreateChan(inputName)
 	outChans := make([]chan string, 0, len(outputNames))
+
 	for _, n := range outputNames {
 		outChans = append(outChans, p.getOrCreateChan(n))
 	}
@@ -105,7 +110,7 @@ func (p *Pipeline) RegisterSeparator(
 				close(ch)
 			}
 		}()
-		return fn(ctx, inCh, outChans)
+		return funct(ctx, inCh, outChans)
 	}
 
 	p.lock.Lock()
@@ -123,6 +128,7 @@ func (p *Pipeline) Run(ctx context.Context) error {
 
 	for _, j := range copiedJobs {
 		job := j
+
 		group.Go(func() error {
 			return job(gCtx)
 		})
@@ -135,25 +141,25 @@ func (p *Pipeline) Run(ctx context.Context) error {
 }
 
 func (p *Pipeline) Send(name, value string) error {
-	ch, ok := p.getChan(name)
+	channel, ok := p.getChan(name)
 	if !ok {
 		return ErrChannelMissing
 	}
 
 	defer func() { _ = recover() }()
 
-	ch <- value
+	channel <- value
 	return nil
 }
 
 func (p *Pipeline) Recv(name string) (string, error) {
-	ch, ok := p.getChan(name)
+	channel, ok := p.getChan(name)
 	if !ok {
 		return "", ErrChannelMissing
 	}
 
 	select {
-	case val, ok := <-ch:
+	case val, ok := <-channel:
 		if !ok {
 			return Undefined, nil
 		}
