@@ -115,7 +115,10 @@ func (c *conveyor) RegisterSeparator(
 }
 
 func (c *conveyor) Run(ctx context.Context) error {
-	// don't shadow caller ctx; we may still cancel locally on error
+	if len(c.decorators) == 0 && len(c.multiplexers) == 0 && len(c.separators) == 0 {
+		return nil
+	}
+
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -136,7 +139,6 @@ func (c *conveyor) Run(ctx context.Context) error {
 		}()
 	}
 
-	// start handlers
 	for _, d := range c.decorators {
 		in, _ := c.getChannel(d.inName)
 		out, _ := c.getChannel(d.outName)
@@ -172,31 +174,25 @@ func (c *conveyor) Run(ctx context.Context) error {
 		})
 	}
 
-	// wait for all handlers to finish in a non-blocking way
 	done := make(chan struct{})
 	go func() {
 		wg.Wait()
 		close(done)
 	}()
 
-	// wait for either: external ctx cancel, first handler error, or all handlers done
 	var retErr error
 	select {
 	case <-ctx.Done():
 		retErr = ctx.Err()
 	case e := <-errCh:
-		// got an error from handler -> cancel others
 		retErr = e
 		cancel()
 	case <-done:
 		retErr = nil
 	}
 
-	// ensure all goroutines finished
 	<-done
 
-	// IMPORTANT: do NOT close channels here — handlers are responsible for closing their own outputs.
-	// Closing here may result in double-close panics (even if recovered).
 	return retErr
 }
 
@@ -205,11 +201,6 @@ func (c *conveyor) Send(input string, data string) error {
 	if !ok {
 		return ErrChanNotFound
 	}
-	// no recover: tests expect simple behavior; sending to closed channel is a user error in tests
-
-	defer func() {
-		_ = recover()
-	}()
 
 	ch <- data
 	return nil
