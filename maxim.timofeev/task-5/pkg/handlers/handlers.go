@@ -65,35 +65,42 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 // MultiplexerFunc - мультиплексор с фильтрацией
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	// Используем простой подход - читаем из всех каналов по очереди
+	// Простая реализация - читаем из каналов по очереди
 	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		default:
-			// Проверяем каждый входной канал
-			for _, input := range inputs {
+		dataReceived := false
+
+		for _, input := range inputs {
+			select {
+			case <-ctx.Done():
+				return nil
+			case data, ok := <-input:
+				if !ok {
+					continue
+				}
+
+				dataReceived = true
+
+				if strings.Contains(data, "no multiplexer") {
+					continue
+				}
+
 				select {
 				case <-ctx.Done():
 					return nil
-				case data, ok := <-input:
-					if !ok {
-						continue
-					}
-
-					// Фильтрация
-					if strings.Contains(data, "no multiplexer") {
-						continue
-					}
-
-					select {
-					case <-ctx.Done():
-						return nil
-					case output <- data:
-					}
-				default:
-					// Нет данных в этом канале, продолжаем
+				case output <- data:
 				}
+			default:
+				// Нет данных в этом канале
+			}
+		}
+
+		// Если ни один канал не дал данных, продолжаем цикл
+		if !dataReceived {
+			select {
+			case <-ctx.Done():
+				return nil
+			default:
+				// Продолжаем цикл
 			}
 		}
 	}
