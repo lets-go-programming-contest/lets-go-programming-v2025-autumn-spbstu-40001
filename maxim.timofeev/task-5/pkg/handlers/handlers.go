@@ -9,7 +9,7 @@ import (
 
 // PrefixDecoratorFunc - модификатор данных с префиксом
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
-	prefix := "decorated: "
+	const prefix = "decorated: "
 
 	for {
 		select {
@@ -70,20 +70,14 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 // MultiplexerFunc - мультиплексор с фильтрацией
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	// Создаем канал для слияния всех входов
-	merged := make(chan string, len(inputs)*10)
+	// Используем отдельную горутину для каждого входного канала
+	done := make(chan struct{}, len(inputs))
 
-	// Запускаем горутины для каждого входного канала
-	done := make(chan struct{})
-	defer close(done)
-
-	for _, input := range inputs {
-		go func(in chan string) {
+	// Запускаем горутины для чтения из каждого входного канала
+	for i, input := range inputs {
+		go func(idx int, in chan string) {
 			defer func() {
-				select {
-				case done <- struct{}{}:
-				case <-ctx.Done():
-				}
+				done <- struct{}{}
 			}()
 
 			for {
@@ -94,48 +88,30 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					if !ok {
 						return
 					}
+
+					// Фильтруем данные с подстрокой "no multiplexer"
+					if strings.Contains(data, "no multiplexer") {
+						continue
+					}
+
 					select {
 					case <-ctx.Done():
 						return
-					case merged <- data:
+					case output <- data:
 					}
 				}
 			}
-		}(input)
+		}(i, input)
 	}
 
 	// Ждем завершения всех горутин
-	go func() {
-		for i := 0; i < len(inputs); i++ {
-			select {
-			case <-done:
-			case <-ctx.Done():
-				return
-			}
-		}
-		close(merged)
-	}()
-
-	// Обрабатываем объединенные данные
-	for {
+	for i := 0; i < len(inputs); i++ {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		case data, ok := <-merged:
-			if !ok {
-				return nil
-			}
-
-			// Фильтруем данные с подстрокой "no multiplexer"
-			if strings.Contains(data, "no multiplexer") {
-				continue
-			}
-
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case output <- data:
-			}
+		case <-done:
 		}
 	}
+
+	return nil
 }
