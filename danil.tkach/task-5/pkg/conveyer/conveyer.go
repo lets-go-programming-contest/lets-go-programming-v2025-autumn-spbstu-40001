@@ -13,10 +13,12 @@ const Undefined = "undefined"
 
 var ErrChannelNotFound = errors.New("chan not found")
 
+type Task func(context.Context) error
+
 type ConveyerImpl struct {
 	mu       sync.RWMutex
 	channels map[string]chan string
-	tasks    []func(context.Context) error
+	tasks    []Task
 	chanSize int
 }
 
@@ -25,7 +27,7 @@ func New(size int) *ConveyerImpl {
 		mu:       sync.RWMutex{},
 		channels: make(map[string]chan string),
 		chanSize: size,
-		tasks:    make([]func(context.Context) error, 0),
+		tasks:    make([]Task, 0),
 	}
 }
 
@@ -113,6 +115,8 @@ func (c *ConveyerImpl) RegisterSeparator(
 }
 
 func (c *ConveyerImpl) Run(ctx context.Context) error {
+	c.mu.RLock()
+
 	group, groupCtx := errgroup.WithContext(ctx)
 
 	for _, task := range c.tasks {
@@ -122,6 +126,8 @@ func (c *ConveyerImpl) Run(ctx context.Context) error {
 			return currentTask(groupCtx)
 		})
 	}
+
+	c.mu.RUnlock()
 
 	if err := group.Wait(); err != nil {
 		return fmt.Errorf("conveyer finished with error: %w", err)
