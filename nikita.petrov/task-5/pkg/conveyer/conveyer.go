@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+
+	"golang.org/x/sync/errgroup"
 )
 
 var errChanNotFound = errors.New("chan not found")
@@ -57,54 +59,6 @@ func (c *Conveyer) getOrCreateChannel(name string) chan string {
 	ch := make(chan string, c.chansSize)
 	c.chansMap[name] = ch
 	return ch
-}
-
-func (c *Conveyer) startAllHandlers(ctx context.Context, errCh chan error, cancel context.CancelFunc) {
-	var wg sync.WaitGroup
-
-	for _, decorator := range c.decorators {
-		wg.Add(1)
-		go func(d Decorator) {
-			defer wg.Done()
-			if err := c.runDecorator(ctx, d); err != nil {
-				select {
-				case errCh <- fmt.Errorf("decorator: from %s to %s: %w", d.input, d.output, err):
-				default:
-				}
-			}
-		}(decorator)
-	}
-
-	for _, multiplexer := range c.multiplexers {
-		wg.Add(1)
-		go func(m Multiplexer) {
-			defer wg.Done()
-			if err := c.runMultiplexer(ctx, m); err != nil {
-				select {
-				case errCh <- fmt.Errorf("multiplexer to %s: %w", m.output, err):
-				default:
-				}
-			}
-		}(multiplexer)
-	}
-
-	for _, separator := range c.separators {
-		wg.Add(1)
-		go func(s Separator) {
-			defer wg.Done()
-			if err := c.runSeparator(ctx, s); err != nil {
-				select {
-				case errCh <- fmt.Errorf("separator from %s: %w", s.input, err):
-				default:
-				}
-			}
-		}(separator)
-	}
-
-	go func() {
-		wg.Wait()
-		close(errCh)
-	}()
 }
 
 func (c *Conveyer) runDecorator(ctx context.Context, d Decorator) error {
@@ -214,26 +168,37 @@ func (c *Conveyer) RegisterSeparator(
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
-	c.mutex.Lock()
+	c.mutex.RLock()
+	defer c.mutex.RUnlock()
 
-	defer func() {
-		c.closeChansMap()
-		c.mutex.Unlock()
-	}()
+	errgroup, ctx := errgroup.WithContext(ctx)
 
-	errCh := make(chan error, len(c.decorators)+len(c.multiplexers)+len(c.separators)+1)
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	c.startAllHandlers(ctx, errCh, cancel)
-
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case err := <-errCh:
-		cancel()
-		return err
+	for _, decorator := range c.decorators {
+		d := decorator
+		errgroup.Go(func() error {
+			return c.runDecorator(ctx, d)
+		})
 	}
+
+	for _, multiplexer := range c.multiplexers {
+		m := multiplexer
+		errgroup.Go(func() error {
+			return c.runMultiplexer(ctx, m)
+		})
+	}
+
+	for _, separator := range c.separators {
+		s := separator
+		errgroup.Go(func() error {
+			return c.runSeparator(ctx, s)
+		})
+	}
+
+	if err := errgroup.Wait(); err != nil {
+		return fmt.Errorf("conveyer finished with error: %w", err)
+	}
+
+	return nil
 }
 
 func (c *Conveyer) Send(input string, data string) error {
