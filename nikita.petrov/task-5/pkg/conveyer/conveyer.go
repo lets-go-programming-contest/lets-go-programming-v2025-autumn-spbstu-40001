@@ -168,8 +168,7 @@ func (c *Conveyer) RegisterSeparator(
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
-	c.mutex.RLock()
-	defer c.mutex.RUnlock()
+	defer c.closeChansMap()
 
 	errgroup, ctx := errgroup.WithContext(ctx)
 
@@ -219,23 +218,14 @@ func (c *Conveyer) Send(input string, data string) error {
 }
 
 func (c *Conveyer) Recv(output string) (string, error) {
-	c.mutex.RLock()
-	ch, ok := c.chansMap[output]
-	c.mutex.RUnlock()
+	channel := c.getOrCreateChannel(output)
 
+	data, ok := <-channel
 	if !ok {
-		return "", errChanNotFound
+		return errUndefinedStr, nil
 	}
 
-	select {
-	case data, ok := <-ch:
-		if !ok {
-			return errUndefinedStr, nil
-		}
-		return data, nil
-	default:
-		return "", fmt.Errorf("channel is empty")
-	}
+	return data, nil
 }
 
 func (c *Conveyer) closeChansMap() {
