@@ -51,8 +51,10 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 		return ErrNoOutputs
 	}
 
-	var count int
-	var numOutputs = len(outputs)
+	var (
+		count      int
+		numOutputs = len(outputs)
+	)
 
 	for {
 		select {
