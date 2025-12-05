@@ -65,6 +65,9 @@ func (c *conveyer) RegisterDecorator(
 	decoratorFunc func(context.Context, chan string, chan string) error,
 	input, output string,
 ) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	inCh := c.getOrCreateChan(input)
 	outCh := c.getOrCreateChan(output)
 
@@ -74,9 +77,7 @@ func (c *conveyer) RegisterDecorator(
 		return decoratorFunc(ctx, inCh, outCh)
 	}
 
-	c.mu.Lock()
 	c.tasks = append(c.tasks, task)
-	c.mu.Unlock()
 }
 
 func (c *conveyer) RegisterMultiplexer(
@@ -84,6 +85,9 @@ func (c *conveyer) RegisterMultiplexer(
 	inputs []string,
 	output string,
 ) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	inputChans := make([]chan string, len(inputs))
 	for i, name := range inputs {
 		inputChans[i] = c.getOrCreateChan(name)
@@ -97,9 +101,7 @@ func (c *conveyer) RegisterMultiplexer(
 		return multiplexerFunc(ctx, inputChans, outCh)
 	}
 
-	c.mu.Lock()
 	c.tasks = append(c.tasks, task)
-	c.mu.Unlock()
 }
 
 func (c *conveyer) RegisterSeparator(
@@ -107,6 +109,9 @@ func (c *conveyer) RegisterSeparator(
 	input string,
 	outputs []string,
 ) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	inCh := c.getOrCreateChan(input)
 
 	outputChans := make([]chan string, len(outputs))
@@ -124,9 +129,7 @@ func (c *conveyer) RegisterSeparator(
 		return separatorFunc(ctx, inCh, outputChans)
 	}
 
-	c.mu.Lock()
 	c.tasks = append(c.tasks, task)
-	c.mu.Unlock()
 }
 
 func (c *conveyer) Run(ctx context.Context) error {
