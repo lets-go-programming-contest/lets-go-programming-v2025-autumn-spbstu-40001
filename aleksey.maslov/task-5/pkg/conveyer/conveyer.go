@@ -27,6 +27,7 @@ func New(size int) *ConveyerType {
 		size:     size,
 		channels: make(map[string]chan string),
 		tasks:    make([]Task, 0),
+		mutex:    sync.RWMutex{},
 	}
 }
 
@@ -95,7 +96,7 @@ func (c *ConveyerType) RegisterSeparator(
 	input string,
 	outputs []string,
 ) {
-	in := c.getOrCreateChannel(input)
+	inChannel := c.getOrCreateChannel(input)
 	outs := make([]chan string, len(outputs))
 
 	for i, name := range outputs {
@@ -104,7 +105,7 @@ func (c *ConveyerType) RegisterSeparator(
 
 	c.mutex.Lock()
 	c.tasks = append(c.tasks, func(ctx context.Context) error {
-		return handler(ctx, in, outs)
+		return handler(ctx, inChannel, outs)
 	})
 	c.mutex.Unlock()
 }
@@ -115,6 +116,7 @@ func (c *ConveyerType) Send(input string, data string) error {
 		return err
 	}
 	ch <- data
+
 	return nil
 }
 
