@@ -20,10 +20,10 @@ func PrefixDecoratorFunc(
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return errors.Join(ctx.Err())
 
-		case data, ok := <-input:
-			if !ok {
+		case data, isOpen := <-input:
+			if !isOpen {
 				return nil
 			}
 
@@ -34,15 +34,16 @@ func PrefixDecoratorFunc(
 			if strings.HasPrefix(data, "decorated: ") {
 				select {
 				case <-ctx.Done():
-					return ctx.Err()
+					return errors.Join(ctx.Err())
 				case output <- data:
 				}
+
 				continue
 			}
 
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return errors.Join(ctx.Err())
 			case output <- "decorated: " + data:
 			}
 		}
@@ -60,25 +61,27 @@ func MultiplexerFunc(
 	cases[0] = reflect.SelectCase{
 		Dir:  reflect.SelectRecv,
 		Chan: reflect.ValueOf(ctx.Done()),
+		Send: reflect.Value{},
 	}
 
-	for i, input := range inputs {
-		cases[i+1] = reflect.SelectCase{
+	for idx, input := range inputs {
+		cases[idx+1] = reflect.SelectCase{
 			Dir:  reflect.SelectRecv,
 			Chan: reflect.ValueOf(input),
+			Send: reflect.Value{},
 		}
 	}
 
 	remaining := len(inputs)
 
 	for remaining > 0 {
-		chosen, value, ok := reflect.Select(cases)
+		chosen, value, isOpen := reflect.Select(cases)
 
 		if chosen == 0 {
-			return ctx.Err()
+			return errors.Join(ctx.Err())
 		}
 
-		if !ok {
+		if !isOpen {
 			cases[chosen].Chan = reflect.ValueOf(nil)
 			remaining--
 			continue
@@ -92,7 +95,7 @@ func MultiplexerFunc(
 
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return errors.Join(ctx.Err())
 		case output <- data:
 		}
 	}
@@ -106,33 +109,35 @@ func SeparatorFunc(
 	outputs []chan string,
 ) error {
 	onceList := make([]*sync.Once, len(outputs))
-	for i := range onceList {
-		onceList[i] = &sync.Once{}
+	for idx := range onceList {
+		onceList[idx] = &sync.Once{}
 	}
 
 	defer func() {
-		for i, output := range outputs {
-			onceList[i].Do(func() {
+		for idx, output := range outputs {
+			onceList[idx].Do(func() {
 				close(output)
 			})
 		}
 	}()
 
-	for i := 0; ; {
+	counter := 0
+
+	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return errors.Join(ctx.Err())
 
-		case data, ok := <-input:
-			if !ok {
+		case data, isOpen := <-input:
+			if !isOpen {
 				return nil
 			}
 
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
-			case outputs[i%len(outputs)] <- data:
-				i++
+				return errors.Join(ctx.Err())
+			case outputs[counter%len(outputs)] <- data:
+				counter++
 			}
 		}
 	}
