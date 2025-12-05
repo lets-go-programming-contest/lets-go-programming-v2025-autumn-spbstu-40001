@@ -26,8 +26,11 @@ type conveyer struct {
 
 func New(size int) *conveyer {
 	return &conveyer{
-		size:  size,
-		chans: make(map[string]chan string),
+		size:    size,
+		chans:   make(map[string]chan string),
+		tasks:   []func(context.Context) error{},
+		running: false,
+		mu:      sync.RWMutex{},
 	}
 }
 
@@ -41,6 +44,7 @@ func (c *conveyer) getOrCreateChan(name string) chan string {
 
 	ch := make(chan string, c.size)
 	c.chans[name] = ch
+
 	return ch
 }
 
@@ -50,13 +54,14 @@ func (c *conveyer) getChan(name string) (chan string, error) {
 
 	ch, ok := c.chans[name]
 	if !ok {
-		return nil, ErrChanNotFound
+		return nil, fmt.Errorf("%w: %s", ErrChanNotFound, name)
 	}
+
 	return ch, nil
 }
 
 func (c *conveyer) RegisterDecorator(
-	fn func(context.Context, chan string, chan string) error,
+	decoratorFunc func(context.Context, chan string, chan string) error,
 	input, output string,
 ) {
 	inCh := c.getOrCreateChan(input)
@@ -64,7 +69,7 @@ func (c *conveyer) RegisterDecorator(
 
 	task := func(ctx context.Context) error {
 		defer close(outCh)
-		return fn(ctx, inCh, outCh)
+		return decoratorFunc(ctx, inCh, outCh)
 	}
 
 	c.mu.Lock()
@@ -73,7 +78,7 @@ func (c *conveyer) RegisterDecorator(
 }
 
 func (c *conveyer) RegisterMultiplexer(
-	fn func(context.Context, []chan string, chan string) error,
+	multiplexerFunc func(context.Context, []chan string, chan string) error,
 	inputs []string,
 	output string,
 ) {
@@ -86,7 +91,7 @@ func (c *conveyer) RegisterMultiplexer(
 
 	task := func(ctx context.Context) error {
 		defer close(outCh)
-		return fn(ctx, inputChans, outCh)
+		return multiplexerFunc(ctx, inputChans, outCh)
 	}
 
 	c.mu.Lock()
@@ -95,7 +100,7 @@ func (c *conveyer) RegisterMultiplexer(
 }
 
 func (c *conveyer) RegisterSeparator(
-	fn func(context.Context, chan string, []chan string) error,
+	separatorFunc func(context.Context, chan string, []chan string) error,
 	input string,
 	outputs []string,
 ) {
@@ -112,7 +117,7 @@ func (c *conveyer) RegisterSeparator(
 				close(out)
 			}
 		}()
-		return fn(ctx, inCh, outputChans)
+		return separatorFunc(ctx, inCh, outputChans)
 	}
 
 	c.mu.Lock()
@@ -126,6 +131,7 @@ func (c *conveyer) Run(ctx context.Context) error {
 		c.mu.Unlock()
 		return errors.New("conveyer already running")
 	}
+
 	c.running = true
 	c.mu.Unlock()
 
@@ -135,20 +141,23 @@ func (c *conveyer) Run(ctx context.Context) error {
 		c.mu.Unlock()
 	}()
 
-	g, ctx := errgroup.WithContext(ctx)
+	errGroup, ctx := errgroup.WithContext(ctx)
 
 	for _, task := range c.tasks {
-		task := task
-		g.Go(func() error {
+		errGroup.Go(func() error {
 			return task(ctx)
 		})
 	}
 
-	return g.Wait()
+	if err := errGroup.Wait(); err != nil {
+		return fmt.Errorf("conveyer run failed: %w", err)
+	}
+
+	return nil
 }
 
 func (c *conveyer) Send(input string, data string) error {
-	ch, err := c.getChan(input)
+	channel, err := c.getChan(input)
 	if err != nil {
 		return fmt.Errorf("%w: %s", ErrChanNotFound, input)
 	}
@@ -157,17 +166,18 @@ func (c *conveyer) Send(input string, data string) error {
 		_ = recover()
 	}()
 
-	ch <- data
+	channel <- data
+
 	return nil
 }
 
 func (c *conveyer) Recv(output string) (string, error) {
-	ch, err := c.getChan(output)
+	channel, err := c.getChan(output)
 	if err != nil {
 		return "", fmt.Errorf("%w: %s", ErrChanNotFound, output)
 	}
 
-	val, ok := <-ch
+	val, ok := <-channel
 	if !ok {
 		return Undefined, nil
 	}
