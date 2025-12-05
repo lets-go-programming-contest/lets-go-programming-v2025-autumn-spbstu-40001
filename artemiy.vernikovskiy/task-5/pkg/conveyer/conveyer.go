@@ -118,8 +118,8 @@ func (p *pipeline) Run(ctx context.Context) error {
 		return err
 	case <-done:
 		return nil
-	case <-ctx.Done():
-		return errors.Join(ErrPipelineCanceled, ctx.Err())
+		//	case <-ctx.Done():
+		//		return errors.Join(ErrPipelineCanceled, ctx.Err())
 	}
 }
 
