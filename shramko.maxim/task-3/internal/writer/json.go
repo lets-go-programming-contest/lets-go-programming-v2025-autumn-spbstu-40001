@@ -7,6 +7,11 @@ import (
 	"path/filepath"
 )
 
+const (
+	DefaultDirPerm  = 0o755
+	DefaultFilePerm = 0o644
+)
+
 func WriteJSON(path string, data interface{}, dirPerm os.FileMode, filePerm os.FileMode) error {
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, dirPerm); err != nil {

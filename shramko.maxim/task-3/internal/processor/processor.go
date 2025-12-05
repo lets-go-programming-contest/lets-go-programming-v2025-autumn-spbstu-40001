@@ -17,7 +17,7 @@ func ProcessCurrencies(cfg *config.Config) error {
 
 	sorter.SortByValueDescending(currencyCollection.CurrencyItems)
 
-	if writeErr := writer.WriteJSON(cfg.OutputFile, currencyCollection.CurrencyItems, 0o755, 0o644); writeErr != nil {
+	if writeErr := writer.WriteJSON(cfg.OutputFile, currencyCollection.CurrencyItems, writer.DefaultDirPerm, writer.DefaultFilePerm); writeErr != nil {
 		return fmt.Errorf("failed to write JSON: %w", writeErr)
 	}
 
