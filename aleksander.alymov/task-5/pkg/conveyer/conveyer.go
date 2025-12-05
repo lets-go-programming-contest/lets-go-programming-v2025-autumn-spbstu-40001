@@ -22,7 +22,6 @@ type conveyer struct {
 	chans    map[string]chan string
 	handlers []handler
 	running  bool
-	closed   map[string]bool // Отслеживаем закрытые каналы
 }
 
 type handler struct {
@@ -42,9 +41,8 @@ const (
 
 func New(size int) *conveyer {
 	return &conveyer{
-		size:   size,
-		chans:  make(map[string]chan string),
-		closed: make(map[string]bool),
+		size:  size,
+		chans: make(map[string]chan string),
 	}
 }
 
@@ -58,7 +56,6 @@ func (c *conveyer) getOrCreateChan(name string) chan string {
 
 	ch := make(chan string, c.size)
 	c.chans[name] = ch
-	c.closed[name] = false
 	return ch
 }
 
@@ -71,16 +68,6 @@ func (c *conveyer) getChan(name string) (chan string, error) {
 		return nil, ErrChanNotFound
 	}
 	return ch, nil
-}
-
-func (c *conveyer) safeCloseChan(name string) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if ch, ok := c.chans[name]; ok && !c.closed[name] {
-		close(ch)
-		c.closed[name] = true
-	}
 }
 
 func (c *conveyer) RegisterDecorator(
@@ -163,9 +150,8 @@ func (c *conveyer) runHandler(ctx context.Context, h handler) error {
 		fn := h.fn.(func(context.Context, chan string, chan string) error)
 		input := c.getOrCreateChan(h.inputNames[0])
 		output := c.getOrCreateChan(h.outputNames[0])
-		err := fn(ctx, input, output)
-		c.safeCloseChan(h.outputNames[0]) // Безопасное закрытие
-		return err
+		defer close(output)
+		return fn(ctx, input, output)
 
 	case multiplexer:
 		fn := h.fn.(func(context.Context, []chan string, chan string) error)
@@ -174,9 +160,8 @@ func (c *conveyer) runHandler(ctx context.Context, h handler) error {
 			inputs[i] = c.getOrCreateChan(name)
 		}
 		output := c.getOrCreateChan(h.outputNames[0])
-		err := fn(ctx, inputs, output)
-		c.safeCloseChan(h.outputNames[0]) // Безопасное закрытие
-		return err
+		defer close(output)
+		return fn(ctx, inputs, output)
 
 	case separator:
 		fn := h.fn.(func(context.Context, chan string, []chan string) error)
@@ -185,12 +170,12 @@ func (c *conveyer) runHandler(ctx context.Context, h handler) error {
 		for i, name := range h.outputNames {
 			outputs[i] = c.getOrCreateChan(name)
 		}
-		err := fn(ctx, input, outputs)
-		// Закрываем все выходные каналы сепаратора
-		for _, name := range h.outputNames {
-			c.safeCloseChan(name)
-		}
-		return err
+		defer func() {
+			for _, out := range outputs {
+				close(out)
+			}
+		}()
+		return fn(ctx, input, outputs)
 
 	default:
 		return errors.New("unknown handler type")
@@ -198,10 +183,16 @@ func (c *conveyer) runHandler(ctx context.Context, h handler) error {
 }
 
 func (c *conveyer) Send(input string, data string) error {
-	ch, err := c.getChan(input) // Используем getChan, а не getOrCreateChan
+	ch, err := c.getChan(input)
 	if err != nil {
-		return err
+		return fmt.Errorf("%w: %s", ErrChanNotFound, input)
 	}
+
+	defer func() {
+		if r := recover(); r != nil {
+
+		}
+	}()
 
 	select {
 	case ch <- data:
