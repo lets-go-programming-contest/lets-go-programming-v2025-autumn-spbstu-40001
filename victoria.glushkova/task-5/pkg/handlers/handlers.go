@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"strings"
-	"sync/atomic"
+	"sync"
 )
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
@@ -13,7 +13,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
 		case data, ok := <-input:
 			if !ok {
 				return nil
@@ -30,7 +30,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return nil
 			case output <- data:
 			}
 		}
@@ -49,17 +49,18 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
 		case data, ok := <-input:
 			if !ok {
 				return nil
 			}
 
-			idx := atomic.AddUint64(&counter, 1) % uint64(len(outputs))
+			idx := int(counter % uint64(len(outputs)))
+			counter++
 
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return nil
 			case outputs[idx] <- data:
 			}
 		}
@@ -73,64 +74,36 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		return nil
 	}
 
-	type result struct {
-		data string
-		ok   bool
-	}
+	var wg sync.WaitGroup
+	wg.Add(len(inputs))
 
-	results := make(chan result, len(inputs))
-
-	for _, input := range inputs {
-		go func(in chan string) {
-			defer func() {
-				select {
-				case results <- result{"", false}:
-				case <-ctx.Done():
-				}
-			}()
+	for _, in := range inputs {
+		go func(inputChan chan string) {
+			defer wg.Done()
 
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case data, ok := <-in:
+				case data, ok := <-inputChan:
 					if !ok {
 						return
 					}
+
+					if strings.Contains(data, "no multiplexer") {
+						continue
+					}
+
 					select {
 					case <-ctx.Done():
 						return
-					case results <- result{data, true}:
+					case output <- data:
 					}
 				}
 			}
-		}(input)
+		}(in)
 	}
 
-	closedInputs := 0
-	totalInputs := len(inputs)
-
-	for closedInputs < totalInputs {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case res := <-results:
-			if !res.ok {
-				closedInputs++
-				continue
-			}
-
-			if strings.Contains(res.data, "no multiplexer") {
-				continue
-			}
-
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case output <- res.data:
-			}
-		}
-	}
-
+	wg.Wait()
 	return nil
 }
