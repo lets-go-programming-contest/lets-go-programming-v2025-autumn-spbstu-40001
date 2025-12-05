@@ -1,0 +1,10 @@
+github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
+github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
+github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+github.com/stretchr/testify v1.11.1 h1:RYqQQWeJ3W0cXIC7k8HUm7noiLQoN8T3jwgIH7g9cDM=
+github.com/stretchr/testify v1.11.1/go.mod h1:II8KvT9dD0l0oZcD+gwI+JgqB+5M5P8PDgBB6NvsKMs=
+golang.org/x/sync v0.18.0 h1:P3+Vbn+Tt8bK+MU7l2iN7u8r4Brk4CkM4YAy3pNxX+M=
+golang.org/x/sync v0.18.0/go.mod h1:Czt+wKu1gCyEFbu6X1BKNBLh2U8o2YLY8ovk+m6TcLs=
+gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
+gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=

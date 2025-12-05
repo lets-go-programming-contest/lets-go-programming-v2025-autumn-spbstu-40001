@@ -7,12 +7,12 @@ import (
 	"sync/atomic"
 )
 
-func AddPrefixDecorator(ctx context.Context, in <-chan string, out chan<- string) error {
+func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
 	for {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		case data, ok := <-in:
+		case data, ok := <-input:
 			if !ok {
 				return nil
 			}
@@ -21,65 +21,65 @@ func AddPrefixDecorator(ctx context.Context, in <-chan string, out chan<- string
 				return errors.New("can't be decorated")
 			}
 
-			const marker = "decorated: "
-			if !strings.HasPrefix(data, marker) {
-				data = marker + data
+			const prefix = "decorated: "
+			if !strings.HasPrefix(data, prefix) {
+				data = prefix + data
 			}
 
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case out <- data:
+			case output <- data:
 			}
 		}
 	}
 }
 
-func SequentialSeparator(ctx context.Context, in <-chan string, outs []chan<- string) error {
+func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	var counter uint64
 
 	for {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		case data, ok := <-in:
+		case data, ok := <-input:
 			if !ok {
 				return nil
 			}
 
-			idx := atomic.AddUint64(&counter, 1) % uint64(len(outs))
+			idx := atomic.AddUint64(&counter, 1) % uint64(len(outputs))
 
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case outs[idx] <- data:
+			case outputs[idx] <- data:
 			}
 		}
 	}
 }
 
-func SelectiveMultiplexer(ctx context.Context, ins []<-chan string, out chan<- string) error {
-	type received struct {
-		value string
-		valid bool
+func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
+	type result struct {
+		data string
+		ok   bool
 	}
 
-	merged := make(chan received, len(ins))
+	results := make(chan result, len(inputs))
 
-	for _, input := range ins {
-		go func(in <-chan string) {
+	for _, input := range inputs {
+		go func(in chan string) {
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case val, ok := <-in:
+				case data, ok := <-in:
 					if !ok {
 						return
 					}
 					select {
 					case <-ctx.Done():
 						return
-					case merged <- received{val, ok}:
+					case results <- result{data, ok}:
 					}
 				}
 			}
@@ -90,19 +90,19 @@ func SelectiveMultiplexer(ctx context.Context, ins []<-chan string, out chan<- s
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		case item := <-merged:
-			if !item.valid {
+		case res := <-results:
+			if !res.ok {
 				continue
 			}
 
-			if strings.Contains(item.value, "no multiplexer") {
+			if strings.Contains(res.data, "no multiplexer") {
 				continue
 			}
 
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case out <- item.value:
+			case output <- res.data:
 			}
 		}
 	}
