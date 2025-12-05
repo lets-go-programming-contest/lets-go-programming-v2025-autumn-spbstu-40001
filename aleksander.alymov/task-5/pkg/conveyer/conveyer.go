@@ -17,27 +17,12 @@ var (
 const Undefined = "undefined"
 
 type conveyer struct {
-	size     int
-	mu       sync.RWMutex
-	chans    map[string]chan string
-	handlers []handler
-	running  bool
+	size    int
+	mu      sync.RWMutex
+	chans   map[string]chan string
+	tasks   []func(context.Context) error
+	running bool
 }
-
-type handler struct {
-	fn          interface{}
-	inputNames  []string
-	outputNames []string
-	htype       handlerType
-}
-
-type handlerType int
-
-const (
-	decorator handlerType = iota
-	multiplexer
-	separator
-)
 
 func New(size int) *conveyer {
 	return &conveyer{
@@ -74,15 +59,16 @@ func (c *conveyer) RegisterDecorator(
 	fn func(context.Context, chan string, chan string) error,
 	input, output string,
 ) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	inCh := c.getOrCreateChan(input)
+	outCh := c.getOrCreateChan(output)
 
-	c.handlers = append(c.handlers, handler{
-		fn:          fn,
-		inputNames:  []string{input},
-		outputNames: []string{output},
-		htype:       decorator,
-	})
+	task := func(ctx context.Context) error {
+		return fn(ctx, inCh, outCh)
+	}
+
+	c.mu.Lock()
+	c.tasks = append(c.tasks, task)
+	c.mu.Unlock()
 }
 
 func (c *conveyer) RegisterMultiplexer(
@@ -90,15 +76,20 @@ func (c *conveyer) RegisterMultiplexer(
 	inputs []string,
 	output string,
 ) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	inputChans := make([]chan string, len(inputs))
+	for i, name := range inputs {
+		inputChans[i] = c.getOrCreateChan(name)
+	}
 
-	c.handlers = append(c.handlers, handler{
-		fn:          fn,
-		inputNames:  inputs,
-		outputNames: []string{output},
-		htype:       multiplexer,
-	})
+	outCh := c.getOrCreateChan(output)
+
+	task := func(ctx context.Context) error {
+		return fn(ctx, inputChans, outCh)
+	}
+
+	c.mu.Lock()
+	c.tasks = append(c.tasks, task)
+	c.mu.Unlock()
 }
 
 func (c *conveyer) RegisterSeparator(
@@ -106,15 +97,20 @@ func (c *conveyer) RegisterSeparator(
 	input string,
 	outputs []string,
 ) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	inCh := c.getOrCreateChan(input)
 
-	c.handlers = append(c.handlers, handler{
-		fn:          fn,
-		inputNames:  []string{input},
-		outputNames: outputs,
-		htype:       separator,
-	})
+	outputChans := make([]chan string, len(outputs))
+	for i, name := range outputs {
+		outputChans[i] = c.getOrCreateChan(name)
+	}
+
+	task := func(ctx context.Context) error {
+		return fn(ctx, inCh, outputChans)
+	}
+
+	c.mu.Lock()
+	c.tasks = append(c.tasks, task)
+	c.mu.Unlock()
 }
 
 func (c *conveyer) Run(ctx context.Context) error {
@@ -134,45 +130,14 @@ func (c *conveyer) Run(ctx context.Context) error {
 
 	g, ctx := errgroup.WithContext(ctx)
 
-	for _, h := range c.handlers {
-		h := h
+	for _, task := range c.tasks {
+		task := task
 		g.Go(func() error {
-			return c.runHandler(ctx, h)
+			return task(ctx)
 		})
 	}
 
 	return g.Wait()
-}
-
-func (c *conveyer) runHandler(ctx context.Context, h handler) error {
-	switch h.htype {
-	case decorator:
-		fn := h.fn.(func(context.Context, chan string, chan string) error)
-		input := c.getOrCreateChan(h.inputNames[0])
-		output := c.getOrCreateChan(h.outputNames[0])
-		return fn(ctx, input, output)
-
-	case multiplexer:
-		fn := h.fn.(func(context.Context, []chan string, chan string) error)
-		inputs := make([]chan string, len(h.inputNames))
-		for i, name := range h.inputNames {
-			inputs[i] = c.getOrCreateChan(name)
-		}
-		output := c.getOrCreateChan(h.outputNames[0])
-		return fn(ctx, inputs, output)
-
-	case separator:
-		fn := h.fn.(func(context.Context, chan string, []chan string) error)
-		input := c.getOrCreateChan(h.inputNames[0])
-		outputs := make([]chan string, len(h.outputNames))
-		for i, name := range h.outputNames {
-			outputs[i] = c.getOrCreateChan(name)
-		}
-		return fn(ctx, input, outputs)
-
-	default:
-		return errors.New("unknown handler type")
-	}
 }
 
 func (c *conveyer) Send(input string, data string) error {
@@ -183,7 +148,6 @@ func (c *conveyer) Send(input string, data string) error {
 
 	defer func() {
 		if r := recover(); r != nil {
-			// Игнорируем panic при записи в закрытый канал
 		}
 	}()
 
