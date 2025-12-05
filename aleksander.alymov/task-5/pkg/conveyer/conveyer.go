@@ -63,6 +63,7 @@ func (c *conveyer) RegisterDecorator(
 	outCh := c.getOrCreateChan(output)
 
 	task := func(ctx context.Context) error {
+		defer close(outCh)
 		return fn(ctx, inCh, outCh)
 	}
 
@@ -84,6 +85,7 @@ func (c *conveyer) RegisterMultiplexer(
 	outCh := c.getOrCreateChan(output)
 
 	task := func(ctx context.Context) error {
+		defer close(outCh)
 		return fn(ctx, inputChans, outCh)
 	}
 
@@ -105,6 +107,11 @@ func (c *conveyer) RegisterSeparator(
 	}
 
 	task := func(ctx context.Context) error {
+		defer func() {
+			for _, out := range outputChans {
+				close(out)
+			}
+		}()
 		return fn(ctx, inCh, outputChans)
 	}
 
@@ -151,12 +158,8 @@ func (c *conveyer) Send(input string, data string) error {
 		}
 	}()
 
-	select {
-	case ch <- data:
-		return nil
-	default:
-		return errors.New("channel is full")
-	}
+	ch <- data
+	return nil
 }
 
 func (c *conveyer) Recv(output string) (string, error) {
