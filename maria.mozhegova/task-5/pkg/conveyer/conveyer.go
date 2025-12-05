@@ -33,24 +33,24 @@ func (c *Conveyer) getOrCreateChan(name string) chan string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	ch, exists := c.channels[name]
+	tempChan, exists := c.channels[name]
 	if exists {
-		return ch
+		return tempChan
 	}
 
-	ch = make(chan string, c.chanCapacity)
-	c.channels[name] = ch
+	tempChan = make(chan string, c.chanCapacity)
+	c.channels[name] = tempChan
 
-	return ch
+	return tempChan
 }
 
 func (c *Conveyer) getChannel(name string) (chan string, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	ch, exists := c.channels[name]
+	tempChan, exists := c.channels[name]
 
-	return ch, exists
+	return tempChan, exists
 }
 
 func (c *Conveyer) RegisterDecorator(
