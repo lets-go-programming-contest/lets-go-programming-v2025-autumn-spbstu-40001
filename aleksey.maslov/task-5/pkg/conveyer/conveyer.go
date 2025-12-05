@@ -31,7 +31,8 @@ func (c *ConveyerType) getChannel(name string) (chan string, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
-	if channel, ok := c.channels[name]; ok {
+	channel, ok := c.channels[name]
+	if ok {
 		return channel, nil
 	}
 
@@ -42,34 +43,69 @@ func (c *ConveyerType) getOrCreateChannel(name string) chan string {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
-	if channel, exists := c.channels[name]; exists {
+	channel, ok := c.channels[name]
+	if ok {
 		return channel
 	}
 
-	channel := make(chan string, c.size)
+	channel = make(chan string, c.size)
 	c.channels[name] = channel
 
 	return channel
 }
+func (c *ConveyerType) RegisterDecorator(
+	handler func(ctx context.Context, input chan string, output chan string) error,
+	input string,
+	output string,
+) {
+	in := c.getOrCreateChannel(input)
+	out := c.getOrCreateChannel(output)
 
-type Conveyer interface {
-	RegisterDecorator(
-		fn func(ctx context.Context, input chan string, output chan string) error,
-		input string,
-		output string,
-	)
-	RegisterMultiplexer(
-		fn func(ctx context.Context, inputs []chan string, output chan string) error,
-		inputs []string,
-		output string,
-	)
-	RegisterSeparator(
-		fn func(ctx context.Context, input chan string, outputs []chan string) error,
-		input string,
-		outputs []string,
-	)
-
-	Run(ctx context.Context) error
-	Send(input string, data string) error
-	Recv(output string) (string, error)
+	c.mutex.Lock()
+	c.tasks = append(c.tasks, func(ctx context.Context) error {
+		return handler(ctx, in, out)
+	})
+	c.mutex.Unlock()
 }
+
+func (c *ConveyerType) RegisterMultiplexer(
+	handler func(ctx context.Context, inputs []chan string, output chan string) error,
+	inputs []string,
+	output string,
+) {
+	out := c.getOrCreateChannel(output)
+	ins := make([]chan string, len(inputs))
+
+	for i, name := range inputs {
+		ins[i] = c.getOrCreateChannel(name)
+	}
+
+	c.mutex.Lock()
+	c.tasks = append(c.tasks, func(ctx context.Context) error {
+		return handler(ctx, ins, out)
+	})
+	c.mutex.Unlock()
+}
+
+func (c *ConveyerType) RegisterSeparator(
+	handler func(ctx context.Context, input chan string, outputs []chan string) error,
+	input string,
+	outputs []string,
+) {
+	in := c.getOrCreateChannel(input)
+	outs := make([]chan string, len(outputs))
+
+	for i, name := range outputs {
+		outs[i] = c.getOrCreateChannel(name)
+	}
+
+	c.mutex.Lock()
+	c.tasks = append(c.tasks, func(ctx context.Context) error {
+		return handler(ctx, in, outs)
+	})
+	c.mutex.Unlock()
+}
+
+Run(ctx context.Context) error
+Send(input string, data string) error
+Recv(output string) (string, error)
