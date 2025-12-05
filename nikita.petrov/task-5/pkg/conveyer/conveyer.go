@@ -48,6 +48,15 @@ func New(size int) *Conveyer {
 	}
 }
 
+func (c *Conveyer) getChannel(name string) (chan string, error) {
+	channel, ok := c.chansMap[name]
+	if !ok {
+		return nil, fmt.Errorf("%w: %s", errChanNotFound, name)
+	}
+
+	return channel, nil
+}
+
 func (c *Conveyer) getOrCreateChannel(name string) chan string {
 	if ch, exists := c.chansMap[name]; exists {
 		return ch
@@ -158,30 +167,30 @@ func (c *Conveyer) RegisterSeparator(
 func (c *Conveyer) Run(ctx context.Context) error {
 	defer c.closeChansMap()
 
-	errgroup, ctx := errgroup.WithContext(ctx)
+	errGroup, ctx := errgroup.WithContext(ctx)
 
 	for _, decorator := range c.decorators {
 		d := decorator
-		errgroup.Go(func() error {
+		errGroup.Go(func() error {
 			return c.runDecorator(ctx, d)
 		})
 	}
 
 	for _, multiplexer := range c.multiplexers {
 		m := multiplexer
-		errgroup.Go(func() error {
+		errGroup.Go(func() error {
 			return c.runMultiplexer(ctx, m)
 		})
 	}
 
 	for _, separator := range c.separators {
 		s := separator
-		errgroup.Go(func() error {
+		errGroup.Go(func() error {
 			return c.runSeparator(ctx, s)
 		})
 	}
 
-	if err := errgroup.Wait(); err != nil {
+	if err := errGroup.Wait(); err != nil {
 		return fmt.Errorf("conveyer finished with error: %w", err)
 	}
 
@@ -204,7 +213,10 @@ func (c *Conveyer) Send(input string, data string) error {
 }
 
 func (c *Conveyer) Recv(output string) (string, error) {
-	channel := c.getOrCreateChannel(output)
+	channel, err := c.getChannel(output)
+	if err != nil {
+		return "", errChanNotFound
+	}
 
 	data, ok := <-channel
 	if !ok {
