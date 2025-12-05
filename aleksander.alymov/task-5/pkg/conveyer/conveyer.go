@@ -165,13 +165,10 @@ func (c *conveyer) Recv(output string) (string, error) {
 		return "", fmt.Errorf("%w: %s", ErrChanNotFound, output)
 	}
 
-	select {
-	case val, ok := <-ch:
-		if !ok {
-			return Undefined, nil
-		}
-		return val, nil
-	default:
-		return "", ErrNoData
+	val, ok := <-ch
+	if !ok {
+		return Undefined, nil
 	}
+
+	return val, nil
 }
