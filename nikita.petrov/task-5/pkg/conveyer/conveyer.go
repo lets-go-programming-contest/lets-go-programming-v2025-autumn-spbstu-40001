@@ -76,7 +76,7 @@ func (c *Conveyer) RegisterMultiplexer(
 	inputs []string,
 	output string,
 ) {
-	inputChans := make([]chan string, len(inputs))
+	inputChans := make([]chan string, 0, len(inputs))
 	for _, input := range inputs {
 		inputChans = append(inputChans, c.getOrCreateChannel(input))
 	}
@@ -98,7 +98,7 @@ func (c *Conveyer) RegisterSeparator(
 ) {
 	inputChan := c.getOrCreateChannel(input)
 
-	outputChans := make([]chan string, len(outputs))
+	outputChans := make([]chan string, 0, len(outputs))
 	for _, output := range outputs {
 		outputChans = append(outputChans, c.getOrCreateChannel(output))
 	}
