@@ -57,6 +57,7 @@ func (c *ConveyerType) getOrCreateChannel(name string) chan string {
 
 	return channel
 }
+
 func (c *ConveyerType) RegisterDecorator(
 	handler func(ctx context.Context, input chan string, output chan string) error,
 	input string,
