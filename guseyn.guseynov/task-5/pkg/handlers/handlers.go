@@ -61,7 +61,7 @@ func MultiplexerFunc(
 			return nil
 
 		default:
-			for i := 0; i < len(activeInputs); i++ {
+			for i := 0; i < len(activeInputs); i++ { //nolint:varnamelen
 				select {
 				case <-context.Done():
 					return nil
@@ -104,7 +104,7 @@ func SeparatorFunc(
 		}
 	})()
 
-	for i := 0; ; {
+	for i := 0; ; { //nolint:varnamelen
 		select {
 		case <-context.Done():
 			return nil
