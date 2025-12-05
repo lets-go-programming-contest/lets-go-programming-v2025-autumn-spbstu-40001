@@ -69,6 +69,8 @@ func (c *conveyer) RegisterDecorator(
 	outCh := c.getOrCreateChan(output)
 
 	task := func(ctx context.Context) error {
+		defer close(outCh)
+
 		return decoratorFunc(ctx, inCh, outCh)
 	}
 
@@ -88,6 +90,8 @@ func (c *conveyer) RegisterMultiplexer(
 	outCh := c.getOrCreateChan(output)
 
 	task := func(ctx context.Context) error {
+		defer close(outCh)
+
 		return multiplexerFunc(ctx, inputChans, outCh)
 	}
 
@@ -107,6 +111,12 @@ func (c *conveyer) RegisterSeparator(
 	}
 
 	task := func(ctx context.Context) error {
+		defer func() {
+			for _, out := range outputChans {
+				close(out)
+			}
+		}()
+
 		return separatorFunc(ctx, inCh, outputChans)
 	}
 
@@ -118,6 +128,7 @@ func (c *conveyer) Run(ctx context.Context) error {
 
 	if c.running {
 		c.mu.Unlock()
+
 		return ErrConveyerRunning
 	}
 
@@ -128,13 +139,11 @@ func (c *conveyer) Run(ctx context.Context) error {
 		c.mu.Lock()
 		c.running = false
 		c.mu.Unlock()
-		c.closeAllChans()
 	}()
 
 	errGroup, ctx := errgroup.WithContext(ctx)
 
 	for _, task := range c.tasks {
-		task := task
 		errGroup.Go(func() error {
 			return task(ctx)
 		})
@@ -145,22 +154,6 @@ func (c *conveyer) Run(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-func (c *conveyer) closeAllChans() {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	for _, ch := range c.chans {
-		select {
-		case _, ok := <-ch:
-			if ok {
-				close(ch)
-			}
-		default:
-			close(ch)
-		}
-	}
 }
 
 func (c *conveyer) Send(input string, data string) error {
