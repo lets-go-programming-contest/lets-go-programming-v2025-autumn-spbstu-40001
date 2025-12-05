@@ -65,8 +65,6 @@ func (c *conveyer) RegisterDecorator(
 	decoratorFunc func(context.Context, chan string, chan string) error,
 	input, output string,
 ) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
 
 	inCh := c.getOrCreateChan(input)
 	outCh := c.getOrCreateChan(output)
@@ -85,8 +83,6 @@ func (c *conveyer) RegisterMultiplexer(
 	inputs []string,
 	output string,
 ) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
 
 	inputChans := make([]chan string, len(inputs))
 	for i, name := range inputs {
@@ -109,8 +105,6 @@ func (c *conveyer) RegisterSeparator(
 	input string,
 	outputs []string,
 ) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
 
 	inCh := c.getOrCreateChan(input)
 
