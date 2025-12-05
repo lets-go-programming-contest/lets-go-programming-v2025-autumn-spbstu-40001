@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"errors"
-	"reflect"
 	"strings"
 	"sync"
 )
@@ -20,7 +19,7 @@ func PrefixDecoratorFunc(
 	for {
 		select {
 		case <-ctx.Done():
-			return errors.Join(ctx.Err())
+			return ctx.Err()
 
 		case data, isOpen := <-input:
 			if !isOpen {
@@ -34,7 +33,7 @@ func PrefixDecoratorFunc(
 			if strings.HasPrefix(data, "decorated: ") {
 				select {
 				case <-ctx.Done():
-					return errors.Join(ctx.Err())
+					return ctx.Err()
 				case output <- data:
 				}
 
@@ -43,7 +42,7 @@ func PrefixDecoratorFunc(
 
 			select {
 			case <-ctx.Done():
-				return errors.Join(ctx.Err())
+				return ctx.Err()
 			case output <- "decorated: " + data:
 			}
 		}
@@ -57,50 +56,48 @@ func MultiplexerFunc(
 ) error {
 	defer close(output)
 
-	cases := make([]reflect.SelectCase, len(inputs)+1)
-	cases[0] = reflect.SelectCase{
-		Dir:  reflect.SelectRecv,
-		Chan: reflect.ValueOf(ctx.Done()),
-		Send: reflect.Value{},
+	var wg sync.WaitGroup
+	errChan := make(chan error, 1)
+
+	for _, inputChan := range inputs {
+		wg.Add(1)
+		go func(in chan string) {
+			defer wg.Done()
+
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case data, isOpen := <-in:
+					if !isOpen {
+						return
+					}
+
+					if strings.Contains(data, "no multiplexer") {
+						continue
+					}
+
+					select {
+					case <-ctx.Done():
+						return
+					case output <- data:
+					}
+				}
+			}
+		}(inputChan)
 	}
 
-	for idx, input := range inputs {
-		cases[idx+1] = reflect.SelectCase{
-			Dir:  reflect.SelectRecv,
-			Chan: reflect.ValueOf(input),
-			Send: reflect.Value{},
-		}
+	go func() {
+		wg.Wait()
+		errChan <- nil
+	}()
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case err := <-errChan:
+		return err
 	}
-
-	remaining := len(inputs)
-
-	for remaining > 0 {
-		chosen, value, isOpen := reflect.Select(cases)
-
-		if chosen == 0 {
-			return errors.Join(ctx.Err())
-		}
-
-		if !isOpen {
-			cases[chosen].Chan = reflect.ValueOf(nil)
-			remaining--
-			continue
-		}
-
-		data := value.String()
-
-		if strings.Contains(data, "no multiplexer") {
-			continue
-		}
-
-		select {
-		case <-ctx.Done():
-			return errors.Join(ctx.Err())
-		case output <- data:
-		}
-	}
-
-	return nil
 }
 
 func SeparatorFunc(
@@ -126,18 +123,33 @@ func SeparatorFunc(
 	for {
 		select {
 		case <-ctx.Done():
-			return errors.Join(ctx.Err())
+			return ctx.Err()
 
 		case data, isOpen := <-input:
 			if !isOpen {
 				return nil
 			}
 
-			select {
-			case <-ctx.Done():
-				return errors.Join(ctx.Err())
-			case outputs[counter%len(outputs)] <- data:
-				counter++
+			sent := false
+			for attempt := 0; attempt < len(outputs) && !sent; attempt++ {
+				idx := (counter + attempt) % len(outputs)
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case outputs[idx] <- data:
+					counter = idx + 1
+					sent = true
+				default:
+				}
+			}
+
+			if !sent {
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case outputs[counter%len(outputs)] <- data:
+					counter++
+				}
 			}
 		}
 	}
