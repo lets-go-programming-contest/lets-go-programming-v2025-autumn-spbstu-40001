@@ -2,7 +2,6 @@ package processor
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/Elektrek/task-3/internal/config"
 	"github.com/Elektrek/task-3/internal/parser"
