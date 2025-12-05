@@ -49,8 +49,6 @@ func main() {
 			break
 		}
 
-		log.Println("Final val recv: ", val)
-
 		if val == "undefined" {
 			log.Println("Pipeline has finished processing.")
 

@@ -114,12 +114,12 @@ func (p *pipeline) Run(ctx context.Context) error {
 	}()
 
 	select {
-	case <-ctx.Done():
-		return errors.Join(ErrPipelineCanceled, ctx.Err())
 	case err := <-errCh:
 		return err
 	case <-done:
 		return nil
+	case <-ctx.Done():
+		return errors.Join(ErrPipelineCanceled, ctx.Err())
 	}
 }
 
