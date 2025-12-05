@@ -10,6 +10,7 @@ import (
 var (
 	ErrNoDecorator = errors.New("can't be decorated")
 	ErrNoOutputs   = errors.New("no output channels provided for separator")
+	ErrNoInputs    = errors.New("no input channels provided for multiplexer")
 )
 
 const (
@@ -78,6 +79,10 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	var wgr sync.WaitGroup
 
 	wgr.Add(len(inputs))
+
+	if len(inputs) == 0 {
+		return ErrNoInputs
+	}
 
 	multiplex := func(chn chan string) {
 		defer wgr.Done()
