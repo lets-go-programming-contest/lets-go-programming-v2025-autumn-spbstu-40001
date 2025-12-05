@@ -2,6 +2,7 @@ package processor
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/Elektrek/task-3/internal/config"
 	"github.com/Elektrek/task-3/internal/parser"
@@ -17,7 +18,7 @@ func ProcessCurrencies(cfg *config.Config) error {
 
 	sorter.SortByValueDescending(currencyCollection.CurrencyItems)
 
-	if writeErr := writer.WriteJSON(cfg.OutputFile, currencyCollection.CurrencyItems); writeErr != nil {
+	if writeErr := writer.WriteJSON(cfg.OutputFile, currencyCollection.CurrencyItems, 0o755, 0o644); writeErr != nil {
 		return fmt.Errorf("failed to write JSON: %w", writeErr)
 	}
 

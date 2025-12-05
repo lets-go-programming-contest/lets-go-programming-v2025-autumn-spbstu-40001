@@ -3,18 +3,14 @@ package main
 import (
 	"flag"
 	"log"
-	"os"
 
 	"github.com/Elektrek/task-3/internal/config"
 	"github.com/Elektrek/task-3/internal/processor"
 )
 
-func main() {
-	defaultConfig := "config.yaml"
-	if envConfig := os.Getenv("APP_CONFIG"); envConfig != "" {
-		defaultConfig = envConfig
-	}
+const defaultConfig = "config.yaml"
 
+func main() {
 	configPath := flag.String("config", defaultConfig, "YAML configuration file path")
 	flag.Parse()
 
