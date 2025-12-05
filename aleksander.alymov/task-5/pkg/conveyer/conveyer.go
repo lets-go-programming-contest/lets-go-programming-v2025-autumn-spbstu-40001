@@ -154,8 +154,7 @@ func (c *conveyer) Send(input string, data string) error {
 	}
 
 	defer func() {
-		if r := recover(); r != nil {
-		}
+		_ = recover()
 	}()
 
 	ch <- data

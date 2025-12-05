@@ -14,8 +14,6 @@ var (
 )
 
 func PrefixDecoratorFunc(ctx context.Context, input, output chan string) error {
-	defer close(output)
-
 	for {
 		select {
 		case <-ctx.Done():
