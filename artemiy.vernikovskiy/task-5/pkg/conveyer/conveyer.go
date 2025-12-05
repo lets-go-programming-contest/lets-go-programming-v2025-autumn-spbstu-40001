@@ -39,10 +39,7 @@ func (p *pipeline) RegisterDecorator(
 	inCh := p.ensureChannel(input)
 	outCh := p.ensureChannel(output)
 	p.mu.Lock()
-
 	p.handlers = append(p.handlers, func(ctx context.Context) error {
-		defer close(outCh)
-
 		return workingFunc(ctx, inCh, outCh)
 	})
 	p.mu.Unlock()
@@ -60,11 +57,11 @@ func (p *pipeline) RegisterMultiplexer(
 	}
 
 	outCh := p.ensureChannel(output)
+	p.mu.Lock()
 	p.handlers = append(p.handlers, func(ctx context.Context) error {
-		defer close(outCh)
-
 		return workingFunc(ctx, inChans, outCh)
 	})
+	p.mu.Unlock()
 }
 
 // Registrate Separator (because task needs it).
@@ -81,14 +78,7 @@ func (p *pipeline) RegisterSeparator(
 	}
 
 	p.mu.Lock()
-
 	p.handlers = append(p.handlers, func(ctx context.Context) error {
-		defer func() { // for proper handling of closing outCh
-			for _, outCh := range outChans {
-				close(outCh)
-			}
-		}()
-
 		return workingFunc(ctx, inCh, outChans)
 	})
 	p.mu.Unlock()
@@ -151,26 +141,23 @@ func (p *pipeline) Send(name string, data string) error {
 // Get pipeline info indirectly.
 func (p *pipeline) Recv(name string) (string, error) {
 	p.mu.RLock()
-	channel, ok := p.channels[name]
+	channel, isThisOKLongEnogh := p.channels[name]
 	p.mu.RUnlock()
 
-	if !ok {
+	if !isThisOKLongEnogh {
 		return "", ErrChanNotFound
 	}
 
-	select {
-	case val, ok := <-channel:
-		if !ok {
-			return "undefined", nil
-		}
-
-		return val, nil
-	default:
+	// okay, lets do without select
+	val, ok := <-channel
+	if !ok {
 		return "undefined", nil
 	}
+
+	return val, nil
 }
 
-// Healthcheck or smth, cannot remember.
+// Get channel properly.
 func (p *pipeline) ensureChannel(name string) chan string {
 	p.mu.Lock()
 	defer p.mu.Unlock()

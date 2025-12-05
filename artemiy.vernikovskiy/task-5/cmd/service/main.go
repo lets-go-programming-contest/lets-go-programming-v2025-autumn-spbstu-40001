@@ -9,7 +9,6 @@ import (
 	"github.com/Aapng-cmd/task-5/pkg/handlers"
 )
 
-// Oh wow, a main!
 func main() {
 	const contextTimeCheck = 5
 
@@ -35,12 +34,13 @@ func main() {
 	for _, data := range inputs {
 		err := conveyerPipeline.Send("in", data)
 		if err != nil {
-			log.Println("Send error:", err)
+			log.Println("Sent error:", err)
+		} else {
+			log.Println("Sent data:", data)
 		}
 	}
 
-	// time.Sleep(1 * time.Second)
-
+	// Wait for results
 	for {
 		val, err := conveyerPipeline.Recv("final")
 		if err != nil {
@@ -49,10 +49,14 @@ func main() {
 			break
 		}
 
+		log.Println("Final val recv: ", val)
+
 		if val == "undefined" {
+			log.Println("Pipeline has finished processing.")
+
 			break
 		}
 
-		log.Println("Final:", val)
+		log.Println("Final processed value:", val)
 	}
 }

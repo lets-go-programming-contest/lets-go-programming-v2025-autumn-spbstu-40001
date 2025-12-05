@@ -12,6 +12,13 @@ var (
 	ErrCannotDecorate      = errors.New("can't be decorated")
 	ErrSeparatorCanceled   = errors.New("separator canceled")
 	ErrMultiplexerCanceled = errors.New("multiplexer canceled")
+	ErrNoOutputs           = errors.New("no output channels")
+)
+
+const (
+	Decorated     = "decorated: "
+	NoDecorator   = "no decorator"
+	NoMultiplexer = "no multiplexer"
 )
 
 // Funcs with business logic.
@@ -28,14 +35,14 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 				return nil
 			}
 
-			if strings.Contains(val, "no decorator") {
+			if strings.Contains(val, NoDecorator) {
 				close(output)
 
 				return ErrCannotDecorate
 			}
 
-			if !strings.HasPrefix(val, "decorated: ") {
-				val = "decorated: " + val
+			if !strings.HasPrefix(val, Decorated) {
+				val = Decorated + val
 			}
 
 			output <- val
@@ -46,6 +53,10 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 // Funcs with business logic.
 // Separator.
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
+	if len(outputs) == 0 {
+		return ErrNoOutputs
+	}
+
 	currentIndex := 0
 
 	for {
@@ -75,6 +86,8 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 	waitGroup.Add(len(inputs))
 
+	finalDone := make(chan struct{})
+
 	for _, inputChannel := range inputs {
 		go func(inputChan chan string) {
 			defer waitGroup.Done()
@@ -88,7 +101,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 						return
 					}
 
-					if strings.Contains(val, "no multiplexer") {
+					if strings.Contains(val, NoMultiplexer) {
 						continue
 					}
 
@@ -98,17 +111,15 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		}(inputChannel)
 	}
 
-	done := make(chan struct{})
-
 	go func() {
 		waitGroup.Wait()
-		close(done)
+		close(finalDone)
 	}()
 
 	select {
 	case <-ctx.Done():
 		return errors.Join(ctx.Err(), ErrMultiplexerCanceled)
-	case <-done:
+	case <-finalDone:
 		close(output)
 
 		return nil
