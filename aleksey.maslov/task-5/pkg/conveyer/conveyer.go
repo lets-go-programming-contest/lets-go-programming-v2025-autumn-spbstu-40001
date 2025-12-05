@@ -145,7 +145,7 @@ func (c *ConveyerType) Run(ctx context.Context) error {
 
 	err := errgr.Wait()
 	if err != nil {
-		return fmt.Errorf("%w", err)
+		return fmt.Errorf("failed to run conveyer: %w", err)
 	}
 
 	return nil
