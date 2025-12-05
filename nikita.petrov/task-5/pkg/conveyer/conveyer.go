@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sync"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -37,7 +36,6 @@ type Conveyer struct {
 	decorators   []Decorator
 	multiplexers []Multiplexer
 	separators   []Separator
-	mutex        sync.RWMutex
 }
 
 func New(size int) *Conveyer {
@@ -47,7 +45,6 @@ func New(size int) *Conveyer {
 		decorators:   make([]Decorator, 0),
 		multiplexers: make([]Multiplexer, 0),
 		separators:   make([]Separator, 0),
-		mutex:        sync.RWMutex{},
 	}
 }
 
@@ -62,10 +59,8 @@ func (c *Conveyer) getOrCreateChannel(name string) chan string {
 }
 
 func (c *Conveyer) runDecorator(ctx context.Context, d Decorator) error {
-	c.mutex.RLock()
 	inputCh, inputOk := c.chansMap[d.input]
 	outputCh, outputOk := c.chansMap[d.output]
-	c.mutex.RUnlock()
 
 	if !inputOk || !outputOk {
 		return errChanNotFound
@@ -75,19 +70,16 @@ func (c *Conveyer) runDecorator(ctx context.Context, d Decorator) error {
 }
 
 func (c *Conveyer) runMultiplexer(ctx context.Context, m Multiplexer) error {
-	c.mutex.RLock()
 	inputs := make([]chan string, len(m.inputs))
 	for i, inputName := range m.inputs {
 		inputCh, ok := c.chansMap[inputName]
 		if !ok {
-			c.mutex.RUnlock()
 			return errChanNotFound
 		}
 		inputs[i] = inputCh
 	}
 
 	outputCh, outputOk := c.chansMap[m.output]
-	c.mutex.RUnlock()
 
 	if !outputOk {
 		return errChanNotFound
@@ -97,10 +89,8 @@ func (c *Conveyer) runMultiplexer(ctx context.Context, m Multiplexer) error {
 }
 
 func (c *Conveyer) runSeparator(ctx context.Context, s Separator) error {
-	c.mutex.RLock()
 	inputCh, inputOk := c.chansMap[s.input]
 	if !inputOk {
-		c.mutex.RUnlock()
 		return errChanNotFound
 	}
 
@@ -108,12 +98,10 @@ func (c *Conveyer) runSeparator(ctx context.Context, s Separator) error {
 	for i, outputName := range s.outputs {
 		outputCh, ok := c.chansMap[outputName]
 		if !ok {
-			c.mutex.RUnlock()
 			return errChanNotFound
 		}
 		outputs[i] = outputCh
 	}
-	c.mutex.RUnlock()
 
 	return s.SeparatorFunc(ctx, inputCh, outputs)
 }
@@ -201,9 +189,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 }
 
 func (c *Conveyer) Send(input string, data string) error {
-	c.mutex.RLock()
 	ch, ok := c.chansMap[input]
-	c.mutex.RUnlock()
 
 	if !ok {
 		return errChanNotFound
