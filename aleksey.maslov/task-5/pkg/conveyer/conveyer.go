@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-const Undefined = "undefined"
+const undefined = "undefined"
 
 var ErrChanNotFound = errors.New("chan not found")
 
@@ -106,6 +106,25 @@ func (c *ConveyerType) RegisterSeparator(
 	c.mutex.Unlock()
 }
 
-Run(ctx context.Context) error
-Send(input string, data string) error
-Recv(output string) (string, error)
+func (c *ConveyerType) Send(input string, data string) error {
+	ch, err := c.getChannel(input)
+	if err != nil {
+		return err
+	}
+	ch <- data
+	return nil
+}
+
+func (c *ConveyerType) Recv(output string) (string, error) {
+	ch, err := c.getChannel(output)
+	if err != nil {
+		return "", err
+	}
+
+	data, ok := <-ch
+	if !ok {
+		return undefined, nil
+	}
+
+	return data, nil
+}
