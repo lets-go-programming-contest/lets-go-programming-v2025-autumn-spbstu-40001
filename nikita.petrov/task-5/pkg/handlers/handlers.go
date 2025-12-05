@@ -25,7 +25,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 			if !strings.HasPrefix(data, "decorated: ") {
 				processed = "decorated: " + data
 			}
-
+		
 			select {
 			case output <- processed:
 			case <-ctx.Done():
@@ -41,13 +41,13 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	}
 
 	counter := 0
+
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
 		case data, ok := <-input:
 			if !ok {
-
 				return nil
 			}
 
@@ -68,6 +68,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	}
 
 	var waitGroup sync.WaitGroup
+
 	waitGroup.Add(len(inputs))
 
 	for index := range inputs {
