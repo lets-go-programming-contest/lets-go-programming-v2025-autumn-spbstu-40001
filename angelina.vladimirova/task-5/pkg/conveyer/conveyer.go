@@ -41,6 +41,7 @@ func (c *ConveyerImpl) getOrCreateChannel(name string) chan string {
 
 	ch := make(chan string, c.chanSize)
 	c.channels[name] = ch
+
 	return ch
 }
 
@@ -49,6 +50,7 @@ func (c *ConveyerImpl) getChannel(name string) (chan string, bool) {
 	defer c.mu.RUnlock()
 
 	ch, exists := c.channels[name]
+
 	return ch, exists
 }
 
@@ -62,6 +64,7 @@ func (c *ConveyerImpl) RegisterDecorator(
 
 	task := func(ctx context.Context) error {
 		defer close(outCh)
+
 		return function(ctx, inCh, outCh)
 	}
 
@@ -86,6 +89,7 @@ func (c *ConveyerImpl) RegisterMultiplexer(
 
 	task := func(ctx context.Context) error {
 		defer close(outCh)
+
 		return function(ctx, inputChannels, outCh)
 	}
 
@@ -110,6 +114,7 @@ func (c *ConveyerImpl) RegisterSeparator(
 				close(ch)
 			}
 		}()
+
 		return function(ctx, inCh, outputChannels)
 	}
 
@@ -126,6 +131,7 @@ func (c *ConveyerImpl) Run(ctx context.Context) error {
 
 	for _, task := range tasksCopy {
 		currentTask := task
+
 		group.Go(func() error {
 			return currentTask(groupCtx)
 		})
@@ -134,6 +140,7 @@ func (c *ConveyerImpl) Run(ctx context.Context) error {
 	if err := group.Wait(); err != nil {
 		return fmt.Errorf("conveyer finished with error: %w", err)
 	}
+
 	return nil
 }
 
@@ -148,6 +155,7 @@ func (c *ConveyerImpl) Send(input string, data string) error {
 	}()
 
 	targetChannel <- data
+
 	return nil
 }
 
@@ -161,5 +169,6 @@ func (c *ConveyerImpl) Recv(output string) (string, error) {
 	if !ok {
 		return Undefined, nil
 	}
+
 	return val, nil
 }
