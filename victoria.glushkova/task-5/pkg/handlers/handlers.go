@@ -82,6 +82,13 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 	for _, input := range inputs {
 		go func(in chan string) {
+			defer func() {
+				select {
+				case results <- result{"", false}:
+				case <-ctx.Done():
+				}
+			}()
+
 			for {
 				select {
 				case <-ctx.Done():
@@ -93,21 +100,23 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					select {
 					case <-ctx.Done():
 						return
-					case results <- result{data, ok}:
+					case results <- result{data, true}:
 					}
 				}
 			}
 		}(input)
 	}
 
-	activeInputs := len(inputs)
-	for activeInputs > 0 {
+	closedInputs := 0
+	totalInputs := len(inputs)
+
+	for closedInputs < totalInputs {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		case res := <-results:
 			if !res.ok {
-				activeInputs--
+				closedInputs++
 				continue
 			}
 
