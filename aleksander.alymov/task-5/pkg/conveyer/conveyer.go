@@ -13,6 +13,7 @@ var (
 	ErrChanNotFound    = errors.New("chan not found")
 	ErrNoData          = errors.New("no data")
 	ErrConveyerRunning = errors.New("conveyer already running")
+	ErrChanClosed      = errors.New("channel closed")
 )
 
 const Undefined = "undefined"
@@ -23,6 +24,7 @@ type conveyer struct {
 	chans   map[string]chan string
 	tasks   []func(context.Context) error
 	running bool
+	cancel  context.CancelFunc
 }
 
 func New(size int) *conveyer {
@@ -69,8 +71,6 @@ func (c *conveyer) RegisterDecorator(
 	outCh := c.getOrCreateChan(output)
 
 	task := func(ctx context.Context) error {
-		defer close(outCh)
-
 		return decoratorFunc(ctx, inCh, outCh)
 	}
 
@@ -90,8 +90,6 @@ func (c *conveyer) RegisterMultiplexer(
 	outCh := c.getOrCreateChan(output)
 
 	task := func(ctx context.Context) error {
-		defer close(outCh)
-
 		return multiplexerFunc(ctx, inputChans, outCh)
 	}
 
@@ -111,12 +109,6 @@ func (c *conveyer) RegisterSeparator(
 	}
 
 	task := func(ctx context.Context) error {
-		defer func() {
-			for _, out := range outputChans {
-				close(out)
-			}
-		}()
-
 		return separatorFunc(ctx, inCh, outputChans)
 	}
 
@@ -128,17 +120,21 @@ func (c *conveyer) Run(ctx context.Context) error {
 
 	if c.running {
 		c.mu.Unlock()
-
 		return ErrConveyerRunning
 	}
 
+	ctx, cancel := context.WithCancel(ctx)
+	c.cancel = cancel
 	c.running = true
 	c.mu.Unlock()
 
 	defer func() {
 		c.mu.Lock()
 		c.running = false
+		c.cancel = nil
 		c.mu.Unlock()
+
+		c.closeAllChans()
 	}()
 
 	errGroup, ctx := errgroup.WithContext(ctx)
@@ -156,19 +152,32 @@ func (c *conveyer) Run(ctx context.Context) error {
 	return nil
 }
 
+func (c *conveyer) closeAllChans() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	for name, ch := range c.chans {
+		select {
+		case <-ch:
+		default:
+		}
+		close(ch)
+		delete(c.chans, name)
+	}
+}
+
 func (c *conveyer) Send(input string, data string) error {
 	channel, err := c.getChan(input)
 	if err != nil {
 		return fmt.Errorf("%w: %s", ErrChanNotFound, input)
 	}
 
-	defer func() {
-		_ = recover()
-	}()
-
-	channel <- data
-
-	return nil
+	select {
+	case channel <- data:
+		return nil
+	default:
+		return fmt.Errorf("channel %s is full or closed", input)
+	}
 }
 
 func (c *conveyer) Recv(output string) (string, error) {
@@ -177,10 +186,13 @@ func (c *conveyer) Recv(output string) (string, error) {
 		return "", fmt.Errorf("%w: %s", ErrChanNotFound, output)
 	}
 
-	val, ok := <-channel
-	if !ok {
-		return Undefined, nil
+	select {
+	case val, ok := <-channel:
+		if !ok {
+			return "", ErrChanClosed
+		}
+		return val, nil
+	default:
+		return "", ErrNoData
 	}
-
-	return val, nil
 }
