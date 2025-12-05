@@ -70,15 +70,6 @@ func (c *conveyer) getChan(name string) (chan string, error) {
 	return ch, nil
 }
 
-func (c *conveyer) closeAllChans() {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	for _, ch := range c.chans {
-		close(ch)
-	}
-}
-
 func (c *conveyer) RegisterDecorator(
 	fn func(context.Context, chan string, chan string) error,
 	input, output string,
@@ -136,7 +127,6 @@ func (c *conveyer) Run(ctx context.Context) error {
 	c.mu.Unlock()
 
 	defer func() {
-		c.closeAllChans()
 		c.mu.Lock()
 		c.running = false
 		c.mu.Unlock()
@@ -160,6 +150,7 @@ func (c *conveyer) runHandler(ctx context.Context, h handler) error {
 		fn := h.fn.(func(context.Context, chan string, chan string) error)
 		input := c.getOrCreateChan(h.inputNames[0])
 		output := c.getOrCreateChan(h.outputNames[0])
+		defer close(output)
 		return fn(ctx, input, output)
 
 	case multiplexer:
@@ -169,6 +160,7 @@ func (c *conveyer) runHandler(ctx context.Context, h handler) error {
 			inputs[i] = c.getOrCreateChan(name)
 		}
 		output := c.getOrCreateChan(h.outputNames[0])
+		defer close(output)
 		return fn(ctx, inputs, output)
 
 	case separator:
@@ -178,6 +170,11 @@ func (c *conveyer) runHandler(ctx context.Context, h handler) error {
 		for i, name := range h.outputNames {
 			outputs[i] = c.getOrCreateChan(name)
 		}
+		defer func() {
+			for _, out := range outputs {
+				close(out)
+			}
+		}()
 		return fn(ctx, input, outputs)
 
 	default:
@@ -186,10 +183,7 @@ func (c *conveyer) runHandler(ctx context.Context, h handler) error {
 }
 
 func (c *conveyer) Send(input string, data string) error {
-	ch, err := c.getChan(input)
-	if err != nil {
-		return fmt.Errorf("%w: %s", ErrChanNotFound, input)
-	}
+	ch := c.getOrCreateChan(input)
 
 	select {
 	case ch <- data:
