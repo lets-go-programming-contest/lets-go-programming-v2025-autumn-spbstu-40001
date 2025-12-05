@@ -1,0 +1,120 @@
+package handlers
+
+import (
+	"context"
+	"errors"
+	"strings"
+	"sync"
+	"sync/atomic"
+)
+
+var (
+	ErrCannotBeDecorated = errors.New("can't be decorated")
+	ErrCannotMultiplex   = errors.New("can't multiplex")
+)
+
+func PrefixDecoratorFunc(ctx context.Context, input, output chan string) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case val, ok := <-input:
+			if !ok {
+				return nil
+			}
+
+			if strings.Contains(val, "no decorator") {
+				return ErrCannotBeDecorated
+			}
+
+			if !strings.HasPrefix(val, "decorated: ") {
+				val = "decorated: " + val
+			}
+
+			select {
+			case output <- val:
+			case <-ctx.Done():
+				return nil
+			}
+		}
+	}
+}
+
+func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
+	var wg sync.WaitGroup
+
+	processInput := func(in chan string) {
+		defer wg.Done()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case val, ok := <-in:
+				if !ok {
+					return
+				}
+
+				if strings.Contains(val, "no multiplexer") {
+					continue
+				}
+
+				select {
+				case output <- val:
+				case <-ctx.Done():
+					return
+				}
+			}
+		}
+	}
+
+	for _, in := range inputs {
+		wg.Add(1)
+		go processInput(in)
+	}
+
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+
+		return nil
+	case <-ctx.Done():
+		return nil
+	}
+}
+
+func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
+	defer func() {
+		for _, out := range outputs {
+			close(out)
+		}
+	}()
+
+	var counter int64 = -1
+	outputsCount := len(outputs)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case val, ok := <-input:
+			if !ok {
+				return nil
+			}
+
+			idx := atomic.AddInt64(&counter, 1) % int64(outputsCount)
+			out := outputs[idx]
+
+			select {
+			case out <- val:
+			case <-ctx.Done():
+				return nil
+			}
+		}
+	}
+}
