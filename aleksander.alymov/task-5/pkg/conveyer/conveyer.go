@@ -12,7 +12,7 @@ import (
 var (
 	ErrChanNotFound    = errors.New("chan not found")
 	ErrNoData          = errors.New("no data")
-	ErrConveyerRunning = errors.New("conveyer already running") // Добавляем статическую ошибку
+	ErrConveyerRunning = errors.New("conveyer already running")
 )
 
 const Undefined = "undefined"
@@ -31,6 +31,7 @@ func New(size int) *conveyer {
 		chans:   make(map[string]chan string),
 		tasks:   []func(context.Context) error{},
 		running: false,
+		mu:      sync.RWMutex{},
 	}
 }
 
@@ -130,9 +131,11 @@ func (c *conveyer) RegisterSeparator(
 
 func (c *conveyer) Run(ctx context.Context) error {
 	c.mu.Lock()
+
 	if c.running {
 		c.mu.Unlock()
-		return ErrConveyerRunning // Используем статическую ошибку
+
+		return ErrConveyerRunning
 	}
 
 	c.running = true
@@ -147,7 +150,6 @@ func (c *conveyer) Run(ctx context.Context) error {
 	errGroup, ctx := errgroup.WithContext(ctx)
 
 	for _, task := range c.tasks {
-		task := task // capture loop variable
 		errGroup.Go(func() error {
 			return task(ctx)
 		})
