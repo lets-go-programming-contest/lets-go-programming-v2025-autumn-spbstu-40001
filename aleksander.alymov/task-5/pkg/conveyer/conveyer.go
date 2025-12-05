@@ -25,6 +25,7 @@ type conveyer struct {
 	tasks   []func(context.Context) error
 	running bool
 	cancel  context.CancelFunc
+	closed  bool
 }
 
 func New(size int) *conveyer {
@@ -34,6 +35,7 @@ func New(size int) *conveyer {
 		tasks:   []func(context.Context) error{},
 		running: false,
 		mu:      sync.RWMutex{},
+		closed:  false,
 	}
 }
 
@@ -126,20 +128,22 @@ func (c *conveyer) Run(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	c.cancel = cancel
 	c.running = true
+	c.closed = false
 	c.mu.Unlock()
 
 	defer func() {
 		c.mu.Lock()
 		c.running = false
 		c.cancel = nil
+		c.closed = true
 		c.mu.Unlock()
-
 		c.closeAllChans()
 	}()
 
 	errGroup, ctx := errgroup.WithContext(ctx)
 
 	for _, task := range c.tasks {
+		task := task
 		errGroup.Go(func() error {
 			return task(ctx)
 		})
@@ -156,13 +160,24 @@ func (c *conveyer) closeAllChans() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	for name, ch := range c.chans {
+	for _, ch := range c.chans {
 		select {
-		case <-ch:
+		case _, ok := <-ch:
+			if ok {
+				close(ch)
+			}
 		default:
+			close(ch)
 		}
-		close(ch)
-		delete(c.chans, name)
+	}
+}
+
+func (c *conveyer) Stop() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if c.cancel != nil {
+		c.cancel()
 	}
 }
 
@@ -172,11 +187,19 @@ func (c *conveyer) Send(input string, data string) error {
 		return fmt.Errorf("%w: %s", ErrChanNotFound, input)
 	}
 
+	c.mu.RLock()
+	closed := c.closed
+	c.mu.RUnlock()
+
+	if closed {
+		return ErrChanClosed
+	}
+
 	select {
 	case channel <- data:
 		return nil
 	default:
-		return fmt.Errorf("channel %s is full or closed", input)
+		return fmt.Errorf("channel %s is full", input)
 	}
 }
 
@@ -186,13 +209,18 @@ func (c *conveyer) Recv(output string) (string, error) {
 		return "", fmt.Errorf("%w: %s", ErrChanNotFound, output)
 	}
 
-	select {
-	case val, ok := <-channel:
-		if !ok {
+	val, ok := <-channel
+	if !ok {
+		c.mu.RLock()
+		closed := c.closed
+		c.mu.RUnlock()
+
+		if closed {
 			return "", ErrChanClosed
 		}
-		return val, nil
-	default:
-		return "", ErrNoData
+
+		return Undefined, nil
 	}
+
+	return val, nil
 }
