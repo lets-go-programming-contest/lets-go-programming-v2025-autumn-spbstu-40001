@@ -70,7 +70,10 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 	for _, inputChan := range inputs {
 		waitGroup.Add(1)
-		go processInput(inputChan)
+		processInput := processInput // capture variable
+		go func(ch chan string) {
+			processInput(ch)
+		}(inputChan)
 	}
 
 	done := make(chan struct{})

@@ -10,8 +10,9 @@ import (
 )
 
 var (
-	ErrChanNotFound = errors.New("chan not found")
-	ErrNoData       = errors.New("no data")
+	ErrChanNotFound    = errors.New("chan not found")
+	ErrNoData          = errors.New("no data")
+	ErrConveyerRunning = errors.New("conveyer already running") // Добавляем статическую ошибку
 )
 
 const Undefined = "undefined"
@@ -30,7 +31,6 @@ func New(size int) *conveyer {
 		chans:   make(map[string]chan string),
 		tasks:   []func(context.Context) error{},
 		running: false,
-		mu:      sync.RWMutex{},
 	}
 }
 
@@ -69,6 +69,7 @@ func (c *conveyer) RegisterDecorator(
 
 	task := func(ctx context.Context) error {
 		defer close(outCh)
+
 		return decoratorFunc(ctx, inCh, outCh)
 	}
 
@@ -91,6 +92,7 @@ func (c *conveyer) RegisterMultiplexer(
 
 	task := func(ctx context.Context) error {
 		defer close(outCh)
+
 		return multiplexerFunc(ctx, inputChans, outCh)
 	}
 
@@ -117,6 +119,7 @@ func (c *conveyer) RegisterSeparator(
 				close(out)
 			}
 		}()
+
 		return separatorFunc(ctx, inCh, outputChans)
 	}
 
@@ -129,7 +132,7 @@ func (c *conveyer) Run(ctx context.Context) error {
 	c.mu.Lock()
 	if c.running {
 		c.mu.Unlock()
-		return errors.New("conveyer already running")
+		return ErrConveyerRunning // Используем статическую ошибку
 	}
 
 	c.running = true
@@ -144,6 +147,7 @@ func (c *conveyer) Run(ctx context.Context) error {
 	errGroup, ctx := errgroup.WithContext(ctx)
 
 	for _, task := range c.tasks {
+		task := task // capture loop variable
 		errGroup.Go(func() error {
 			return task(ctx)
 		})
