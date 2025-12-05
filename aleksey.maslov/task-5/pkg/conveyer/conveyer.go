@@ -3,11 +3,12 @@ package conveyer
 import (
 	"context"
 	"errors"
+	"sync"
 )
 
-var (
-	ErrChanNotFound = errors.New("chan not found")
-)
+const Undefined = "undefined"
+
+var ErrChanNotFound = errors.New("chan not found")
 
 type Task func(ctx context.Context) error
 
@@ -15,6 +16,7 @@ type ConveyerType struct {
 	size     int
 	channels map[string]chan string
 	tasks    []Task
+	mutex    sync.RWMutex
 }
 
 func New(size int) *ConveyerType {
@@ -23,6 +25,31 @@ func New(size int) *ConveyerType {
 		channels: make(map[string]chan string),
 		tasks:    make([]Task, 0),
 	}
+}
+
+func (c *ConveyerType) getChannel(name string) (chan string, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	if channel, ok := c.channels[name]; ok {
+		return channel, nil
+	}
+
+	return nil, ErrChanNotFound
+}
+
+func (c *ConveyerType) getOrCreateChannel(name string) chan string {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	if channel, exists := c.channels[name]; exists {
+		return channel
+	}
+
+	channel := make(chan string, c.size)
+	c.channels[name] = channel
+
+	return channel
 }
 
 type Conveyer interface {
