@@ -3,7 +3,10 @@ package conveyer
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
+
+	"golang.org/x/sync/errgroup"
 )
 
 const undefined = "undefined"
@@ -127,4 +130,31 @@ func (c *ConveyerType) Recv(output string) (string, error) {
 	}
 
 	return data, nil
+}
+
+func (c *ConveyerType) Run(ctx context.Context) error {
+	defer c.closeChannels()
+
+	errgr, ctx := errgroup.WithContext(ctx)
+
+	for _, t := range c.tasks {
+		errgr.Go(func() error {
+			return t(ctx)
+		})
+	}
+
+	err := errgr.Wait()
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	return nil
+}
+
+func (c *ConveyerType) closeChannels() {
+	c.mutex.Lock()
+	for _, ch := range c.channels {
+		close(ch)
+	}
+	c.mutex.Unlock()
 }
