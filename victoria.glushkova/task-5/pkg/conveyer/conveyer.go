@@ -80,7 +80,9 @@ func (c *conveyerImpl) RegisterSeparator(
 	defer c.mu.Unlock()
 
 	inputChan := c.getOrCreateChannel(inputName)
+
 	outputs := make([]chan string, len(outputNames))
+
 	for i, name := range outputNames {
 		outputs[i] = c.getOrCreateChannel(name)
 	}
