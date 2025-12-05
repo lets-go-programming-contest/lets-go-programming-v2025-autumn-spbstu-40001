@@ -13,7 +13,6 @@ var (
 	ErrChanNotFound    = errors.New("chan not found")
 	ErrNoData          = errors.New("no data")
 	ErrConveyerRunning = errors.New("conveyer already running")
-	ErrChanClosed      = errors.New("channel closed")
 )
 
 const Undefined = "undefined"
@@ -24,8 +23,6 @@ type conveyer struct {
 	chans   map[string]chan string
 	tasks   []func(context.Context) error
 	running bool
-	cancel  context.CancelFunc
-	closed  bool
 }
 
 func New(size int) *conveyer {
@@ -35,7 +32,6 @@ func New(size int) *conveyer {
 		tasks:   []func(context.Context) error{},
 		running: false,
 		mu:      sync.RWMutex{},
-		closed:  false,
 	}
 }
 
@@ -125,17 +121,12 @@ func (c *conveyer) Run(ctx context.Context) error {
 		return ErrConveyerRunning
 	}
 
-	ctx, cancel := context.WithCancel(ctx)
-	c.cancel = cancel
 	c.running = true
-	c.closed = false
 	c.mu.Unlock()
 
 	defer func() {
 		c.mu.Lock()
 		c.running = false
-		c.cancel = nil
-		c.closed = true
 		c.mu.Unlock()
 		c.closeAllChans()
 	}()
@@ -172,35 +163,19 @@ func (c *conveyer) closeAllChans() {
 	}
 }
 
-func (c *conveyer) Stop() {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if c.cancel != nil {
-		c.cancel()
-	}
-}
-
 func (c *conveyer) Send(input string, data string) error {
 	channel, err := c.getChan(input)
 	if err != nil {
 		return fmt.Errorf("%w: %s", ErrChanNotFound, input)
 	}
 
-	c.mu.RLock()
-	closed := c.closed
-	c.mu.RUnlock()
+	defer func() {
+		_ = recover()
+	}()
 
-	if closed {
-		return ErrChanClosed
-	}
+	channel <- data
 
-	select {
-	case channel <- data:
-		return nil
-	default:
-		return fmt.Errorf("channel %s is full", input)
-	}
+	return nil
 }
 
 func (c *conveyer) Recv(output string) (string, error) {
@@ -211,14 +186,6 @@ func (c *conveyer) Recv(output string) (string, error) {
 
 	val, ok := <-channel
 	if !ok {
-		c.mu.RLock()
-		closed := c.closed
-		c.mu.RUnlock()
-
-		if closed {
-			return "", ErrChanClosed
-		}
-
 		return Undefined, nil
 	}
 
