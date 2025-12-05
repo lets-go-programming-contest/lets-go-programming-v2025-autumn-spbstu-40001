@@ -81,7 +81,7 @@ func (c *Conveyer) RegisterMultiplexer(
 	for _, input := range inputs {
 		inputChans = append(inputChans, c.getOrCreateChannel(input))
 	}
-	
+
 	outputChan := c.getOrCreateChannel(output)
 
 	newModifier := func(ctx context.Context) error {
