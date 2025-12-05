@@ -38,9 +38,14 @@ func (p *pipeline) RegisterDecorator(
 ) {
 	inCh := p.ensureChannel(input)
 	outCh := p.ensureChannel(output)
+	p.mu.Lock()
+
 	p.handlers = append(p.handlers, func(ctx context.Context) error {
+		defer close(outCh)
+
 		return workingFunc(ctx, inCh, outCh)
 	})
+	p.mu.Unlock()
 }
 
 // Registrate Multiplexer (because task needs it).
@@ -56,6 +61,8 @@ func (p *pipeline) RegisterMultiplexer(
 
 	outCh := p.ensureChannel(output)
 	p.handlers = append(p.handlers, func(ctx context.Context) error {
+		defer close(outCh)
+
 		return workingFunc(ctx, inChans, outCh)
 	})
 }
@@ -73,9 +80,18 @@ func (p *pipeline) RegisterSeparator(
 		outChans = append(outChans, p.ensureChannel(name))
 	}
 
+	p.mu.Lock()
+
 	p.handlers = append(p.handlers, func(ctx context.Context) error {
+		defer func() { // for proper handling of closing outCh
+			for _, outCh := range outChans {
+				close(outCh)
+			}
+		}()
+
 		return workingFunc(ctx, inCh, outChans)
 	})
+	p.mu.Unlock()
 }
 
 // Here we run pipeline with gorutines. Main logic.
