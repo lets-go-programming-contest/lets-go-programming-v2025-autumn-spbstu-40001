@@ -150,7 +150,6 @@ func (c *conveyer) runHandler(ctx context.Context, h handler) error {
 		fn := h.fn.(func(context.Context, chan string, chan string) error)
 		input := c.getOrCreateChan(h.inputNames[0])
 		output := c.getOrCreateChan(h.outputNames[0])
-		defer close(output)
 		return fn(ctx, input, output)
 
 	case multiplexer:
@@ -160,7 +159,6 @@ func (c *conveyer) runHandler(ctx context.Context, h handler) error {
 			inputs[i] = c.getOrCreateChan(name)
 		}
 		output := c.getOrCreateChan(h.outputNames[0])
-		defer close(output)
 		return fn(ctx, inputs, output)
 
 	case separator:
@@ -170,11 +168,6 @@ func (c *conveyer) runHandler(ctx context.Context, h handler) error {
 		for i, name := range h.outputNames {
 			outputs[i] = c.getOrCreateChan(name)
 		}
-		defer func() {
-			for _, out := range outputs {
-				close(out)
-			}
-		}()
 		return fn(ctx, input, outputs)
 
 	default:
@@ -190,7 +183,7 @@ func (c *conveyer) Send(input string, data string) error {
 
 	defer func() {
 		if r := recover(); r != nil {
-
+			// Игнорируем panic при записи в закрытый канал
 		}
 	}()
 
