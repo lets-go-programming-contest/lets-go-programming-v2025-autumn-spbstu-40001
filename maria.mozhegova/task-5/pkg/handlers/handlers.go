@@ -10,6 +10,7 @@ import (
 var (
 	ErrNoDecorator = errors.New("can't be decorated")
 	ErrNoOutputs   = errors.New("no output channels")
+	ErrNoInputs    = errors.New("no input channels")
 )
 
 const (
@@ -46,7 +47,8 @@ func PrefixDecoratorFunc(ctx context.Context, inChan, outChan chan string) error
 }
 
 func SeparatorFunc(ctx context.Context, inChan chan string, outChans []chan string) error {
-	if len(outChans) == 0 {
+	numOut := len(outChans)
+	if numOut == 0 {
 		return ErrNoOutputs
 	}
 
@@ -61,11 +63,11 @@ func SeparatorFunc(ctx context.Context, inChan chan string, outChans []chan stri
 				return nil
 			}
 
-			target := outChans[index%len(outChans)]
+			target := index % numOut
 			index++
 
 			select {
-			case target <- val:
+			case outChans[target] <- val:
 			case <-ctx.Done():
 				return nil
 			}
@@ -74,35 +76,34 @@ func SeparatorFunc(ctx context.Context, inChan chan string, outChans []chan stri
 }
 
 func MultiplexerFunc(ctx context.Context, inChans []chan string, outChan chan string) error {
-	if len(inChans) == 0 {
-		return ErrNoOutputs
+	numInput := len(inChans)
+	if numInput == 0 {
+		return ErrNoInputs
 	}
 
 	var waitGroup sync.WaitGroup
 
-	waitGroup.Add(len(inChans))
+	waitGroup.Add(numInput)
 
 	for _, channel := range inChans {
-		go func(inputChannel chan string) {
+		go func(inChan chan string) {
 			defer waitGroup.Done()
 
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case val, ok := <-inputChannel:
+				case val, ok := <-inChan:
 					if !ok {
 						return
 					}
 
-					if strings.Contains(val, NoMultiplexer) {
-						continue
-					}
-
-					select {
-					case outChan <- val:
-					case <-ctx.Done():
-						return
+					if !strings.Contains(val, NoMultiplexer) {
+						select {
+						case outChan <- val:
+						case <-ctx.Done():
+							return
+						}
 					}
 				}
 			}

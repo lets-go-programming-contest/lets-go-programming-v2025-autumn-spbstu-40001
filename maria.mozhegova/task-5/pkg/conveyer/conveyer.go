@@ -54,63 +54,66 @@ func (c *Conveyer) getChannel(name string) (chan string, bool) {
 }
 
 func (c *Conveyer) RegisterDecorator(
-	funkt func(ctx context.Context, input chan string, output chan string) error,
+	funct func(ctx context.Context, input chan string, output chan string) error,
 	input string,
 	output string,
 ) {
 	inCh := c.getOrCreateChan(input)
 	outCh := c.getOrCreateChan(output)
 
-	task := func(ctx context.Context) error {
+	c.mu.Lock()
+	c.workers = append(c.workers, func(ctx context.Context) error {
 		defer close(outCh)
 
-		return funkt(ctx, inCh, outCh)
-	}
-	c.workers = append(c.workers, task)
+		return funct(ctx, inCh, outCh)
+	})
+	c.mu.Unlock()
 }
 
 func (c *Conveyer) RegisterMultiplexer(
-	funkt func(ctx context.Context, inputs []chan string, output chan string) error,
+	funct func(ctx context.Context, inputs []chan string, output chan string) error,
 	inputs []string,
 	output string,
 ) {
-	inputChannels := make([]chan string, 0, len(inputs))
+	inChans := make([]chan string, 0, len(inputs))
 	for _, name := range inputs {
-		inputChannels = append(inputChannels, c.getOrCreateChan(name))
+		inChans = append(inChans, c.getOrCreateChan(name))
 	}
 
 	outCh := c.getOrCreateChan(output)
 
-	task := func(ctx context.Context) error {
+	c.mu.Lock()
+	c.workers = append(c.workers, func(ctx context.Context) error {
 		defer close(outCh)
 
-		return funkt(ctx, inputChannels, outCh)
-	}
-	c.workers = append(c.workers, task)
+		return funct(ctx, inChans, outCh)
+	})
+	c.mu.Unlock()
 }
 
 func (c *Conveyer) RegisterSeparator(
-	funkt func(ctx context.Context, input chan string, outputs []chan string) error,
+	funct func(ctx context.Context, input chan string, outputs []chan string) error,
 	input string,
 	outputs []string,
 ) {
 	inCh := c.getOrCreateChan(input)
 
-	outputChannels := make([]chan string, 0, len(outputs))
+	outChans := make([]chan string, 0, len(outputs))
 	for _, name := range outputs {
-		outputChannels = append(outputChannels, c.getOrCreateChan(name))
+		outChans = append(outChans, c.getOrCreateChan(name))
 	}
 
-	task := func(ctx context.Context) error {
+	c.mu.Lock()
+	c.workers = append(c.workers, func(ctx context.Context) error {
 		defer func() {
-			for _, ch := range outputChannels {
+			for _, ch := range outChans {
 				close(ch)
 			}
 		}()
 
-		return funkt(ctx, inCh, outputChannels)
-	}
-	c.workers = append(c.workers, task)
+		return funct(ctx, inCh, outChans)
+	})
+	c.mu.Unlock()
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
@@ -141,7 +144,10 @@ func (c *Conveyer) Send(input, data string) error {
 		return ErrChannelNotFound
 	}
 
-	defer func() { _ = recover() }()
+	defer func() {
+		_ = recover()
+	}()
+
 	channel <- data
 
 	return nil
