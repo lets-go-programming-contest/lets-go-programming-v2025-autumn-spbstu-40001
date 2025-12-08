@@ -170,9 +170,6 @@ func (c *Conveyer) Close(name string) error {
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
 	g, ctx := errgroup.WithContext(ctx)
 
 	for _, d := range c.decorators {
@@ -201,7 +198,6 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	for _, s := range c.separators {
 		in := c.ensureChan(s.input)
-
 		outs := make([]chan string, len(s.outputs))
 		for i, name := range s.outputs {
 			outs[i] = c.ensureChan(name)
@@ -213,8 +209,6 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		})
 	}
 
-	err := g.Wait()
-
 	c.chansMu.Lock()
 	for name, ch := range c.chans {
 		if ch != nil {
@@ -224,5 +218,5 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	}
 	c.chansMu.Unlock()
 
-	return err
+	return g.Wait()
 }
