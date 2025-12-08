@@ -126,6 +126,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		in := c.ensureChan(d.input)
 		out := c.ensureChan(d.output)
 
+		d := d
 		g.Go(func() error {
 			return d.fn(ctx, in, out)
 		})
@@ -134,24 +135,26 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	for _, m := range c.multiplexers {
 		out := c.ensureChan(m.output)
 
-		ins := make([]chan string, 0, len(m.inputs))
-		for _, name := range m.inputs {
-			ins = append(ins, c.ensureChan(name))
+		inputs := make([]chan string, len(m.inputs))
+		for i, name := range m.inputs {
+			inputs[i] = c.ensureChan(name)
 		}
 
+		m := m
 		g.Go(func() error {
-			return m.fn(ctx, ins, out)
+			return m.fn(ctx, inputs, out)
 		})
 	}
 
 	for _, s := range c.separators {
 		in := c.ensureChan(s.input)
 
-		outs := make([]chan string, 0, len(s.outputs))
-		for _, name := range s.outputs {
-			outs = append(outs, c.ensureChan(name))
+		outs := make([]chan string, len(s.outputs))
+		for i, name := range s.outputs {
+			outs[i] = c.ensureChan(name)
 		}
 
+		s := s
 		g.Go(func() error {
 			return s.fn(ctx, in, outs)
 		})
@@ -166,60 +169,6 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	c.chansMu.Unlock()
 
 	return err
-}
-
-func (c *Conveyer) wrapHandler(
-	ctx context.Context,
-	wg *sync.WaitGroup,
-	fn func(context.Context, chan string, chan string) error,
-	in chan string,
-	out chan string,
-	errCh chan<- error,
-) {
-	defer wg.Done()
-	err := fn(ctx, in, out)
-	if err != nil {
-		select {
-		case errCh <- err:
-		default:
-		}
-	}
-}
-
-func (c *Conveyer) wrapMultiplexer(
-	ctx context.Context,
-	wg *sync.WaitGroup,
-	fn func(context.Context, []chan string, chan string) error,
-	ins []chan string,
-	out chan string,
-	errCh chan<- error,
-) {
-	defer wg.Done()
-	err := fn(ctx, ins, out)
-	if err != nil {
-		select {
-		case errCh <- err:
-		default:
-		}
-	}
-}
-
-func (c *Conveyer) wrapSeparator(
-	ctx context.Context,
-	wg *sync.WaitGroup,
-	fn func(context.Context, chan string, []chan string) error,
-	in chan string,
-	outs []chan string,
-	errCh chan<- error,
-) {
-	defer wg.Done()
-	err := fn(ctx, in, outs)
-	if err != nil {
-		select {
-		case errCh <- err:
-		default:
-		}
-	}
 }
 
 func (c *Conveyer) Send(input string, data string) error {
