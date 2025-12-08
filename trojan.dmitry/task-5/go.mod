@@ -1,0 +1,3 @@
+module github.com/DimasFantomasA/task-5
+
+go 1.22.7
