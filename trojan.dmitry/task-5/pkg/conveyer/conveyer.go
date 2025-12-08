@@ -175,7 +175,6 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	for _, d := range c.decorators {
 		in := c.ensureChan(d.input)
 		out := c.ensureChan(d.output)
-
 		d := d
 		g.Go(func() error {
 			return d.fn(ctx, in, out)
@@ -184,12 +183,10 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	for _, m := range c.multiplexers {
 		out := c.ensureChan(m.output)
-
 		ins := make([]chan string, len(m.inputs))
 		for i, name := range m.inputs {
 			ins[i] = c.ensureChan(name)
 		}
-
 		m := m
 		g.Go(func() error {
 			return m.fn(ctx, ins, out)
@@ -202,12 +199,13 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		for i, name := range s.outputs {
 			outs[i] = c.ensureChan(name)
 		}
-
 		s := s
 		g.Go(func() error {
 			return s.fn(ctx, in, outs)
 		})
 	}
+
+	err := g.Wait()
 
 	c.chansMu.Lock()
 	for name, ch := range c.chans {
@@ -218,5 +216,5 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	}
 	c.chansMu.Unlock()
 
-	return g.Wait()
+	return err
 }
