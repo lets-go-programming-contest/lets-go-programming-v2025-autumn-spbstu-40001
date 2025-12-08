@@ -12,7 +12,6 @@ const UndefinedMsg = "undefined"
 
 var ErrChanNotFound = errors.New("chan not found")
 
-// handler types
 type decoratorHandler struct {
 	fn     func(context.Context, chan string, chan string) error
 	input  string
@@ -214,5 +213,16 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		})
 	}
 
-	return g.Wait()
+	err := g.Wait()
+
+	c.chansMu.Lock()
+	for name, ch := range c.chans {
+		if ch != nil {
+			close(ch)
+			c.chans[name] = nil
+		}
+	}
+	c.chansMu.Unlock()
+
+	return err
 }
