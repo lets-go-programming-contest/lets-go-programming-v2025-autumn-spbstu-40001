@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+
+	"golang.org/x/sync/errgroup"
 )
 
 type Conveyer struct {
@@ -118,67 +120,52 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	errCh := make(chan error, 1)
+	g, ctx := errgroup.WithContext(ctx)
 
 	for _, d := range c.decorators {
-		in, _ := c.getChan(d.input)
-		out, _ := c.getChan(d.output)
-		c.wg.Add(1)
-		go c.wrapHandler(ctx, &c.wg, d.fn, in, out, errCh)
+		in := c.ensureChan(d.input)
+		out := c.ensureChan(d.output)
+
+		g.Go(func() error {
+			return d.fn(ctx, in, out)
+		})
 	}
 
 	for _, m := range c.multiplexers {
-		out, _ := c.getChan(m.output)
+		out := c.ensureChan(m.output)
+
 		ins := make([]chan string, 0, len(m.inputs))
-		for _, inName := range m.inputs {
-			ch, ok := c.getChan(inName)
-			if ok {
-				ins = append(ins, ch)
-			}
+		for _, name := range m.inputs {
+			ins = append(ins, c.ensureChan(name))
 		}
-		c.wg.Add(1)
-		go c.wrapMultiplexer(ctx, &c.wg, m.fn, ins, out, errCh)
+
+		g.Go(func() error {
+			return m.fn(ctx, ins, out)
+		})
 	}
 
 	for _, s := range c.separators {
-		in, _ := c.getChan(s.input)
+		in := c.ensureChan(s.input)
+
 		outs := make([]chan string, 0, len(s.outputs))
-		for _, outName := range s.outputs {
-			ch, ok := c.getChan(outName)
-			if ok {
-				outs = append(outs, ch)
-			}
+		for _, name := range s.outputs {
+			outs = append(outs, c.ensureChan(name))
 		}
-		c.wg.Add(1)
-		go c.wrapSeparator(ctx, &c.wg, s.fn, in, outs, errCh)
+
+		g.Go(func() error {
+			return s.fn(ctx, in, outs)
+		})
 	}
 
-	var retErr error
-	select {
-	case <-ctx.Done():
-		retErr = ctx.Err()
-	case err := <-errCh:
-		retErr = err
-		cancel()
-	}
-
-	c.wg.Wait()
+	err := g.Wait()
 
 	c.chansMu.Lock()
-	for name, ch := range c.chans {
-		if ch != nil {
-			func() {
-				defer func() {
-					_ = recover()
-				}()
-				close(ch)
-			}()
-			c.chans[name] = nil
-		}
+	for _, ch := range c.chans {
+		close(ch)
 	}
 	c.chansMu.Unlock()
 
-	return retErr
+	return err
 }
 
 func (c *Conveyer) wrapHandler(
