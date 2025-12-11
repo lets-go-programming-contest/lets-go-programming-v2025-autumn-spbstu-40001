@@ -15,9 +15,7 @@ const (
 	ErrNoMultiplexer = "no multiplexer"
 )
 
-var (
-	ErrPrefixDecoratorCantBeDecorated = errors.New("handlers.PrefixDecoratorFunc: can't be decorated")
-)
+var ErrPrefixDecoratorCantBeDecorated = errors.New("handlers.PrefixDecoratorFunc: can't be decorated")
 
 func PrefixDecoratorFunc(
 	ctx context.Context,
