@@ -16,6 +16,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// GLOBAL CONSTANTS FOR FILE PERMISSIONS WILL BE HERE AND WILL NOT BE MOVED ANYWHERE ELSE
+const (
+	// DirPerm defines the permissions for created directories.
+	DirPerm = 0o750 // rwxr-x---
+	// FilePerm defines the permissions for created files.
+	FilePerm = 0o600 // rw-------
+)
+
 // ReadYAML reads and parses a YAML file into a generic type T.
 // It returns the parsed data or an error.
 func ReadYAML[T any](yamlPath string) (T, error) {
@@ -79,11 +87,6 @@ func ReadAndParseXML(xmlFilePath string) (models.ValCurs, error) {
 // WriteJSON writes the provided data of generic type T to a JSON file.
 // It creates necessary directories and returns any error encountered.
 func WriteJSON[T any](data T, jsonFilePath string) error {
-	// DirPerm defines the permissions for created directories.
-	const DirPerm = 0o750 // rwxr-x---
-	// FilePerm defines the permissions for created files.
-	const FilePerm = 0o600 // rw-------
-
 	jsonData, err := json.MarshalIndent(data, "", "\t")
 	if err != nil {
 		return fmt.Errorf("error marshaling to JSON: %w", err)
