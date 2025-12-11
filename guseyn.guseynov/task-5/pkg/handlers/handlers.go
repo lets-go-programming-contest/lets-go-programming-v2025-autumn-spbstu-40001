@@ -13,7 +13,6 @@ const (
 	ErrNoDecorator   = "no decorator"
 	DecoratedPrefix  = "decorated: "
 	ErrNoMultiplexer = "no multiplexer"
-	UndefinedValue   = "undefined"
 )
 
 var (
@@ -47,6 +46,7 @@ func PrefixDecoratorFunc(
 					return nil
 				case output <- data:
 				}
+
 				continue
 			}
 
@@ -113,26 +113,9 @@ func SeparatorFunc(
 	defer closeOutputs()
 
 	if len(outputs) == 0 {
-		return readAndDiscard(ctx, input)
+		return nil
 	}
 
-	return distributeRoundRobin(ctx, input, outputs)
-}
-
-func readAndDiscard(ctx context.Context, input chan string) error {
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		case _, ok := <-input:
-			if !ok {
-				return nil
-			}
-		}
-	}
-}
-
-func distributeRoundRobin(ctx context.Context, input chan string, outputs []chan string) error {
 	index := 0
 
 	for {

@@ -178,10 +178,7 @@ func (conveyer *Conveyer) Run(ctx context.Context) error {
 }
 
 func (conveyer *Conveyer) Send(input string, data string) error {
-	channel, channelFound := conveyer.channels.Get(input)
-	if !channelFound {
-		return ErrSendChanNotFound
-	}
+	channel := conveyer.channels.GetOrCreate(input)
 
 	channel <- data
 
