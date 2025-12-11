@@ -65,11 +65,10 @@ func MultiplexerFunc(
 ) error {
 	defer close(output)
 
-	g, ctx := errgroup.WithContext(ctx)
+	errGroup, ctx := errgroup.WithContext(ctx)
 
 	for _, inputChan := range inputs {
-		inputChan := inputChan
-		g.Go(func() error {
+		errGroup.Go(func() error {
 			for {
 				select {
 				case <-ctx.Done():
@@ -93,7 +92,11 @@ func MultiplexerFunc(
 		})
 	}
 
-	return g.Wait()
+	if err := errGroup.Wait(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func SeparatorFunc(
@@ -102,8 +105,8 @@ func SeparatorFunc(
 	outputs []chan string,
 ) error {
 	closeOutputs := func() {
-		for _, output := range outputs {
-			close(output)
+		for _, outputChan := range outputs {
+			close(outputChan)
 		}
 	}
 	defer closeOutputs()
@@ -121,7 +124,8 @@ func SeparatorFunc(
 		}
 	}
 
-	i := 0
+	index := 0
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -135,8 +139,8 @@ func SeparatorFunc(
 			select {
 			case <-ctx.Done():
 				return nil
-			case outputs[i%len(outputs)] <- data:
-				i++
+			case outputs[index%len(outputs)] <- data:
+				index++
 			}
 		}
 	}
