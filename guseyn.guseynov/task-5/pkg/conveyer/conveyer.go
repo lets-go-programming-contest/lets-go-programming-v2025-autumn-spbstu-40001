@@ -3,13 +3,14 @@ package conveyer
 import (
 	"context"
 	"errors"
+	"sync"
 
 	"golang.org/x/sync/errgroup"
 )
 
-var (
-	errSendChanNotFound = errors.New("conveyer.Send: chan not found")
-	errRecvChanNotFound = errors.New("conveyer.Recv: chan not found")
+const (
+	ErrSendChanNotFound = "conveyer.Send: chan not found"
+	ErrRecvChanNotFound = "conveyer.Recv: chan not found"
 )
 
 type Decorator func(
@@ -30,43 +31,70 @@ type Separator func(
 	[]chan string,
 ) error
 
+type WorkerPool struct {
+	workers []func(context.Context) error
+	mu      sync.RWMutex
+}
+
+func NewWorkerPool() *WorkerPool {
+	return &WorkerPool{
+		workers: make([]func(context.Context) error, 0),
+	}
+}
+
+func (wp *WorkerPool) Add(worker func(context.Context) error) {
+	wp.mu.Lock()
+	defer wp.mu.Unlock()
+	wp.workers = append(wp.workers, worker)
+}
+
+func (wp *WorkerPool) GetAll() []func(context.Context) error {
+	wp.mu.RLock()
+	defer wp.mu.RUnlock()
+	return wp.workers
+}
+
+type ChannelRegistry struct {
+	channels sync.Map
+	size     int
+}
+
+func NewChannelRegistry(size int) *ChannelRegistry {
+	return &ChannelRegistry{
+		size: size,
+	}
+}
+
+func (cr *ChannelRegistry) GetOrCreate(name string) chan string {
+	if ch, ok := cr.channels.Load(name); ok {
+		return ch.(chan string)
+	}
+
+	ch := make(chan string, cr.size)
+	cr.channels.Store(name, ch)
+	return ch
+}
+
+func (cr *ChannelRegistry) Get(name string) (chan string, bool) {
+	ch, ok := cr.channels.Load(name)
+	if !ok {
+		return nil, false
+	}
+	return ch.(chan string), true
+}
+
 type Conveyer struct {
 	channelSize int
-	channels    map[string]chan string
-	pool        []func(context.Context) error
+	channels    *ChannelRegistry
+	pool        *WorkerPool
 }
 
 func New(channelSize int) *Conveyer {
 	return &Conveyer{
-		channelSize,
-		map[string]chan string{},
-		[]func(context.Context) error{},
+		channelSize: channelSize,
+		channels:    NewChannelRegistry(channelSize),
+		pool:        NewWorkerPool(),
 	}
-}
-
-func (conveyer *Conveyer) addToPool(function func(context.Context) error) {
-	conveyer.pool = append(conveyer.pool, function)
-}
-
-func (conveyer *Conveyer) makeChannel(name string) {
-	if _, ok := conveyer.channels[name]; !ok {
-		conveyer.channels[name] = make(chan string, conveyer.channelSize)
-	}
-}
-
-func (conveyer *Conveyer) makeChannels(names ...string) {
-	for _, name := range names {
-		conveyer.makeChannel(name)
-	}
-}
-
-func (conveyer *Conveyer) collectChannels(names ...string) []chan string {
-	result := []chan string{}
-	for _, name := range names {
-		result = append(result, conveyer.channels[name])
-	}
-
-	return result
 }
 
 func (conveyer *Conveyer) RegisterDecorator(
@@ -74,13 +102,10 @@ func (conveyer *Conveyer) RegisterDecorator(
 	input string,
 	output string,
 ) {
-	conveyer.makeChannels(input, output)
-	conveyer.addToPool(func(context context.Context) error {
-		return decorator(
-			context,
-			conveyer.channels[input],
-			conveyer.channels[output],
-		)
+	conveyer.pool.Add(func(ctx context.Context) error {
+		inputChan := conveyer.channels.GetOrCreate(input)
+		outputChan := conveyer.channels.GetOrCreate(output)
+		return decorator(ctx, inputChan, outputChan)
 	})
 }
 
@@ -89,14 +114,13 @@ func (conveyer *Conveyer) RegisterMultiplexer(
 	inputs []string,
 	output string,
 ) {
-	conveyer.makeChannel(output)
-	conveyer.makeChannels(inputs...)
-	conveyer.addToPool(func(context context.Context) error {
-		return multiplexer(
-			context,
-			conveyer.collectChannels(inputs...),
-			conveyer.channels[output],
-		)
+	conveyer.pool.Add(func(ctx context.Context) error {
+		inputChannels := make([]chan string, len(inputs))
+		for i, inputName := range inputs {
+			inputChannels[i] = conveyer.channels.GetOrCreate(inputName)
+		}
+		outputChan := conveyer.channels.GetOrCreate(output)
+		return multiplexer(ctx, inputChannels, outputChan)
 	})
 }
 
@@ -105,44 +129,44 @@ func (conveyer *Conveyer) RegisterSeparator(
 	input string,
 	outputs []string,
 ) {
-	conveyer.makeChannel(input)
-	conveyer.makeChannels(outputs...)
-	conveyer.addToPool(func(context context.Context) error {
-		return separator(
-			context,
-			conveyer.channels[input],
-			conveyer.collectChannels(outputs...),
-		)
+	conveyer.pool.Add(func(ctx context.Context) error {
+		inputChan := conveyer.channels.GetOrCreate(input)
+		outputChannels := make([]chan string, len(outputs))
+		for i, outputName := range outputs {
+			outputChannels[i] = conveyer.channels.GetOrCreate(outputName)
+		}
+		return separator(ctx, inputChan, outputChannels)
 	})
 }
 
 func (conveyer *Conveyer) Run(context context.Context) error {
 	group, contextWithErrs := errgroup.WithContext(context)
-	for _, function := range conveyer.pool {
+	workers := conveyer.pool.GetAll()
+
+	for _, worker := range workers {
+		worker := worker
 		group.Go(func() error {
-			return function(contextWithErrs)
+			return worker(contextWithErrs)
 		})
 	}
 
-	/* Errors are mine anyway.  */
-	return group.Wait() //nolint:wrapcheck
+	return group.Wait()
 }
 
 func (conveyer *Conveyer) Send(input string, data string) error {
-	channel, ok := conveyer.channels[input]
+	channel, ok := conveyer.channels.Get(input)
 	if !ok {
-		return errSendChanNotFound
+		return errors.New(ErrSendChanNotFound)
 	}
 
 	channel <- data
-
 	return nil
 }
 
 func (conveyer *Conveyer) Recv(output string) (string, error) {
-	channel, ok := conveyer.channels[output] //nolint:varnamelen
+	channel, ok := conveyer.channels.Get(output)
 	if !ok {
-		return "", errRecvChanNotFound
+		return "", errors.New(ErrRecvChanNotFound)
 	}
 
 	data, ok := <-channel
