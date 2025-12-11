@@ -103,6 +103,7 @@ type Conveyer struct {
 	channelSize int
 	channels    *ChannelRegistry
 	pool        *WorkerPool
+	initialized bool
 }
 
 func New(channelSize int) *Conveyer {
@@ -110,6 +111,7 @@ func New(channelSize int) *Conveyer {
 		channelSize: channelSize,
 		channels:    NewChannelRegistry(channelSize),
 		pool:        NewWorkerPool(),
+		initialized: false,
 	}
 }
 
@@ -118,6 +120,7 @@ func (conveyer *Conveyer) RegisterDecorator(
 	input string,
 	output string,
 ) {
+	conveyer.initialized = true
 	conveyer.pool.Add(func(ctx context.Context) error {
 		inputChan := conveyer.channels.GetOrCreate(input)
 		outputChan := conveyer.channels.GetOrCreate(output)
@@ -131,6 +134,7 @@ func (conveyer *Conveyer) RegisterMultiplexer(
 	inputs []string,
 	output string,
 ) {
+	conveyer.initialized = true
 	conveyer.pool.Add(func(ctx context.Context) error {
 		inputChannels := make([]chan string, len(inputs))
 		for index, inputName := range inputs {
@@ -148,6 +152,7 @@ func (conveyer *Conveyer) RegisterSeparator(
 	input string,
 	outputs []string,
 ) {
+	conveyer.initialized = true
 	conveyer.pool.Add(func(ctx context.Context) error {
 		inputChan := conveyer.channels.GetOrCreate(input)
 
@@ -178,8 +183,11 @@ func (conveyer *Conveyer) Run(ctx context.Context) error {
 }
 
 func (conveyer *Conveyer) Send(input string, data string) error {
-	channel := conveyer.channels.GetOrCreate(input)
+	if !conveyer.initialized {
+		return ErrSendChanNotFound
+	}
 
+	channel := conveyer.channels.GetOrCreate(input)
 	channel <- data
 
 	return nil
