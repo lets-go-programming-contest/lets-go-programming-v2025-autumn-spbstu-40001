@@ -16,7 +16,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// GLOBAL CONSTANTS FOR FILE PERMISSIONS WILL BE HERE AND WILL NOT BE MOVED ANYWHERE ELSE
+// GLOBAL CONSTANTS FOR FILE PERMISSIONS WILL BE HERE AND WILL NOT BE MOVED ANYWHERE ELSE.
 const (
 	// DirPerm defines the permissions for created directories.
 	DirPerm = 0o750 // rwxr-x---
