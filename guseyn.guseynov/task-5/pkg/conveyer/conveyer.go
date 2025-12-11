@@ -76,9 +76,9 @@ func NewChannelRegistry(size int) *ChannelRegistry {
 }
 
 func (cr *ChannelRegistry) GetOrCreate(name string) chan string {
-	if ch, ok := cr.channels.Load(name); ok {
-		if channel, ok := ch.(chan string); ok {
-			return channel
+	if channel, ok := cr.channels.Load(name); ok {
+		if ch, typeOk := channel.(chan string); typeOk {
+			return ch
 		}
 	}
 
@@ -89,13 +89,14 @@ func (cr *ChannelRegistry) GetOrCreate(name string) chan string {
 }
 
 func (cr *ChannelRegistry) Get(name string) (chan string, bool) {
-	ch, ok := cr.channels.Load(name)
-	if !ok {
+	channel, channelFound := cr.channels.Load(name)
+	if !channelFound {
 		return nil, false
 	}
 
-	channel, ok := ch.(chan string)
-	return channel, ok
+	ch, typeOk := channel.(chan string)
+
+	return ch, typeOk
 }
 
 type Conveyer struct {
@@ -177,7 +178,10 @@ func (conveyer *Conveyer) Run(ctx context.Context) error {
 }
 
 func (conveyer *Conveyer) Send(input string, data string) error {
-	channel := conveyer.channels.GetOrCreate(input)
+	channel, channelFound := conveyer.channels.Get(input)
+	if !channelFound {
+		return ErrSendChanNotFound
+	}
 
 	channel <- data
 

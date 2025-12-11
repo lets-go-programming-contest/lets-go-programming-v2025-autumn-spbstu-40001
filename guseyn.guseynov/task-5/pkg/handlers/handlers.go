@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	"golang.org/x/sync/errgroup"
@@ -45,8 +46,8 @@ func PrefixDecoratorFunc(
 				case <-ctx.Done():
 					return nil
 				case output <- data:
-					continue
 				}
+				continue
 			}
 
 			select {
@@ -93,7 +94,7 @@ func MultiplexerFunc(
 	}
 
 	if err := errGroup.Wait(); err != nil {
-		return err
+		return fmt.Errorf("multiplexer wait error: %w", err)
 	}
 
 	return nil
@@ -112,18 +113,26 @@ func SeparatorFunc(
 	defer closeOutputs()
 
 	if len(outputs) == 0 {
-		for {
-			select {
-			case <-ctx.Done():
+		return readAndDiscard(ctx, input)
+	}
+
+	return distributeRoundRobin(ctx, input, outputs)
+}
+
+func readAndDiscard(ctx context.Context, input chan string) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case _, ok := <-input:
+			if !ok {
 				return nil
-			case _, ok := <-input:
-				if !ok {
-					return nil
-				}
 			}
 		}
 	}
+}
 
+func distributeRoundRobin(ctx context.Context, input chan string, outputs []chan string) error {
 	index := 0
 
 	for {
@@ -139,8 +148,8 @@ func SeparatorFunc(
 			select {
 			case <-ctx.Done():
 				return nil
-			case outputs[index%len(outputs)] <- data:
-				index++
+			case outputs[index] <- data:
+				index = (index + 1) % len(outputs)
 			}
 		}
 	}
