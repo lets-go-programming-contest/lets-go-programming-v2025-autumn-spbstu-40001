@@ -76,13 +76,13 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 }
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	var wgr sync.WaitGroup
-
-	wgr.Add(len(inputs))
-
 	if len(inputs) == 0 {
 		return ErrNoInputs
 	}
+
+	var wgr sync.WaitGroup
+
+	wgr.Add(len(inputs))
 
 	multiplex := func(chn chan string) {
 		defer wgr.Done()

@@ -45,13 +45,16 @@ func (c *ConveyerImpl) getOrCreateChannel(name string) chan string {
 	return ch
 }
 
-func (c *ConveyerImpl) getChannel(name string) (chan string, bool) {
+func (c *ConveyerImpl) getChannel(name string) (chan string, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
 	ch, exists := c.channels[name]
+	if !exists {
+		return nil, ErrChannelNotFound
+	}
 
-	return ch, exists
+	return ch, nil
 }
 
 func (c *ConveyerImpl) RegisterDecorator(
@@ -63,8 +66,6 @@ func (c *ConveyerImpl) RegisterDecorator(
 	outCh := c.getOrCreateChannel(output)
 
 	task := func(ctx context.Context) error {
-		defer close(outCh)
-
 		return function(ctx, inCh, outCh)
 	}
 
@@ -86,8 +87,6 @@ func (c *ConveyerImpl) RegisterMultiplexer(
 	outCh := c.getOrCreateChannel(output)
 
 	task := func(ctx context.Context) error {
-		defer close(outCh)
-
 		return function(ctx, inputChannels, outCh)
 	}
 
@@ -109,12 +108,6 @@ func (c *ConveyerImpl) RegisterSeparator(
 	}
 
 	task := func(ctx context.Context) error {
-		defer func() {
-			for _, ch := range outputChannels {
-				close(ch)
-			}
-		}()
-
 		return function(ctx, inCh, outputChannels)
 	}
 
@@ -124,6 +117,15 @@ func (c *ConveyerImpl) RegisterSeparator(
 }
 
 func (c *ConveyerImpl) Run(ctx context.Context) error {
+	defer func() {
+		c.mu.Lock()
+		defer c.mu.Unlock()
+
+		for _, ch := range c.channels {
+			close(ch)
+		}
+	}()
+
 	c.mu.RLock()
 
 	group, groupCtx := errgroup.WithContext(ctx)
@@ -146,9 +148,9 @@ func (c *ConveyerImpl) Run(ctx context.Context) error {
 }
 
 func (c *ConveyerImpl) Send(input string, data string) error {
-	targetChannel, exists := c.getChannel(input)
-	if !exists {
-		return ErrChannelNotFound
+	targetChannel, err := c.getChannel(input)
+	if err != nil {
+		return err
 	}
 
 	defer func() {
@@ -161,9 +163,9 @@ func (c *ConveyerImpl) Send(input string, data string) error {
 }
 
 func (c *ConveyerImpl) Recv(output string) (string, error) {
-	ch, exists := c.getChannel(output)
-	if !exists {
-		return "", ErrChannelNotFound
+	ch, err := c.getChannel(output)
+	if err != nil {
+		return "", err
 	}
 
 	val, ok := <-ch
