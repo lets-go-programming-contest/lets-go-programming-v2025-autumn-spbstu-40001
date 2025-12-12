@@ -80,10 +80,11 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 	for _, inputChan := range inputs {
 		waitGroup.Add(1)
-		processInput := processInput
-		inputChan := inputChan
+		localInputChan := inputChan
+		localProcessInput := processInput
+
 		go func() {
-			processInput(inputChan)
+			localProcessInput(localInputChan)
 		}()
 	}
 
