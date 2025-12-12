@@ -11,11 +11,19 @@ import (
 	"github.com/Aapng-cmd/task-3/internal/sorts"
 )
 
+// Global constants for file permissions will be here and will not be moved anywhere else.
+const (
+	// DirPerm defines the permissions for created directories.
+	DirPerm = 0o750 // rwxr-x---
+	// FilePerm defines the permissions for created files.
+	FilePerm = 0o600 // rw-------
+)
+
 // main parses command-line flags, reads configuration, processes currency data, and handles errors.
 func main() {
 	var configPath string
 
-	flag.StringVar(&configPath, "config", "", "Path to config file")
+	flag.StringVar(&configPath, "config", "config.yaml", "Path to config file")
 
 	flag.Parse()
 
@@ -39,7 +47,7 @@ func main() {
 
 	valCurs = sorts.SortDataByValue(valCurs)
 
-	err = files.WriteDataToJSON(valCurs, settings.OutputFileSetting)
+	err = files.WriteDataToJSON(valCurs, settings.OutputFileSetting, DirPerm, FilePerm)
 	if err != nil {
 		log.Fatalf("Failed to write JSON file: %v", err)
 	}
