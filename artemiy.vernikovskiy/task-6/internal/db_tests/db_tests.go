@@ -24,6 +24,8 @@ func TestDBServiceGetNamesSuccess(t *testing.T) {
 
 	defer mockDB.Close()
 
+	numberOfData := 3
+
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Petya").
 		AddRow("Vanya").
@@ -35,7 +37,7 @@ func TestDBServiceGetNamesSuccess(t *testing.T) {
 	names, err := service.GetNames()
 
 	require.NoError(t, err)
-	assert.Len(t, names, 3)
+	assert.Len(t, names, numberOfData)
 	assert.Equal(t, "Petya", names[0])
 	assert.Equal(t, "Vanya", names[1])
 	assert.Equal(t, "Punk", names[2])
@@ -112,6 +114,8 @@ func TestDBServiceGetUniqueNamesSuccess(t *testing.T) {
 
 	defer mockDB.Close()
 
+	numberOfData := 3
+
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("UniqueName1FantasyDied").
 		AddRow("AgroCultureIsTheBest").
@@ -123,7 +127,7 @@ func TestDBServiceGetUniqueNamesSuccess(t *testing.T) {
 	names, err := service.GetUniqueNames()
 
 	require.NoError(t, err)
-	assert.Len(t, names, 3)
+	assert.Len(t, names, numberOfData)
 	assert.Equal(t, "UniqueName1FantasyDied", names[0])
 	assert.Equal(t, "AgroCultureIsTheBest", names[1])
 	assert.Equal(t, "GodLovesNumber3Large", names[2])

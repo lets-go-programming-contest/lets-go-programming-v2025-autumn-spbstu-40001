@@ -22,6 +22,8 @@ func TestWiFiServiceGetAddressesSuccess(t *testing.T) {
 	hwAddr1, _ := net.ParseMAC("00:11:22:33:44:55")
 	hwAddr2, _ := net.ParseMAC("aa:bb:cc:dd:ee:ff")
 
+	numberOfData := 3
+
 	interfaces := []*wifi.Interface{
 		{
 			Name: "wlan0", HardwareAddr: hwAddr1,
@@ -40,7 +42,7 @@ func TestWiFiServiceGetAddressesSuccess(t *testing.T) {
 	addrs, err := service.GetAddresses()
 
 	require.NoError(t, err)
-	assert.Len(t, addrs, 3)
+	assert.Len(t, addrs, numberOfData)
 	assert.Equal(t, hwAddr1, addrs[0])
 	assert.Equal(t, hwAddr2, addrs[1])
 	assert.Equal(t, hwAddr2, addrs[2])
@@ -69,6 +71,8 @@ func TestWiFiServiceGetNamesSuccess(t *testing.T) {
 
 	mockWiFi := new(taskWifiPack.WiFiHandle)
 
+	numberOfData := 3
+
 	hwAddr, _ := net.ParseMAC("13:37:de:ad:be:ef")
 	interfaces := []*wifi.Interface{
 		{
@@ -84,7 +88,7 @@ func TestWiFiServiceGetNamesSuccess(t *testing.T) {
 	names, err := service.GetNames()
 
 	require.NoError(t, err)
-	assert.Len(t, names, 3)
+	assert.Len(t, names, numberOfData)
 	assert.Equal(t, []string{"wlan0", "wlan1", "eth0"}, names)
 
 	mockWiFi.AssertExpectations(t)
