@@ -28,29 +28,25 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 				return nil
 			}
 
-			sent := false
 			for attempts := 0; attempts < len(outputs); attempts++ {
 				out := outputs[idx%len(outputs)]
 				select {
 				case <-ctx.Done():
 					return ctx.Err()
 				case out <- v:
-					sent = true
-					goto sendComplete
+					goto next
 				default:
 					idx = (idx + 1) % len(outputs)
 				}
 			}
 
-			if !sent {
-				select {
-				case <-ctx.Done():
-					return ctx.Err()
-				case outputs[idx%len(outputs)] <- v:
-				}
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case outputs[idx%len(outputs)] <- v:
 			}
 
-		sendComplete:
+		next:
 			idx = (idx + 1) % len(outputs)
 		}
 	}

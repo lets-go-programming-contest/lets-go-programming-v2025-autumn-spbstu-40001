@@ -39,10 +39,6 @@ type Conveyer struct {
 	decorators   []decoratorHandler
 	multiplexers []multiplexerHandler
 	separators   []separatorHandler
-
-	cancelFunc context.CancelFunc
-	running    bool
-	runningMu  sync.RWMutex
 }
 
 func New(size int) *Conveyer {
@@ -52,7 +48,6 @@ func New(size int) *Conveyer {
 		decorators:   make([]decoratorHandler, 0),
 		multiplexers: make([]multiplexerHandler, 0),
 		separators:   make([]separatorHandler, 0),
-		running:      false,
 	}
 }
 
@@ -79,12 +74,6 @@ func (c *Conveyer) getChan(name string) (chan string, error) {
 		return nil, ErrChanNotFound
 	}
 	return ch, nil
-}
-
-func (c *Conveyer) isRunning() bool {
-	c.runningMu.RLock()
-	defer c.runningMu.RUnlock()
-	return c.running
 }
 
 func (c *Conveyer) RegisterDecorator(
@@ -137,76 +126,31 @@ func (c *Conveyer) RegisterSeparator(
 }
 
 func (c *Conveyer) Send(input string, data string) error {
-	if !c.isRunning() {
-		return errors.New("conveyer is not running")
-	}
-
 	ch, err := c.getChan(input)
 	if err != nil {
 		return err
 	}
 
-	select {
-	case ch <- data:
-		return nil
-	default:
-		return errors.New("channel is full or closed")
-	}
+	defer func() { _ = recover() }()
+
+	ch <- data
+	return nil
 }
 
 func (c *Conveyer) Recv(output string) (string, error) {
-	if !c.isRunning() {
-		return "", errors.New("conveyer is not running")
-	}
-
 	ch, err := c.getChan(output)
 	if err != nil {
 		return "", err
 	}
 
-	select {
-	case v, ok := <-ch:
-		if !ok {
-			return UndefinedMsg, nil
-		}
-		return v, nil
-	default:
-		return "", errors.New("no data available")
+	v, ok := <-ch
+	if !ok {
+		return UndefinedMsg, nil
 	}
+	return v, nil
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
-	c.runningMu.Lock()
-	if c.running {
-		c.runningMu.Unlock()
-		return errors.New("conveyer is already running")
-	}
-
-	ctx, cancel := context.WithCancel(ctx)
-	c.cancelFunc = cancel
-	c.running = true
-	c.runningMu.Unlock()
-
-	defer func() {
-		c.runningMu.Lock()
-		c.running = false
-		c.cancelFunc = nil
-		c.runningMu.Unlock()
-
-		c.chansMu.Lock()
-		for name, ch := range c.chans {
-			if ch != nil {
-				select {
-				case <-ch:
-				default:
-				}
-				close(ch)
-				c.chans[name] = nil
-			}
-		}
-		c.chansMu.Unlock()
-	}()
-
 	g, ctx := errgroup.WithContext(ctx)
 
 	for _, d := range c.decorators {
@@ -246,13 +190,16 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		})
 	}
 
-	return g.Wait()
-}
+	err := g.Wait()
 
-func (c *Conveyer) Stop() {
-	c.runningMu.RLock()
-	if c.cancelFunc != nil {
-		c.cancelFunc()
+	c.chansMu.Lock()
+	for name, ch := range c.chans {
+		if ch != nil {
+			close(ch)
+			c.chans[name] = nil
+		}
 	}
-	c.runningMu.RUnlock()
+	c.chansMu.Unlock()
+
+	return err
 }
