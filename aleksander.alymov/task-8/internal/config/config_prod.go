@@ -2,19 +2,7 @@
 
 package config
 
-import (
-	_ "embed"
-
-	"gopkg.in/yaml.v3"
-)
+import _ "embed"
 
 //go:embed prod.yaml
-var configData []byte
-
-func init() {
-	loadConfig = func() (*Config, error) {
-		var cfg Config
-		err := yaml.Unmarshal(configData, &cfg)
-		return &cfg, err
-	}
-}
+var ConfigFile []byte

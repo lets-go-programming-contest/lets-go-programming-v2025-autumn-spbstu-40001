@@ -8,8 +8,10 @@ import (
 
 func main() {
 	cfg, err := config.Load()
+
 	if err != nil {
 		panic(err)
 	}
+
 	fmt.Printf("%s %s", cfg.Environment, cfg.LogLevel)
 }
