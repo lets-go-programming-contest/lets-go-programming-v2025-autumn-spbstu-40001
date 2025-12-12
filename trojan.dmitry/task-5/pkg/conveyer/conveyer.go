@@ -43,10 +43,8 @@ type Conveyer struct {
 
 func New(size int) *Conveyer {
 	return &Conveyer{
-		size: size,
-
-		chans: make(map[string]chan string),
-
+		size:         size,
+		chans:        make(map[string]chan string),
 		decorators:   make([]decoratorHandler, 0),
 		multiplexers: make([]multiplexerHandler, 0),
 		separators:   make([]separatorHandler, 0),
@@ -116,8 +114,8 @@ func (c *Conveyer) RegisterSeparator(
 	outputs []string,
 ) {
 	c.ensureChan(input)
-	for _, o := range outputs {
-		c.ensureChan(o)
+	for _, out := range outputs {
+		c.ensureChan(out)
 	}
 
 	c.separators = append(c.separators, separatorHandler{
@@ -133,9 +131,7 @@ func (c *Conveyer) Send(input string, data string) error {
 		return err
 	}
 
-	defer func() {
-		_ = recover()
-	}()
+	defer func() { _ = recover() }()
 
 	ch <- data
 	return nil
@@ -151,22 +147,7 @@ func (c *Conveyer) Recv(output string) (string, error) {
 	if !ok {
 		return UndefinedMsg, nil
 	}
-
 	return v, nil
-}
-
-func (c *Conveyer) Close(name string) error {
-	c.chansMu.Lock()
-	defer c.chansMu.Unlock()
-
-	ch, ok := c.chans[name]
-	if !ok || ch == nil {
-		return ErrChanNotFound
-	}
-
-	close(ch)
-	c.chans[name] = nil
-	return nil
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
@@ -183,10 +164,12 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	for _, m := range c.multiplexers {
 		out := c.ensureChan(m.output)
+
 		ins := make([]chan string, len(m.inputs))
 		for i, name := range m.inputs {
 			ins[i] = c.ensureChan(name)
 		}
+
 		m := m
 		g.Go(func() error {
 			return m.fn(ctx, ins, out)
@@ -195,10 +178,12 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	for _, s := range c.separators {
 		in := c.ensureChan(s.input)
+
 		outs := make([]chan string, len(s.outputs))
 		for i, name := range s.outputs {
 			outs[i] = c.ensureChan(name)
 		}
+
 		s := s
 		g.Go(func() error {
 			return s.fn(ctx, in, outs)
