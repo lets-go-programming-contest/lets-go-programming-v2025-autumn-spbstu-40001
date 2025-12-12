@@ -80,7 +80,11 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 	for _, inputChan := range inputs {
 		waitGroup.Add(1)
-		go processInput(inputChan)
+		processInput := processInput
+		inputChan := inputChan
+		go func() {
+			processInput(inputChan)
+		}()
 	}
 
 	done := make(chan struct{})
@@ -103,6 +107,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	}
 
 	var counter int64 = -1
+
 	outputsCount := len(outputs)
 
 	for {
