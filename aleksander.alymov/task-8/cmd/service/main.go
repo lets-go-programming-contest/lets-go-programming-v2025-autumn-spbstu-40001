@@ -1,0 +1,15 @@
+package main
+
+import (
+	"fmt"
+
+	"github.com/netwite/task-8/internal/config"
+)
+
+func main() {
+	cfg, err := config.Load()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("%s %s\n", cfg.Environment, cfg.LogLevel)
+}
