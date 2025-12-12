@@ -13,10 +13,10 @@ import (
 
 // Global constants for file permissions will be here and will not be moved anywhere else.
 const (
-	// DirPerm defines the permissions for created directories.
-	DirPerm = 0o750 // rwxr-x---
-	// FilePerm defines the permissions for created files.
-	FilePerm = 0o600 // rw-------
+	// dirPerm defines the permissions for created directories.
+	dirPerm = 0o750 // rwxr-x---
+	// filePerm defines the permissions for created files.
+	filePerm = 0o600 // rw-------
 )
 
 // main parses command-line flags, reads configuration, processes currency data, and handles errors.
@@ -47,7 +47,7 @@ func main() {
 
 	valCurs = sorts.SortDataByValue(valCurs)
 
-	err = files.WriteDataToJSON(valCurs, settings.OutputFileSetting, DirPerm, FilePerm)
+	err = files.WriteDataToJSON(valCurs, settings.OutputFileSetting, dirPerm, filePerm)
 	if err != nil {
 		log.Fatalf("Failed to write JSON file: %v", err)
 	}

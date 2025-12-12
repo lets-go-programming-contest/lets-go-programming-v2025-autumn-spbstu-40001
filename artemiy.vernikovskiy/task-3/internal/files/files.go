@@ -8,6 +8,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -78,18 +79,18 @@ func ReadAndParseXML(xmlFilePath string) (models.ValCurs, error) {
 
 // WriteJSON writes the provided data of generic type T to a JSON file.
 // It creates necessary directories and returns any error encountered.
-func WriteJSON[T any](data T, jsonFilePath string, DirPerm, FilePerm int) error {
+func WriteJSON[T any](data T, jsonFilePath string, dirPerm, filePerm fs.FileMode) error {
 	jsonData, err := json.MarshalIndent(data, "", "\t")
 	if err != nil {
 		return fmt.Errorf("error marshaling to JSON: %w", err)
 	}
 
-	err = os.MkdirAll(filepath.Dir(jsonFilePath), DirPerm)
+	err = os.MkdirAll(filepath.Dir(jsonFilePath), dirPerm)
 	if err != nil {
 		return fmt.Errorf("error creating directories: %w", err)
 	}
 
-	err = os.WriteFile(jsonFilePath, jsonData, FilePerm)
+	err = os.WriteFile(jsonFilePath, jsonData, filePerm)
 	if err != nil {
 		return fmt.Errorf("error writing JSON file: %w", err)
 	}
@@ -100,6 +101,6 @@ func WriteJSON[T any](data T, jsonFilePath string, DirPerm, FilePerm int) error 
 // WriteDataToJSON writes the ValCurs data to a JSON file.
 // It creates necessary directories and returns any error encountered.
 // This function is now implemented using the generic WriteJSON function for better reusability.
-func WriteDataToJSON(valCurs models.ValCurs, jsonFilePath string, DirPerm, FilePerm int) error {
-	return WriteJSON(valCurs.Valutes, jsonFilePath, DirPerm, FilePerm)
+func WriteDataToJSON(valCurs models.ValCurs, jsonFilePath string, dirPerm, filePerm fs.FileMode) error {
+	return WriteJSON(valCurs.Valutes, jsonFilePath, dirPerm, filePerm)
 }
