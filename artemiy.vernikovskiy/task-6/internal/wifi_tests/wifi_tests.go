@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	taskWifiPack "github.com/artemiy.vernikovskiy/task-6/internal/wifi"
-	
+
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,26 +17,26 @@ var ErrExpected = errors.New("expected error")
 func TestWiFiServiceGetAddressesSuccess(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := new(MockWiFiHandle)
+	mockWiFi := new(taskWifiPack.WifiHandle)
 
 	hwAddr1, _ := net.ParseMAC("00:11:22:33:44:55")
 	hwAddr2, _ := net.ParseMAC("aa:bb:cc:dd:ee:ff")
 
 	interfaces := []*wifi.Interface{
 		{
-		    Name: "wlan0", HardwareAddr: hwAddr1
+			Name: "wlan0", HardwareAddr: hwAddr1,
 		},
 		{
-		    Name: "wlan1", HardwareAddr: hwAddr2
+			Name: "wlan1", HardwareAddr: hwAddr2,
 		},
 		{
-		    Name: "wlan2", HardwareAddr: hwAddr2
+			Name: "wlan2", HardwareAddr: hwAddr2,
 		},
 	}
 
 	mockWiFi.On("Interfaces").Return(interfaces, nil)
 
-	service := myWifi.New(mockWiFi)
+	service := taskWifiPack.New(mockWiFi)
 	addrs, err := service.GetAddresses()
 
 	require.NoError(t, err)
@@ -51,10 +51,10 @@ func TestWiFiServiceGetAddressesSuccess(t *testing.T) {
 func TestWiFiServiceGetAddressesError(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := new(MockWiFiHandle)
+	mockWiFi := new(taskWifiPack.WifiHandle)
 	mockWiFi.On("Interfaces").Return([]*wifi.Interface{}, ErrExpected)
 
-	service := myWifi.New(mockWiFi)
+	service := taskWifiPack.New(mockWiFi)
 	addrs, err := service.GetAddresses()
 
 	require.Error(t, err)
@@ -64,16 +64,15 @@ func TestWiFiServiceGetAddressesError(t *testing.T) {
 	mockWiFi.AssertExpectations(t)
 }
 
-
 func TestWiFiServiceGetNamesSuccess(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := new(MockWiFiHandle)
+	mockWiFi := new(taskWifiPack.WifiHandle)
 
 	hwAddr, _ := net.ParseMAC("13:37:de:ad:be:ef")
 	interfaces := []*wifi.Interface{
 		{
-		    Name: "wlan0", HardwareAddr: hwAddr
+			Name: "wlan0", HardwareAddr: hwAddr,
 		},
 		{Name: "wlan1"},
 		{Name: "eth0"},
@@ -81,7 +80,7 @@ func TestWiFiServiceGetNamesSuccess(t *testing.T) {
 
 	mockWiFi.On("Interfaces").Return(interfaces, nil)
 
-	service := myWifi.New(mockWiFi)
+	service := taskWifiPack.New(mockWiFi)
 	names, err := service.GetNames()
 
 	require.NoError(t, err)
@@ -94,12 +93,12 @@ func TestWiFiServiceGetNamesSuccess(t *testing.T) {
 func TestWiFiServiceGetNamesEmpty(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := new(MockWiFiHandle)
+	mockWiFi := new(taskWifiPack.WifiHandle)
 	interfaces := []*wifi.Interface{}
 
 	mockWiFi.On("Interfaces").Return(interfaces, nil)
 
-	service := myWifi.New(mockWiFi)
+	service := taskWifiPack.New(mockWiFi)
 	names, err := service.GetNames()
 
 	require.NoError(t, err)
@@ -111,10 +110,10 @@ func TestWiFiServiceGetNamesEmpty(t *testing.T) {
 func TestWiFiServiceGetNamesError(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := new(MockWiFiHandle)
+	mockWiFi := new(taskWifiPack.WifiHandle)
 	mockWiFi.On("Interfaces").Return([]*wifi.Interface{}, ErrExpected)
 
-	service := myWifi.New(mockWiFi)
+	service := taskWifiPack.New(mockWiFi)
 	names, err := service.GetNames()
 
 	require.Error(t, err)
@@ -127,9 +126,9 @@ func TestWiFiServiceGetNamesError(t *testing.T) {
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := new(MockWiFiHandle)
-	service := myWifi.New(mockWiFi)
-	
+	mockWiFi := new(taskWifiPack.WifiHandle)
+	service := taskWifiPack.New(mockWiFi)
+
 	assert.NotNil(t, service)
 	assert.Equal(t, mockWiFi, service.WiFi)
 }

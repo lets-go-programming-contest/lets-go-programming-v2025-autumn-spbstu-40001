@@ -5,15 +5,15 @@ import (
 	"testing"
 
 	"github.com/artemiy.vernikovskiy/task-6/internal/db"
-	
+
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 const (
-    const sqlGetNames := "SELECT name FROM users"
-    const sqlGetUniqueNames := "SELECT DISTINCT name FROM users"
+	sqlGetNames       = "SELECT name FROM users"
+	sqlGetUniqueNames = "SELECT DISTINCT name FROM users"
 )
 
 func TestDBServiceGetNamesSuccess(t *testing.T) {
@@ -121,7 +121,7 @@ func TestDBServiceGetUniqueNamesSuccess(t *testing.T) {
 	assert.Len(t, names, 3)
 	assert.Equal(t, "UniqueName1FantasyDied", names[0])
 	assert.Equal(t, "AgroCultureIsTheBest", names[1])
-	assert.Equal(t, "GodLovesNumber3Large", names[2])	
+	assert.Equal(t, "GodLovesNumber3Large", names[2])
 }
 
 func TestDBServiceGetUniqueNamesEmpty(t *testing.T) {
