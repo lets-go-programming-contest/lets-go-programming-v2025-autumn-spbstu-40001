@@ -68,8 +68,6 @@ func (c *pipeline) RegisterDecorator(
 	outCh := c.getOrCreateChannel(output)
 
 	task := func(ctx context.Context) error {
-		//		defer close(outCh)
-
 		return function(ctx, inCh, outCh)
 	}
 
@@ -91,8 +89,6 @@ func (c *pipeline) RegisterMultiplexer(
 	outCh := c.getOrCreateChannel(output)
 
 	task := func(ctx context.Context) error {
-		//		defer close(outCh)
-
 		return function(ctx, inputChannels, outCh)
 	}
 
@@ -114,12 +110,6 @@ func (c *pipeline) RegisterSeparator(
 	}
 
 	task := func(ctx context.Context) error {
-		//		defer func() {
-		//			for _, ch := range outputChannels {
-		//				close(ch)
-		//			}
-		//		}()
-
 		return function(ctx, inCh, outputChannels)
 	}
 
