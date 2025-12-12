@@ -71,8 +71,6 @@ func (c *conveyer) RegisterDecorator(
 	outCh := c.getOrCreateChan(output)
 
 	task := func(ctx context.Context) error {
-		defer close(outCh)
-
 		return decoratorFunc(ctx, inCh, outCh)
 	}
 
@@ -94,8 +92,6 @@ func (c *conveyer) RegisterMultiplexer(
 	outCh := c.getOrCreateChan(output)
 
 	task := func(ctx context.Context) error {
-		defer close(outCh)
-
 		return multiplexerFunc(ctx, inputChans, outCh)
 	}
 
@@ -117,12 +113,6 @@ func (c *conveyer) RegisterSeparator(
 	}
 
 	task := func(ctx context.Context) error {
-		defer func() {
-			for _, out := range outputChans {
-				close(out)
-			}
-		}()
-
 		return separatorFunc(ctx, inCh, outputChans)
 	}
 
@@ -133,20 +123,22 @@ func (c *conveyer) RegisterSeparator(
 
 func (c *conveyer) Run(ctx context.Context) error {
 	c.mu.Lock()
-
 	if c.running {
 		c.mu.Unlock()
-
 		return ErrConveyerRunning
 	}
-
 	c.running = true
 	c.mu.Unlock()
 
 	defer func() {
 		c.mu.Lock()
+		defer c.mu.Unlock()
+
+		for _, ch := range c.chans {
+			close(ch)
+		}
+
 		c.running = false
-		c.mu.Unlock()
 	}()
 
 	errGroup, ctx := errgroup.WithContext(ctx)
