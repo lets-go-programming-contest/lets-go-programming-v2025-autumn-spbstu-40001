@@ -5,7 +5,7 @@ import (
 	"net"
 	"testing"
 
-	taskWifiPack "github.com/artemiy.vernikovskiy/task-6/internal/wifi"
+	taskWifiPack "github.com/Aapng-cmd/task-6/internal/wifi"
 
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +17,7 @@ var ErrExpected = errors.New("expected error")
 func TestWiFiServiceGetAddressesSuccess(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := new(taskWifiPack.WifiHandle)
+	mockWiFi := new(taskWifiPack.WiFiHandle)
 
 	hwAddr1, _ := net.ParseMAC("00:11:22:33:44:55")
 	hwAddr2, _ := net.ParseMAC("aa:bb:cc:dd:ee:ff")
@@ -51,7 +51,7 @@ func TestWiFiServiceGetAddressesSuccess(t *testing.T) {
 func TestWiFiServiceGetAddressesError(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := new(taskWifiPack.WifiHandle)
+	mockWiFi := new(taskWifiPack.WiFiHandle)
 	mockWiFi.On("Interfaces").Return([]*wifi.Interface{}, ErrExpected)
 
 	service := taskWifiPack.New(mockWiFi)
@@ -67,7 +67,7 @@ func TestWiFiServiceGetAddressesError(t *testing.T) {
 func TestWiFiServiceGetNamesSuccess(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := new(taskWifiPack.WifiHandle)
+	mockWiFi := new(taskWifiPack.WiFiHandle)
 
 	hwAddr, _ := net.ParseMAC("13:37:de:ad:be:ef")
 	interfaces := []*wifi.Interface{
@@ -93,7 +93,7 @@ func TestWiFiServiceGetNamesSuccess(t *testing.T) {
 func TestWiFiServiceGetNamesEmpty(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := new(taskWifiPack.WifiHandle)
+	mockWiFi := new(taskWifiPack.WiFiHandle)
 	interfaces := []*wifi.Interface{}
 
 	mockWiFi.On("Interfaces").Return(interfaces, nil)
@@ -110,7 +110,7 @@ func TestWiFiServiceGetNamesEmpty(t *testing.T) {
 func TestWiFiServiceGetNamesError(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := new(taskWifiPack.WifiHandle)
+	mockWiFi := new(taskWifiPack.WiFiHandle)
 	mockWiFi.On("Interfaces").Return([]*wifi.Interface{}, ErrExpected)
 
 	service := taskWifiPack.New(mockWiFi)
@@ -126,7 +126,7 @@ func TestWiFiServiceGetNamesError(t *testing.T) {
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := new(taskWifiPack.WifiHandle)
+	mockWiFi := new(taskWifiPack.WiFiHandle)
 	service := taskWifiPack.New(mockWiFi)
 
 	assert.NotNil(t, service)
