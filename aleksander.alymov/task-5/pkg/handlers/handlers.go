@@ -13,6 +13,12 @@ var (
 	ErrCannotMultiplex   = errors.New("can't multiplex")
 )
 
+const (
+	NoDecoratorMarker   = "no decorator"
+	NoMultiplexerMarker = "no multiplexer"
+	DecoratedPrefix     = "decorated: "
+)
+
 func PrefixDecoratorFunc(ctx context.Context, input, output chan string) error {
 	for {
 		select {
@@ -23,12 +29,12 @@ func PrefixDecoratorFunc(ctx context.Context, input, output chan string) error {
 				return nil
 			}
 
-			if strings.Contains(val, "no decorator") {
+			if strings.Contains(val, NoDecoratorMarker) {
 				return ErrCannotBeDecorated
 			}
 
-			if !strings.HasPrefix(val, "decorated: ") {
-				val = "decorated: " + val
+			if !strings.HasPrefix(val, DecoratedPrefix) {
+				val = DecoratedPrefix + val
 			}
 
 			select {
@@ -41,6 +47,10 @@ func PrefixDecoratorFunc(ctx context.Context, input, output chan string) error {
 }
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
+	if len(inputs) == 0 {
+		return nil
+	}
+
 	var waitGroup sync.WaitGroup
 
 	processInput := func(inputChan chan string) {
@@ -55,7 +65,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					return
 				}
 
-				if strings.Contains(val, "no multiplexer") {
+				if strings.Contains(val, NoMultiplexerMarker) {
 					continue
 				}
 
@@ -70,10 +80,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 	for _, inputChan := range inputs {
 		waitGroup.Add(1)
-
-		go func() {
-			processInput(inputChan)
-		}()
+		go processInput(inputChan)
 	}
 
 	done := make(chan struct{})
@@ -91,8 +98,11 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 }
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
-	var counter int64 = -1
+	if len(outputs) == 0 {
+		return nil
+	}
 
+	var counter int64 = -1
 	outputsCount := len(outputs)
 
 	for {
