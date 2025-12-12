@@ -189,6 +189,7 @@ func (c *conveyer) Recv(output string) (string, error) {
 		if !ok {
 			return Undefined, nil
 		}
+
 		return val, nil
 	default:
 		return "", ErrNoData
