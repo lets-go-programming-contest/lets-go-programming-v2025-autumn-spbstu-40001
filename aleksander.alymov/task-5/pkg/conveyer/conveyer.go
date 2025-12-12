@@ -125,8 +125,10 @@ func (c *conveyer) Run(ctx context.Context) error {
 	c.mu.Lock()
 	if c.running {
 		c.mu.Unlock()
+
 		return ErrConveyerRunning
 	}
+
 	c.running = true
 	c.mu.Unlock()
 
