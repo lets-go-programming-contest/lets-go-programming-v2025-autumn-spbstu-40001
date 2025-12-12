@@ -11,7 +11,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		return nil
 	}
 
-	inMerged := make(chan string)
+	inMerged := make(chan string, len(inputs)*10)
 	var wg sync.WaitGroup
 
 	for _, ch := range inputs {
