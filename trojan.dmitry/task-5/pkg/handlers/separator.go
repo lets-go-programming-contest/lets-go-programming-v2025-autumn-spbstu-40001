@@ -29,14 +29,15 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			}
 
 			for attempts := 0; attempts < len(outputs); attempts++ {
-				out := outputs[idx%len(outputs)]
+				currentIdx := (idx + attempts) % len(outputs)
 				select {
 				case <-ctx.Done():
 					return ctx.Err()
-				case out <- v:
+				case outputs[currentIdx] <- v:
+					idx = (currentIdx + 1) % len(outputs)
 					goto next
 				default:
-					idx = (idx + 1) % len(outputs)
+					continue
 				}
 			}
 
@@ -47,7 +48,6 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			}
 
 		next:
-			idx = (idx + 1) % len(outputs)
 		}
 	}
 }

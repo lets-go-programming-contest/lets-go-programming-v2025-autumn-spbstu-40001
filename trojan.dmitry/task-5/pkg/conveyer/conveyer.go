@@ -39,6 +39,11 @@ type Conveyer struct {
 	decorators   []decoratorHandler
 	multiplexers []multiplexerHandler
 	separators   []separatorHandler
+
+	runCtx    context.Context
+	runCancel context.CancelFunc
+	running   bool
+	runningMu sync.RWMutex
 }
 
 func New(size int) *Conveyer {
@@ -131,10 +136,12 @@ func (c *Conveyer) Send(input string, data string) error {
 		return err
 	}
 
-	defer func() { _ = recover() }()
-
-	ch <- data
-	return nil
+	select {
+	case ch <- data:
+		return nil
+	case <-c.runCtx.Done():
+		return c.runCtx.Err()
+	}
 }
 
 func (c *Conveyer) Recv(output string) (string, error) {
@@ -143,15 +150,39 @@ func (c *Conveyer) Recv(output string) (string, error) {
 		return "", err
 	}
 
-	v, ok := <-ch
-	if !ok {
-		return UndefinedMsg, nil
+	select {
+	case v, ok := <-ch:
+		if !ok {
+			return UndefinedMsg, nil
+		}
+		return v, nil
+	case <-c.runCtx.Done():
+		return "", c.runCtx.Err()
 	}
-	return v, nil
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
-	g, ctx := errgroup.WithContext(ctx)
+	c.runningMu.Lock()
+	if c.running {
+		c.runningMu.Unlock()
+		return errors.New("conveyer is already running")
+	}
+
+	c.runCtx, c.runCancel = context.WithCancel(ctx)
+	c.running = true
+	c.runningMu.Unlock()
+
+	defer func() {
+		c.runningMu.Lock()
+		c.running = false
+		if c.runCancel != nil {
+			c.runCancel()
+			c.runCancel = nil
+		}
+		c.runningMu.Unlock()
+	}()
+
+	g, ctx := errgroup.WithContext(c.runCtx)
 
 	for _, d := range c.decorators {
 		in := c.ensureChan(d.input)
@@ -202,4 +233,12 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	c.chansMu.Unlock()
 
 	return err
+}
+
+func (c *Conveyer) Stop() {
+	c.runningMu.RLock()
+	if c.runCancel != nil {
+		c.runCancel()
+	}
+	c.runningMu.RUnlock()
 }
