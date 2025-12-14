@@ -153,10 +153,6 @@ func (c *ConveyerImpl) Send(input string, data string) error {
 		return err
 	}
 
-	defer func() {
-		_ = recover()
-	}()
-
 	targetChannel <- data
 
 	return nil
