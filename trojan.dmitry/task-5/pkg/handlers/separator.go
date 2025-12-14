@@ -5,6 +5,12 @@ import (
 )
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
+	defer func() {
+		for _, out := range outputs {
+			close(out)
+		}
+	}()
+
 	if len(outputs) == 0 {
 		for {
 			select {
@@ -28,26 +34,20 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 				return nil
 			}
 
-			for attempts := 0; attempts < len(outputs); attempts++ {
-				currentIdx := (idx + attempts) % len(outputs)
+			for i := 0; i < len(outputs); i++ {
+				currentIdx := (idx + i) % len(outputs)
 				select {
 				case <-ctx.Done():
 					return ctx.Err()
 				case outputs[currentIdx] <- v:
-					idx = (currentIdx + 1) % len(outputs)
-					goto next
+					break
 				default:
 					continue
 				}
+				break
 			}
 
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case outputs[idx%len(outputs)] <- v:
-			}
-
-		next:
+			idx = (idx + 1) % len(outputs)
 		}
 	}
 }
