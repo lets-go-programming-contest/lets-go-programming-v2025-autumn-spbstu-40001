@@ -7,7 +7,10 @@ import (
 )
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
-	defer close(output)
+	defer func() {
+		recover()
+	}()
+
 	for {
 		select {
 		case <-ctx.Done():

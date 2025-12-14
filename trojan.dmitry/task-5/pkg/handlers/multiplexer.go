@@ -7,7 +7,6 @@ import (
 )
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	defer close(output)
 	if len(inputs) == 0 {
 		return nil
 	}
