@@ -6,32 +6,39 @@ import (
 	"strings"
 )
 
-func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
-	defer func() {
-		recover()
-	}()
+var ErrDecorator = errors.New("can't be decorated")
 
+const (
+	Decorator   = "decorated: "
+	NoDecorator = "no decorator"
+)
+
+func PrefixDecoratorFunc(
+	ctx context.Context,
+	input chan string,
+	output chan string,
+) error {
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
-		case v, ok := <-input:
+			return nil
+		case message, ok := <-input:
 			if !ok {
 				return nil
 			}
 
-			if strings.Contains(v, "no decorator") {
-				return errors.New("can't be decorated")
+			if strings.Contains(message, NoDecorator) {
+				return ErrDecorator
 			}
 
-			if !strings.HasPrefix(v, "decorated: ") {
-				v = "decorated: " + v
+			if !strings.HasPrefix(message, Decorator) {
+				message = Decorator + message
 			}
 
 			select {
+			case output <- message:
 			case <-ctx.Done():
-				return ctx.Err()
-			case output <- v:
+				return nil
 			}
 		}
 	}

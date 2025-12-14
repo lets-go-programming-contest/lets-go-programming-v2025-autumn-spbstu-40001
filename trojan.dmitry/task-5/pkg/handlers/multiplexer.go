@@ -2,61 +2,56 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"sync"
 )
 
-func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
+var ErrEmptyChannel = errors.New("channel can't be empty")
+
+const NoMultiplexer = "no multiplexer"
+
+func MultiplexerFunc(
+	ctx context.Context,
+	inputs []chan string,
+	output chan string,
+) error {
 	if len(inputs) == 0 {
-		return nil
+		return ErrEmptyChannel
 	}
 
-	inMerged := make(chan string, len(inputs)*10)
-	var wg sync.WaitGroup
+	var waitGrp sync.WaitGroup
 
-	for _, ch := range inputs {
-		wg.Add(1)
-		go func(cch chan string) {
-			defer wg.Done()
+	waitGrp.Add(len(inputs))
+
+	for _, channel := range inputs {
+		go func(inputChannel chan string) {
+			defer waitGrp.Done()
+
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case v, ok := <-cch:
+				case message, ok := <-inputChannel:
 					if !ok {
 						return
 					}
+
+					if strings.Contains(message, NoMultiplexer) {
+						continue
+					}
+
 					select {
+					case output <- message:
 					case <-ctx.Done():
 						return
-					case inMerged <- v:
 					}
 				}
 			}
-		}(ch)
+		}(channel)
 	}
 
-	go func() {
-		wg.Wait()
-		close(inMerged)
-	}()
+	waitGrp.Wait()
 
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case v, ok := <-inMerged:
-			if !ok {
-				return nil
-			}
-			if strings.Contains(v, "no multiplexer") {
-				continue
-			}
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case output <- v:
-			}
-		}
-	}
+	return nil
 }

@@ -4,55 +4,33 @@ import (
 	"context"
 )
 
-func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
+func SeparatorFunc(
+	ctx context.Context,
+	input chan string,
+	outputs []chan string,
+) error {
 	if len(outputs) == 0 {
-		for {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case _, ok := <-input:
-				if !ok {
-					return nil
-				}
-			}
-		}
+		return ErrEmptyChannel
 	}
 
-	idx := 0
+	var index int
+
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
-		case v, ok := <-input:
+			return nil
+		case message, ok := <-input:
 			if !ok {
 				return nil
 			}
 
-			sent := false
-			for attempts := 0; attempts < len(outputs); attempts++ {
-				currentIdx := (idx + attempts) % len(outputs)
-				select {
-				case <-ctx.Done():
-					return ctx.Err()
-				case outputs[currentIdx] <- v:
-					sent = true
-					idx = (currentIdx + 1) % len(outputs)
-					break
-				default:
-					continue
-				}
-				if sent {
-					break
-				}
-			}
+			targetChannel := outputs[index]
+			index = (index + 1) % len(outputs)
 
-			if !sent {
-				select {
-				case <-ctx.Done():
-					return ctx.Err()
-				case outputs[idx%len(outputs)] <- v:
-				}
-				idx = (idx + 1) % len(outputs)
+			select {
+			case targetChannel <- message:
+			case <-ctx.Done():
+				return nil
 			}
 		}
 	}
