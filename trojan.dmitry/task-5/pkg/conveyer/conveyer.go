@@ -144,6 +144,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	for _, t := range c.tasks {
 		task := t
+
 		errgr.Go(func() error {
 			return task(ctx)
 		})
