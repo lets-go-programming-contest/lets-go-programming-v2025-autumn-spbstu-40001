@@ -3,6 +3,7 @@ package conveyer
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 
 	"golang.org/x/sync/errgroup"
@@ -26,6 +27,7 @@ func New(size int) *Conveyer {
 		size:     size,
 		channels: make(map[string]chan string),
 		tasks:    make([]Task, 0),
+		mutex:    sync.RWMutex{},
 	}
 }
 
@@ -139,6 +141,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	errgr, ctx := errgroup.WithContext(ctx)
 
 	c.mutex.RLock()
+
 	for _, t := range c.tasks {
 		task := t
 		errgr.Go(func() error {
@@ -147,7 +150,12 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	}
 	c.mutex.RUnlock()
 
-	return errgr.Wait()
+	err := errgr.Wait()
+	if err != nil {
+		return fmt.Errorf("conveyer run failed: %w", err)
+	}
+
+	return nil
 }
 
 func (c *Conveyer) closeChannels() {
