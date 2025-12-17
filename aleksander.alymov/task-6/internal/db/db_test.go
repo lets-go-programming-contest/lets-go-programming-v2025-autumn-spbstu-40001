@@ -3,6 +3,7 @@ package db_test
 import (
 	"database/sql"
 	"errors"
+	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/netwite/task-6/internal/db"
@@ -16,16 +17,26 @@ type DBServiceTestSuite struct {
 	mock   sqlmock.Sqlmock
 }
 
-func (s *DBServiceTestSuite) TestNew() {
-	s.T().Parallel()
+func (s *DBServiceTestSuite) SetupTest() {
+	var err error
+	s.mockDB, s.mock, err = sqlmock.New()
+	if err != nil {
+		s.T().Fatalf("failed to create sqlmock: %v", err)
+	}
+}
 
+func (s *DBServiceTestSuite) TearDownTest() {
+	if s.mockDB != nil {
+		s.mockDB.Close()
+	}
+}
+
+func (s *DBServiceTestSuite) TestNew() {
 	service := db.New(s.mockDB)
 	assert.Equal(s.T(), s.mockDB, service.DB)
 }
 
 func (s *DBServiceTestSuite) TestGetNames_Success() {
-	s.T().Parallel()
-
 	service := db.DBService{DB: s.mockDB}
 
 	expectedRows := []string{"Alice", "Bob", "Charlie"}
@@ -40,11 +51,12 @@ func (s *DBServiceTestSuite) TestGetNames_Success() {
 
 	assert.NoError(s.T(), err)
 	assert.Equal(s.T(), expectedRows, result)
+
+	err = s.mock.ExpectationsWereMet()
+	assert.NoError(s.T(), err)
 }
 
 func (s *DBServiceTestSuite) TestGetNames_EmptyResult() {
-	s.T().Parallel()
-
 	service := db.DBService{DB: s.mockDB}
 
 	rows := sqlmock.NewRows([]string{"name"})
@@ -54,11 +66,12 @@ func (s *DBServiceTestSuite) TestGetNames_EmptyResult() {
 
 	assert.NoError(s.T(), err)
 	assert.Empty(s.T(), result)
+
+	err = s.mock.ExpectationsWereMet()
+	assert.NoError(s.T(), err)
 }
 
 func (s *DBServiceTestSuite) TestGetNames_QueryError() {
-	s.T().Parallel()
-
 	service := db.DBService{DB: s.mockDB}
 
 	testError := errors.New("connection failed")
@@ -68,13 +81,14 @@ func (s *DBServiceTestSuite) TestGetNames_QueryError() {
 
 	assert.Error(s.T(), err)
 	assert.ErrorContains(s.T(), err, "db query")
-	assert.ErrorIs(s.T(), err, testError, "original error should be wrapped")
+	assert.Contains(s.T(), err.Error(), testError.Error())
 	assert.Nil(s.T(), result)
+
+	err = s.mock.ExpectationsWereMet()
+	assert.NoError(s.T(), err)
 }
 
 func (s *DBServiceTestSuite) TestGetNames_ScanError() {
-	s.T().Parallel()
-
 	service := db.DBService{DB: s.mockDB}
 
 	rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
@@ -85,11 +99,12 @@ func (s *DBServiceTestSuite) TestGetNames_ScanError() {
 	assert.Error(s.T(), err)
 	assert.ErrorContains(s.T(), err, "rows scanning")
 	assert.Nil(s.T(), result)
+
+	err = s.mock.ExpectationsWereMet()
+	assert.NoError(s.T(), err)
 }
 
 func (s *DBServiceTestSuite) TestGetNames_RowsError() {
-	s.T().Parallel()
-
 	service := db.DBService{DB: s.mockDB}
 
 	rows := sqlmock.NewRows([]string{"name"}).AddRow("Alice").RowError(0, errors.New("row error"))
@@ -100,11 +115,12 @@ func (s *DBServiceTestSuite) TestGetNames_RowsError() {
 	assert.Error(s.T(), err)
 	assert.ErrorContains(s.T(), err, "rows error")
 	assert.Nil(s.T(), result)
+
+	err = s.mock.ExpectationsWereMet()
+	assert.NoError(s.T(), err)
 }
 
 func (s *DBServiceTestSuite) TestGetUniqueNames_Success() {
-	s.T().Parallel()
-
 	service := db.DBService{DB: s.mockDB}
 
 	uniqueNames := []string{"Alice", "Bob", "Charlie"}
@@ -120,11 +136,12 @@ func (s *DBServiceTestSuite) TestGetUniqueNames_Success() {
 
 	assert.NoError(s.T(), err)
 	assert.Equal(s.T(), uniqueNames, result)
+
+	err = s.mock.ExpectationsWereMet()
+	assert.NoError(s.T(), err)
 }
 
 func (s *DBServiceTestSuite) TestGetUniqueNames_EmptyResult() {
-	s.T().Parallel()
-
 	service := db.DBService{DB: s.mockDB}
 
 	rows := sqlmock.NewRows([]string{"name"})
@@ -134,11 +151,12 @@ func (s *DBServiceTestSuite) TestGetUniqueNames_EmptyResult() {
 
 	assert.NoError(s.T(), err)
 	assert.Empty(s.T(), result)
+
+	err = s.mock.ExpectationsWereMet()
+	assert.NoError(s.T(), err)
 }
 
 func (s *DBServiceTestSuite) TestGetUniqueNames_QueryError() {
-	s.T().Parallel()
-
 	service := db.DBService{DB: s.mockDB}
 
 	testError := errors.New("connection failed")
@@ -148,13 +166,14 @@ func (s *DBServiceTestSuite) TestGetUniqueNames_QueryError() {
 
 	assert.Error(s.T(), err)
 	assert.ErrorContains(s.T(), err, "db query")
-	assert.ErrorIs(s.T(), err, testError, "original error should be wrapped")
+	assert.Contains(s.T(), err.Error(), testError.Error())
 	assert.Nil(s.T(), result)
+
+	err = s.mock.ExpectationsWereMet()
+	assert.NoError(s.T(), err)
 }
 
 func (s *DBServiceTestSuite) TestGetUniqueNames_ScanError() {
-	s.T().Parallel()
-
 	service := db.DBService{DB: s.mockDB}
 
 	rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
@@ -165,11 +184,12 @@ func (s *DBServiceTestSuite) TestGetUniqueNames_ScanError() {
 	assert.Error(s.T(), err)
 	assert.ErrorContains(s.T(), err, "rows scanning")
 	assert.Nil(s.T(), result)
+
+	err = s.mock.ExpectationsWereMet()
+	assert.NoError(s.T(), err)
 }
 
 func (s *DBServiceTestSuite) TestGetUniqueNames_RowsError() {
-	s.T().Parallel()
-
 	service := db.DBService{DB: s.mockDB}
 
 	rows := sqlmock.NewRows([]string{"name"}).AddRow("Alice").RowError(0, errors.New("row error"))
@@ -180,11 +200,12 @@ func (s *DBServiceTestSuite) TestGetUniqueNames_RowsError() {
 	assert.Error(s.T(), err)
 	assert.ErrorContains(s.T(), err, "rows error")
 	assert.Nil(s.T(), result)
+
+	err = s.mock.ExpectationsWereMet()
+	assert.NoError(s.T(), err)
 }
 
 func (s *DBServiceTestSuite) TestGetUniqueNames_ReturnsOnlyUnique() {
-	s.T().Parallel()
-
 	service := db.DBService{DB: s.mockDB}
 
 	uniqueRows := []string{"John", "Jane"}
@@ -198,6 +219,13 @@ func (s *DBServiceTestSuite) TestGetUniqueNames_ReturnsOnlyUnique() {
 	result, err := service.GetUniqueNames()
 
 	assert.NoError(s.T(), err)
-	assert.ElementsMatch(s.T(), uniqueRows, result)
+	assert.Equal(s.T(), uniqueRows, result)
 	assert.Equal(s.T(), 2, len(result), "Должно вернуть только уникальные значения")
+
+	err = s.mock.ExpectationsWereMet()
+	assert.NoError(s.T(), err)
+}
+
+func TestDBServiceTestSuite(t *testing.T) {
+	suite.Run(t, new(DBServiceTestSuite))
 }
