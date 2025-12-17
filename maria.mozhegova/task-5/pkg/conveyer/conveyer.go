@@ -13,10 +13,12 @@ const Undefined = "undefined"
 
 var ErrChannelNotFound = errors.New("chan not found")
 
+type Worker func(context.Context) error
+
 type Conveyer struct {
 	mu           sync.RWMutex
 	channels     map[string]chan string
-	workers      []func(context.Context) error
+	workers      []Worker
 	chanCapacity int
 }
 
@@ -24,7 +26,7 @@ func New(size int) *Conveyer {
 	return &Conveyer{
 		mu:           sync.RWMutex{},
 		channels:     make(map[string]chan string),
-		workers:      []func(context.Context) error{},
+		workers:      make([]Worker, 0),
 		chanCapacity: size,
 	}
 }
@@ -44,13 +46,16 @@ func (c *Conveyer) getOrCreateChan(name string) chan string {
 	return tempChan
 }
 
-func (c *Conveyer) getChannel(name string) (chan string, bool) {
+func (c *Conveyer) getChannel(name string) (chan string, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
 	tempChan, exists := c.channels[name]
+	if exists {
+		return tempChan, nil
+	}
 
-	return tempChan, exists
+	return nil, ErrChannelNotFound
 }
 
 func (c *Conveyer) RegisterDecorator(
@@ -63,8 +68,6 @@ func (c *Conveyer) RegisterDecorator(
 
 	c.mu.Lock()
 	c.workers = append(c.workers, func(ctx context.Context) error {
-		defer close(outCh)
-
 		return funct(ctx, inCh, outCh)
 	})
 	c.mu.Unlock()
@@ -84,8 +87,6 @@ func (c *Conveyer) RegisterMultiplexer(
 
 	c.mu.Lock()
 	c.workers = append(c.workers, func(ctx context.Context) error {
-		defer close(outCh)
-
 		return funct(ctx, inChans, outCh)
 	})
 	c.mu.Unlock()
@@ -105,12 +106,6 @@ func (c *Conveyer) RegisterSeparator(
 
 	c.mu.Lock()
 	c.workers = append(c.workers, func(ctx context.Context) error {
-		defer func() {
-			for _, ch := range outChans {
-				close(ch)
-			}
-		}()
-
 		return funct(ctx, inCh, outChans)
 	})
 	c.mu.Unlock()
@@ -139,9 +134,9 @@ func (c *Conveyer) Run(ctx context.Context) error {
 }
 
 func (c *Conveyer) Send(input, data string) error {
-	channel, exists := c.getChannel(input)
-	if !exists {
-		return ErrChannelNotFound
+	channel, err := c.getChannel(input)
+	if err != nil {
+		return err
 	}
 
 	defer func() {
@@ -154,9 +149,9 @@ func (c *Conveyer) Send(input, data string) error {
 }
 
 func (c *Conveyer) Recv(output string) (string, error) {
-	channel, exists := c.getChannel(output)
-	if !exists {
-		return "", ErrChannelNotFound
+	channel, err := c.getChannel(output)
+	if err != nil {
+		return "", err
 	}
 
 	val, ok := <-channel
