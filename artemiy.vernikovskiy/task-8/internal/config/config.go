@@ -9,7 +9,7 @@ import (
 
 // will this help? Because i thought i needed only tag-related build
 //
-//go:embed test_debug.yaml
+//go:embed test_prod.yaml
 var configFile []byte
 
 type Config struct {
