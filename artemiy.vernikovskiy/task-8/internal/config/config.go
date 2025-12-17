@@ -1,3 +1,5 @@
+//go:build WOW_THIS_SHOULD_NOT_HAPPEN
+
 package config
 
 import (
@@ -5,6 +7,8 @@ import (
 
 	"gopkg.in/yaml.v3"
 )
+
+var configFile []byte
 
 type Config struct {
 	Env      string `yaml:"environment"`
