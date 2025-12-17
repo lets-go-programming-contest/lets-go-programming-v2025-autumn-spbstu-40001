@@ -1,5 +1,3 @@
-//go:build WOW_THIS_SHOULD_NOT_HAPPEN
-
 package config
 
 import (
@@ -8,6 +6,9 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// will this help? Because i thought i needed only tag-related build
+//
+//go:embed test_debug.yaml
 var configFile []byte
 
 type Config struct {
