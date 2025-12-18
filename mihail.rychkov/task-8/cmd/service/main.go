@@ -1,13 +1,18 @@
-package main;
+package main
 
-import "fmt";
-import "github.com/Rychmick/task-8/internal/config";
+import (
+	"fmt"
+
+	"github.com/Rychmick/task-8/internal/config"
+)
 
 func main() {
-	cfg, err := config.GetActive();
-	if (err != nil) {
-		fmt.Println("failed to load config: %w");
-		return;
+	cfg, err := config.GetActive()
+	if err != nil {
+		fmt.Println("failed to load config: %w")
+
+		return
 	}
-	fmt.Println(cfg.Env, cfg.LogLvl);
+
+	fmt.Println(cfg.Env, cfg.LogLvl)
 }

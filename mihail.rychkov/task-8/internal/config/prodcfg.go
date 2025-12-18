@@ -1,8 +1,8 @@
 //go:build !dev
 
-package config;
+package config
 
-import _ "embed";
+import _ "embed"
 
 //go:embed prod.yaml
-var activeConfigRaw []byte;
+var activeConfigRaw []byte
