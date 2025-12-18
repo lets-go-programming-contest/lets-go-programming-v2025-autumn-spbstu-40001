@@ -18,8 +18,10 @@ func (_m *WiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 		panic("no return value specified for Interfaces")
 	}
 
-	var r0 []*wifi.Interface
-	var r1 error
+	var (
+		r0 []*wifi.Interface
+		r1 error
+	)
 
 	if rf, ok := ret.Get(0).(func() ([]*wifi.Interface, error)); ok {
 		return rf()
@@ -46,8 +48,9 @@ func (_m *WiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 
 func NewWiFiHandle(t interface {
 	mock.TestingT
-	Cleanup(func())
+	Cleanup(cleanupFunc func())
 }) *WiFiHandle {
+
 	mock := &WiFiHandle{}
 	mock.Mock.Test(t)
 
