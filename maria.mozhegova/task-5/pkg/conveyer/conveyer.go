@@ -146,11 +146,6 @@ func (c *Conveyer) Send(input, data string) error {
 	if err != nil {
 		return err
 	}
-
-	defer func() {
-		_ = recover()
-	}()
-
 	channel <- data
 
 	return nil
