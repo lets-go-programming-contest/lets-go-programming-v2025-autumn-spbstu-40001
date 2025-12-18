@@ -10,12 +10,6 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
-func panicIfErr(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
 func ParseCurrencyRateFromXML[T any](inputFilePath string) (*T, error) {
 	data, err := os.ReadFile(inputFilePath)
 	if err != nil {

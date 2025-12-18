@@ -13,12 +13,12 @@ import (
 type Currency struct {
 	NumCode  int     `json:"num_code" xml:"NumCode"`
 	CharCode string  `json:"char_code" xml:"CharCode"`
-	Value    float64 `json:"value" xml:"Value"`
+	Value    float64 `json:"value"     xml:"Value"`
 }
 
 type xmlCurrency Currency
 
-func (xc *xmlCurrency) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+func (xc *xmlCurrency) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
 	type rawCurrency struct {
 		NumCode  int    `xml:"NumCode"`
 		CharCode string `xml:"CharCode"`
@@ -26,12 +26,14 @@ func (xc *xmlCurrency) UnmarshalXML(d *xml.Decoder, start xml.StartElement) erro
 	}
 
 	var raw rawCurrency
-	if err := d.DecodeElement(&raw, &start); err != nil {
+
+	if err := decoder.DecodeElement(&raw, &start); err != nil {
 		return fmt.Errorf("decode element: %w", err)
 	}
 
 	valueStr := strings.Replace(raw.Value, ",", ".", 1)
 	value, err := strconv.ParseFloat(valueStr, 64)
+
 	if err != nil {
 		return fmt.Errorf("parse value %q: %w", raw.Value, err)
 	}
@@ -54,6 +56,7 @@ func ParseFromXMLFile(inputFilePath string) ([]Currency, error) {
 	}
 
 	currencies := make([]Currency, len(valCurs.Valutes))
+
 	for i, xc := range valCurs.Valutes {
 		currencies[i] = Currency(xc)
 	}
