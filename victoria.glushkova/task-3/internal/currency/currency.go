@@ -14,23 +14,22 @@ type Currency struct {
 	Value    float64 `json:"value"     xml:"Value"`
 }
 
-type currencyXML struct {
-	NumCode  int    `xml:"NumCode"`
-	CharCode string `xml:"CharCode"`
-	Value    string `xml:"Value"`
-}
-
-type ValCursXML struct {
-	Valutes []currencyXML `xml:"Valute"`
+type valCursXML struct {
+	Valutes []struct {
+		NumCode  int    `xml:"NumCode"`
+		CharCode string `xml:"CharCode"`
+		Value    string `xml:"Value"`
+	} `xml:"Valute"`
 }
 
 func ParseFromXMLFile(inputFilePath string) ([]Currency, error) {
-	valCurs, err := xmlparser.ParseCurrencyRateFromXML[ValCursXML](inputFilePath)
+	valCurs, err := xmlparser.ParseCurrencyRateFromXML[valCursXML](inputFilePath)
 	if err != nil {
 		return nil, err
 	}
 
 	currencies := make([]Currency, len(valCurs.Valutes))
+
 	for i, v := range valCurs.Valutes {
 		valueStr := strings.Replace(v.Value, ",", ".", 1)
 		value, err := strconv.ParseFloat(valueStr, 64)
