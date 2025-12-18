@@ -49,7 +49,8 @@ func (_m *WiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 func NewWiFiHandle(t interface {
 	mock.TestingT
 	Cleanup(cleanupFunc func())
-}) *WiFiHandle {
+},
+) *WiFiHandle {
 
 	mock := &WiFiHandle{}
 	mock.Mock.Test(t)
