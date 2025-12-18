@@ -1,79 +1,73 @@
 package db_test
 
 import (
+	"database/sql/driver"
 	"errors"
 	"testing"
 
-	"github.com/DimasFantomasA/task-6/internal/db"
-
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/require"
+
+	"github.com/DimasFantomasA/task-6/internal/db"
 )
 
-func TestDBService_GetNames(t *testing.T) {
-	mockDB, mock, err := sqlmock.New()
-	require.NoError(t, err)
-
+func TestGetNames_Success(t *testing.T) {
+	mockDB, mock, _ := sqlmock.New()
 	service := db.New(mockDB)
 
-	tests := []struct {
-		name        string
-		dbRows      []string
-		dbErr       error
-		expected    []string
-		expectError bool
-	}{
-		{
-			name:     "success",
-			dbRows:   []string{"Ivan", "Petr"},
-			expected: []string{"Ivan", "Petr"},
-		},
-		{
-			name:        "db error",
-			dbErr:       errors.New("db error"),
-			expectError: true,
-		},
-	}
+	mock.ExpectQuery("SELECT name FROM users").
+		WillReturnRows(sqlmock.NewRows([]string{"name"}).
+			AddRow("Ivan").
+			AddRow("Petr"))
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mock.ExpectQuery("SELECT name FROM users").
-				WillReturnRows(mockRows(tt.dbRows)).
-				WillReturnError(tt.dbErr)
+	names, err := service.GetNames()
 
-			result, err := service.GetNames()
-
-			if tt.expectError {
-				require.Error(t, err)
-				require.Nil(t, result)
-				return
-			}
-
-			require.NoError(t, err)
-			require.Equal(t, tt.expected, result)
-		})
-	}
+	require.NoError(t, err)
+	require.Equal(t, []string{"Ivan", "Petr"}, names)
 }
 
-func TestDBService_GetUniqueNames(t *testing.T) {
-	mockDB, mock, err := sqlmock.New()
-	require.NoError(t, err)
-
+func TestGetNames_QueryError(t *testing.T) {
+	mockDB, mock, _ := sqlmock.New()
 	service := db.New(mockDB)
 
-	mock.ExpectQuery("SELECT DISTINCT name FROM users").
-		WillReturnRows(mockRows([]string{"Ivan", "Petr"}))
+	mock.ExpectQuery("SELECT name FROM users").
+		WillReturnError(errors.New("query error"))
 
-	result, err := service.GetUniqueNames()
+	names, err := service.GetNames()
 
-	require.NoError(t, err)
-	require.Equal(t, []string{"Ivan", "Petr"}, result)
+	require.Error(t, err)
+	require.Nil(t, names)
 }
 
-func mockRows(values []string) *sqlmock.Rows {
-	rows := sqlmock.NewRows([]string{"name"})
-	for _, v := range values {
-		rows.AddRow(v)
-	}
-	return rows
+func TestGetNames_ScanError(t *testing.T) {
+	mockDB, mock, _ := sqlmock.New()
+	service := db.New(mockDB)
+
+	mock.ExpectQuery("SELECT name FROM users").
+		WillReturnRows(
+			sqlmock.NewRows([]string{"name"}).
+				AddRow(driver.Value(123)),
+		)
+
+	names, err := service.GetNames()
+
+	require.Error(t, err)
+	require.Nil(t, names)
+}
+
+func TestGetNames_RowsError(t *testing.T) {
+	mockDB, mock, _ := sqlmock.New()
+	service := db.New(mockDB)
+
+	rows := sqlmock.NewRows([]string{"name"}).
+		AddRow("Ivan").
+		RowError(0, errors.New("rows error"))
+
+	mock.ExpectQuery("SELECT name FROM users").
+		WillReturnRows(rows)
+
+	names, err := service.GetNames()
+
+	require.Error(t, err)
+	require.Nil(t, names)
 }
