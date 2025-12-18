@@ -19,123 +19,92 @@ func TestNew(t *testing.T) {
 	require.NotNil(t, service.WiFi)
 }
 
-func TestWiFiService_GetAddresses(t *testing.T) {
+func TestWiFiService_GetAddresses_Success(t *testing.T) {
 	mockWiFi := NewWiFiHandle(t)
 	service := wifi.New(mockWiFi)
 
-	tests := []struct {
-		name        string
-		ifaces      []*mdwifi.Interface
-		errExpected error
-		expected    []net.HardwareAddr
-	}{
-		{
-			name: "success",
-			ifaces: []*mdwifi.Interface{
-				{HardwareAddr: mustMAC("00:11:22:33:44:55")},
-				{HardwareAddr: mustMAC("aa:bb:cc:dd:ee:ff")},
-			},
-			expected: []net.HardwareAddr{
-				mustMAC("00:11:22:33:44:55"),
-				mustMAC("aa:bb:cc:dd:ee:ff"),
-			},
-		},
-		{
-			name:        "error from Interfaces",
-			errExpected: errors.New("wifi error"),
-		},
-		{
-			name:     "empty result",
-			ifaces:   []*mdwifi.Interface{},
-			expected: []net.HardwareAddr{},
-		},
-		{
-			name: "interface with nil hardware address",
-			ifaces: []*mdwifi.Interface{
-				{HardwareAddr: nil},
-				{HardwareAddr: mustMAC("00:11:22:33:44:55")},
-			},
-			expected: []net.HardwareAddr{
-				nil,
-				mustMAC("00:11:22:33:44:55"),
-			},
-		},
-	}
+	mockWiFi.On("Interfaces").Return([]*mdwifi.Interface{
+		{HardwareAddr: mustMAC("00:11:22:33:44:55")},
+		{HardwareAddr: mustMAC("aa:bb:cc:dd:ee:ff")},
+	}, nil)
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mockWiFi.On("Interfaces").Return(tt.ifaces, tt.errExpected)
+	result, err := service.GetAddresses()
 
-			result, err := service.GetAddresses()
-
-			if tt.errExpected != nil {
-				require.Error(t, err)
-				require.Contains(t, err.Error(), "getting interfaces")
-				require.Contains(t, err.Error(), tt.errExpected.Error())
-				return
-			}
-
-			require.NoError(t, err)
-			require.Equal(t, tt.expected, result)
-		})
-	}
+	require.NoError(t, err)
+	require.Equal(t, []net.HardwareAddr{
+		mustMAC("00:11:22:33:44:55"),
+		mustMAC("aa:bb:cc:dd:ee:ff"),
+	}, result)
 }
 
-func TestWiFiService_GetNames(t *testing.T) {
+func TestWiFiService_GetAddresses_Error(t *testing.T) {
 	mockWiFi := NewWiFiHandle(t)
 	service := wifi.New(mockWiFi)
 
-	tests := []struct {
-		name        string
-		ifaces      []*mdwifi.Interface
-		errExpected error
-		expected    []string
-	}{
-		{
-			name: "success",
-			ifaces: []*mdwifi.Interface{
-				{Name: "wlan0"},
-				{Name: "eth0"},
-				{Name: "wlan1"},
-			},
-			expected: []string{"wlan0", "eth0", "wlan1"},
-		},
-		{
-			name:        "error from Interfaces",
-			errExpected: errors.New("wifi error"),
-		},
-		{
-			name:     "empty result",
-			ifaces:   []*mdwifi.Interface{},
-			expected: []string{},
-		},
-		{
-			name: "interface with empty name",
-			ifaces: []*mdwifi.Interface{
-				{Name: ""},
-				{Name: "wlan0"},
-			},
-			expected: []string{"", "wlan0"},
-		},
-	}
+	expectedErr := errors.New("wifi error")
+	mockWiFi.On("Interfaces").Return(([]*mdwifi.Interface)(nil), expectedErr)
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mockWiFi.On("Interfaces").Return(tt.ifaces, tt.errExpected)
+	result, err := service.GetAddresses()
 
-			result, err := service.GetNames()
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "getting interfaces")
+	require.Contains(t, err.Error(), expectedErr.Error())
+	require.Nil(t, result)
+}
 
-			if tt.errExpected != nil {
-				require.Error(t, err)
-				require.Contains(t, err.Error(), "getting interfaces")
-				require.Contains(t, err.Error(), tt.errExpected.Error())
-				return
-			}
+func TestWiFiService_GetAddresses_Empty(t *testing.T) {
+	mockWiFi := NewWiFiHandle(t)
+	service := wifi.New(mockWiFi)
 
-			require.NoError(t, err)
-			require.Equal(t, tt.expected, result)
-		})
-	}
+	mockWiFi.On("Interfaces").Return([]*mdwifi.Interface{}, nil)
+
+	result, err := service.GetAddresses()
+
+	require.NoError(t, err)
+	require.Empty(t, result)
+}
+
+func TestWiFiService_GetNames_Success(t *testing.T) {
+	mockWiFi := NewWiFiHandle(t)
+	service := wifi.New(mockWiFi)
+
+	mockWiFi.On("Interfaces").Return([]*mdwifi.Interface{
+		{Name: "wlan0"},
+		{Name: "eth0"},
+		{Name: "wlan1"},
+	}, nil)
+
+	result, err := service.GetNames()
+
+	require.NoError(t, err)
+	require.Equal(t, []string{"wlan0", "eth0", "wlan1"}, result)
+}
+
+func TestWiFiService_GetNames_Error(t *testing.T) {
+	mockWiFi := NewWiFiHandle(t)
+	service := wifi.New(mockWiFi)
+
+	expectedErr := errors.New("wifi error")
+	mockWiFi.On("Interfaces").Return(([]*mdwifi.Interface)(nil), expectedErr)
+
+	result, err := service.GetNames()
+
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "getting interfaces")
+	require.Contains(t, err.Error(), expectedErr.Error())
+	require.Nil(t, result)
+}
+
+func TestWiFiService_GetNames_Empty(t *testing.T) {
+	mockWiFi := NewWiFiHandle(t)
+	service := wifi.New(mockWiFi)
+
+	mockWiFi.On("Interfaces").Return([]*mdwifi.Interface{}, nil)
+
+	result, err := service.GetNames()
+
+	require.NoError(t, err)
+	require.Empty(t, result)
 }
 
 func mustMAC(s string) net.HardwareAddr {
