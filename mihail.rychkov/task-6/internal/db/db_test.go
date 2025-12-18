@@ -1,25 +1,32 @@
-package db_test;
+package db_test
 
-import "testing";
-import "errors";
-import "github.com/DATA-DOG/go-sqlmock";
-import "github.com/stretchr/testify/require";
-import "github.com/Rychmick/task-6/internal/db";
+import (
+	"errors"
+	"testing"
 
-const queryUsual = "SELECT name FROM users";
-const queryDistinct = "SELECT DISTINCT name FROM users";
+	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/Rychmick/task-6/internal/db"
+	"github.com/stretchr/testify/require"
+)
 
-var errDefault = errors.New("something went wrong...");
-var headings = []string{"name"};
+const (
+	queryUsual    = "SELECT name FROM users"
+	queryDistinct = "SELECT DISTINCT name FROM users"
+)
 
-var testCases = []struct {
-	useGetUnique bool;
-	rows           *sqlmock.Rows;
-	names          []string;
-	errExpectedMsg string;
-	errExpected    error;
-	errQuery       error;
-	} {
+var (
+	errDefault = errors.New("something went wrong")
+	headings   = []string{"name"} //nolint:gochecknoglobals
+)
+
+var testCases = []struct { //nolint:gochecknoglobals
+	useGetUnique   bool
+	rows           *sqlmock.Rows
+	names          []string
+	errExpectedMsg string
+	errExpected    error
+	errQuery       error
+}{
 	{false, sqlmock.NewRows(headings).AddRow("1"), []string{"1"}, "", nil, nil},
 	{false, sqlmock.NewRows(headings).AddRow("1"), nil, "db query", errDefault, errDefault},
 	{false, sqlmock.NewRows(headings).AddRow(nil), nil, "rows scanning", nil, nil},
@@ -28,39 +35,48 @@ var testCases = []struct {
 	{true, sqlmock.NewRows(headings).AddRow("1"), nil, "db query", errDefault, errDefault},
 	{true, sqlmock.NewRows(headings).AddRow(nil), nil, "rows scanning", nil, nil},
 	{true, sqlmock.NewRows(headings).AddRow("1").RowError(0, errDefault), nil, "rows error", errDefault, nil},
-};
+}
 
 func TestDatabase(t *testing.T) {
-	t.Parallel();
+	t.Parallel()
 
-	mockDB, mock, err := sqlmock.New();
-	if (err != nil) {
-		require.NoError(t, err);
+	mockDB, mock, err := sqlmock.New()
+	if err != nil {
+		require.NoError(t, err)
 	}
-	defer mockDB.Close();
+	defer mockDB.Close()
 
-	libDB := db.New(mockDB);
-	for _, testData := range(testCases) {
-		var names []string;
-		if (testData.useGetUnique) {
-			mock.ExpectQuery(queryDistinct).WillReturnRows(testData.rows).WillReturnError(testData.errQuery);
-			names, err = libDB.GetUniqueNames();
+	libDB := db.New(mockDB)
+
+	for _, testData := range testCases {
+		var names []string
+
+		if testData.useGetUnique {
+			mock.ExpectQuery(queryDistinct).WillReturnRows(testData.rows).WillReturnError(testData.errQuery)
+
+			names, err = libDB.GetUniqueNames()
 		} else {
-			mock.ExpectQuery(queryUsual).WillReturnRows(testData.rows).WillReturnError(testData.errQuery);
-			names, err = libDB.GetNames();
+			mock.ExpectQuery(queryUsual).WillReturnRows(testData.rows).WillReturnError(testData.errQuery)
+
+			names, err = libDB.GetNames()
 		}
-		require.NoError(t, mock.ExpectationsWereMet());
-		if ((testData.errExpected != nil) || (testData.errExpectedMsg != "")) {
-			if (testData.errExpected != nil) {
-				require.ErrorIs(t, err, testData.errExpected);
+
+		require.NoError(t, mock.ExpectationsWereMet())
+
+		if (testData.errExpected != nil) || (testData.errExpectedMsg != "") {
+			if testData.errExpected != nil {
+				require.ErrorIs(t, err, testData.errExpected)
 			} else {
-				require.Error(t, err);
+				require.Error(t, err)
 			}
-			require.ErrorContains(t, err, testData.errExpectedMsg);
-			require.Empty(t, names);
-			continue;
+
+			require.ErrorContains(t, err, testData.errExpectedMsg)
+			require.Empty(t, names)
+
+			continue
 		}
-		require.NoError(t, err);
-		require.Equal(t, testData.names, names);
+
+		require.NoError(t, err)
+		require.Equal(t, testData.names, names)
 	}
 }
