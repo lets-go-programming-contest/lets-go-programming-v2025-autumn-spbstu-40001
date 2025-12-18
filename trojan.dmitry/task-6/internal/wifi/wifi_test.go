@@ -11,6 +11,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestNew(t *testing.T) {
+	mockWiFi := NewWiFiHandle(t)
+	service := wifi.New(mockWiFi)
+
+	require.NotNil(t, service)
+	require.NotNil(t, service.WiFi)
+}
+
 func TestWiFiService_GetAddresses(t *testing.T) {
 	mockWiFi := NewWiFiHandle(t)
 	service := wifi.New(mockWiFi)
@@ -55,19 +63,69 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 	}
 }
 
+func TestWiFiService_GetAddresses_Empty(t *testing.T) {
+	mockWiFi := NewWiFiHandle(t)
+	service := wifi.New(mockWiFi)
+
+	mockWiFi.On("Interfaces").Return([]*mdwifi.Interface{}, nil)
+
+	result, err := service.GetAddresses()
+
+	require.NoError(t, err)
+	require.Empty(t, result)
+}
+
 func TestWiFiService_GetNames(t *testing.T) {
 	mockWiFi := NewWiFiHandle(t)
 	service := wifi.New(mockWiFi)
 
-	mockWiFi.On("Interfaces").Return([]*mdwifi.Interface{
-		{Name: "wlan0"},
-		{Name: "eth0"},
-	}, nil)
+	tests := []struct {
+		name        string
+		ifaces      []*mdwifi.Interface
+		errExpected error
+		expected    []string
+	}{
+		{
+			name: "success",
+			ifaces: []*mdwifi.Interface{
+				{Name: "wlan0"},
+				{Name: "eth0"},
+			},
+			expected: []string{"wlan0", "eth0"},
+		},
+		{
+			name:        "error",
+			errExpected: errors.New("wifi error"),
+		},
+	}
 
-	names, err := service.GetNames()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockWiFi.On("Interfaces").Return(tt.ifaces, tt.errExpected)
+
+			result, err := service.GetNames()
+
+			if tt.errExpected != nil {
+				require.ErrorIs(t, err, tt.errExpected)
+				return
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestWiFiService_GetNames_Empty(t *testing.T) {
+	mockWiFi := NewWiFiHandle(t)
+	service := wifi.New(mockWiFi)
+
+	mockWiFi.On("Interfaces").Return([]*mdwifi.Interface{}, nil)
+
+	result, err := service.GetNames()
 
 	require.NoError(t, err)
-	require.Equal(t, []string{"wlan0", "eth0"}, names)
+	require.Empty(t, result)
 }
 
 func mustMAC(s string) net.HardwareAddr {
