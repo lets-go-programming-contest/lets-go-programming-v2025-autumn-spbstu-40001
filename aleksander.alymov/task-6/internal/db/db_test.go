@@ -7,6 +7,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/netwite/task-6/internal/db"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -19,9 +20,7 @@ type DBServiceTestSuite struct {
 func (s *DBServiceTestSuite) SetupTest() {
 	var err error
 	s.mockDB, s.mock, err = sqlmock.New()
-	if err != nil {
-		s.T().Fatalf("failed to create sqlmock: %v", err)
-	}
+	require.NoError(s.T(), err, "failed to create sqlmock")
 }
 
 func (s *DBServiceTestSuite) TearDownTest() {
@@ -49,11 +48,11 @@ func (s *DBServiceTestSuite) TestGetNames_Success() {
 
 	result, err := service.GetNames()
 
-	s.NoError(err)
+	require.NoError(s.T(), err)
 	s.Equal(expectedRows, result)
 
 	err = s.mock.ExpectationsWereMet()
-	s.NoError(err)
+	require.NoError(s.T(), err)
 }
 
 func (s *DBServiceTestSuite) TestGetNames_EmptyResult() {
@@ -64,11 +63,11 @@ func (s *DBServiceTestSuite) TestGetNames_EmptyResult() {
 
 	result, err := service.GetNames()
 
-	s.NoError(err)
+	require.NoError(s.T(), err)
 	s.Empty(result)
 
 	err = s.mock.ExpectationsWereMet()
-	s.NoError(err)
+	require.NoError(s.T(), err)
 }
 
 func (s *DBServiceTestSuite) TestGetNames_QueryError() {
@@ -79,13 +78,13 @@ func (s *DBServiceTestSuite) TestGetNames_QueryError() {
 
 	result, err := service.GetNames()
 
-	s.Error(err)
-	s.ErrorContains(err, "db query")
+	require.Error(s.T(), err)
+	require.ErrorContains(s.T(), err, "db query")
 	s.Contains(err.Error(), testError.Error())
 	s.Nil(result)
 
 	err = s.mock.ExpectationsWereMet()
-	s.NoError(err)
+	require.NoError(s.T(), err)
 }
 
 func (s *DBServiceTestSuite) TestGetNames_ScanError() {
@@ -96,12 +95,12 @@ func (s *DBServiceTestSuite) TestGetNames_ScanError() {
 
 	result, err := service.GetNames()
 
-	s.Error(err)
-	s.ErrorContains(err, "rows scanning")
+	require.Error(s.T(), err)
+	require.ErrorContains(s.T(), err, "rows scanning")
 	s.Nil(result)
 
 	err = s.mock.ExpectationsWereMet()
-	s.NoError(err)
+	require.NoError(s.T(), err)
 }
 
 func (s *DBServiceTestSuite) TestGetNames_RowsError() {
@@ -112,12 +111,12 @@ func (s *DBServiceTestSuite) TestGetNames_RowsError() {
 
 	result, err := service.GetNames()
 
-	s.Error(err)
-	s.ErrorContains(err, "rows error")
+	require.Error(s.T(), err)
+	require.ErrorContains(s.T(), err, "rows error")
 	s.Nil(result)
 
 	err = s.mock.ExpectationsWereMet()
-	s.NoError(err)
+	require.NoError(s.T(), err)
 }
 
 func (s *DBServiceTestSuite) TestGetUniqueNames_Success() {
@@ -134,11 +133,11 @@ func (s *DBServiceTestSuite) TestGetUniqueNames_Success() {
 
 	result, err := service.GetUniqueNames()
 
-	s.NoError(err)
+	require.NoError(s.T(), err)
 	s.Equal(uniqueNames, result)
 
 	err = s.mock.ExpectationsWereMet()
-	s.NoError(err)
+	require.NoError(s.T(), err)
 }
 
 func (s *DBServiceTestSuite) TestGetUniqueNames_EmptyResult() {
@@ -149,11 +148,11 @@ func (s *DBServiceTestSuite) TestGetUniqueNames_EmptyResult() {
 
 	result, err := service.GetUniqueNames()
 
-	s.NoError(err)
+	require.NoError(s.T(), err)
 	s.Empty(result)
 
 	err = s.mock.ExpectationsWereMet()
-	s.NoError(err)
+	require.NoError(s.T(), err)
 }
 
 func (s *DBServiceTestSuite) TestGetUniqueNames_QueryError() {
@@ -164,13 +163,13 @@ func (s *DBServiceTestSuite) TestGetUniqueNames_QueryError() {
 
 	result, err := service.GetUniqueNames()
 
-	s.Error(err)
-	s.ErrorContains(err, "db query")
+	require.Error(s.T(), err)
+	require.ErrorContains(s.T(), err, "db query")
 	s.Contains(err.Error(), testError.Error())
 	s.Nil(result)
 
 	err = s.mock.ExpectationsWereMet()
-	s.NoError(err)
+	require.NoError(s.T(), err)
 }
 
 func (s *DBServiceTestSuite) TestGetUniqueNames_ScanError() {
@@ -181,12 +180,12 @@ func (s *DBServiceTestSuite) TestGetUniqueNames_ScanError() {
 
 	result, err := service.GetUniqueNames()
 
-	s.Error(err)
-	s.ErrorContains(err, "rows scanning")
+	require.Error(s.T(), err)
+	require.ErrorContains(s.T(), err, "rows scanning")
 	s.Nil(result)
 
 	err = s.mock.ExpectationsWereMet()
-	s.NoError(err)
+	require.NoError(s.T(), err)
 }
 
 func (s *DBServiceTestSuite) TestGetUniqueNames_RowsError() {
@@ -197,12 +196,12 @@ func (s *DBServiceTestSuite) TestGetUniqueNames_RowsError() {
 
 	result, err := service.GetUniqueNames()
 
-	s.Error(err)
-	s.ErrorContains(err, "rows error")
+	require.Error(s.T(), err)
+	require.ErrorContains(s.T(), err, "rows error")
 	s.Nil(result)
 
 	err = s.mock.ExpectationsWereMet()
-	s.NoError(err)
+	require.NoError(s.T(), err)
 }
 
 func (s *DBServiceTestSuite) TestGetUniqueNames_ReturnsOnlyUnique() {
@@ -219,12 +218,12 @@ func (s *DBServiceTestSuite) TestGetUniqueNames_ReturnsOnlyUnique() {
 
 	result, err := service.GetUniqueNames()
 
-	s.NoError(err)
+	require.NoError(s.T(), err)
 	s.Equal(uniqueRows, result)
 	s.Len(result, 2, "Должно вернуть только уникальные значения")
 
 	err = s.mock.ExpectationsWereMet()
-	s.NoError(err)
+	require.NoError(s.T(), err)
 }
 
 func TestDBServiceTestSuite(t *testing.T) {

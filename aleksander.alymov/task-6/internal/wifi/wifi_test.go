@@ -58,7 +58,7 @@ func (s *WiFiServiceTestSuite) TestGetAddresses_Success() {
 
 	result, err := service.GetAddresses()
 
-	s.NoError(err)
+	require.NoError(s.T(), err)
 	s.Equal(expectedAddrs, result)
 }
 
@@ -70,7 +70,7 @@ func (s *WiFiServiceTestSuite) TestGetAddresses_EmptyResult() {
 
 	result, err := service.GetAddresses()
 
-	s.NoError(err)
+	require.NoError(s.T(), err)
 	s.Empty(result)
 }
 
@@ -83,8 +83,8 @@ func (s *WiFiServiceTestSuite) TestGetAddresses_InterfacesError() {
 
 	result, err := service.GetAddresses()
 
-	s.Error(err)
-	s.ErrorContains(err, "getting interfaces")
+	require.Error(s.T(), err)
+	require.ErrorContains(s.T(), err, "getting interfaces")
 	s.Contains(err.Error(), testError.Error())
 	s.Nil(result)
 }
@@ -115,7 +115,7 @@ func (s *WiFiServiceTestSuite) TestGetAddresses_WithNilHardwareAddr() {
 
 	result, err := service.GetAddresses()
 
-	s.NoError(err)
+	require.NoError(s.T(), err)
 	s.Equal(expectedAddrs, result)
 }
 
@@ -147,7 +147,7 @@ func (s *WiFiServiceTestSuite) TestGetNames_Success() {
 
 	result, err := service.GetNames()
 
-	s.NoError(err)
+	require.NoError(s.T(), err)
 	s.Equal(expectedNames, result)
 }
 
@@ -159,7 +159,7 @@ func (s *WiFiServiceTestSuite) TestGetNames_EmptyResult() {
 
 	result, err := service.GetNames()
 
-	s.NoError(err)
+	require.NoError(s.T(), err)
 	s.Empty(result)
 }
 
@@ -172,8 +172,8 @@ func (s *WiFiServiceTestSuite) TestGetNames_InterfacesError() {
 
 	result, err := service.GetNames()
 
-	s.Error(err)
-	s.ErrorContains(err, "getting interfaces")
+	require.Error(s.T(), err)
+	require.ErrorContains(s.T(), err, "getting interfaces")
 	s.Contains(err.Error(), testError.Error())
 	s.Nil(result)
 }
@@ -201,7 +201,7 @@ func (s *WiFiServiceTestSuite) TestGetNames_WithEmptyName() {
 
 	result, err := service.GetNames()
 
-	s.NoError(err)
+	require.NoError(s.T(), err)
 	s.Equal(expectedNames, result)
 }
 
@@ -223,7 +223,7 @@ func (s *WiFiServiceTestSuite) TestGetNames_SingleInterface() {
 
 	result, err := service.GetNames()
 
-	s.NoError(err)
+	require.NoError(s.T(), err)
 	s.Equal(expectedNames, result)
 }
 
@@ -250,7 +250,7 @@ func (s *WiFiServiceTestSuite) TestGetNames_SpecialCharacterNames() {
 
 	result, err := service.GetNames()
 
-	s.NoError(err)
+	require.NoError(s.T(), err)
 	s.Equal(expectedNames, result)
 }
 
@@ -272,7 +272,7 @@ func (s *WiFiServiceTestSuite) TestGetAddresses_SingleInterface() {
 
 	result, err := service.GetAddresses()
 
-	s.NoError(err)
+	require.NoError(s.T(), err)
 	s.Equal([]net.HardwareAddr{expectedAddr}, result)
 }
 
@@ -294,12 +294,13 @@ func (s *WiFiServiceTestSuite) TestGetAddresses_ZeroMACAddress() {
 
 	result, err := service.GetAddresses()
 
-	s.NoError(err)
+	require.NoError(s.T(), err)
 	s.Equal([]net.HardwareAddr{zeroMAC}, result)
 }
 
 func parseMAC(t *testing.T, s string) net.HardwareAddr {
 	t.Helper()
+
 	hwAddr, err := net.ParseMAC(s)
 	require.NoError(t, err, "failed to parse MAC address: %s", s)
 
