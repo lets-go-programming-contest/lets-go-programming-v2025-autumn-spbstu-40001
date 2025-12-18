@@ -9,7 +9,7 @@ import (
 	"github.com/vikaglushkova/task-3/internal/config"
 	"github.com/vikaglushkova/task-3/internal/currency"
 	"github.com/vikaglushkova/task-3/internal/json"
-	"github.com/vikaglushkova/task-3/internal/xml"
+	"github.com/vikaglushkova/task-3/internal/xmlparser"
 )
 
 const (
@@ -31,7 +31,7 @@ func main() {
 		log.Fatalf("Error reading config: %v", err)
 	}
 
-	valCurs, err := xml.ParseXMLFile[ValCurs](cfg.InputFile)
+	valCurs, err := xmlparser.ParseXMLFile[ValCurs](cfg.InputFile)
 	if err != nil {
 		log.Fatalf("Error reading XML data: %v", err)
 	}
