@@ -300,6 +300,7 @@ func (s *WiFiServiceTestSuite) TestGetAddresses_ZeroMACAddress() {
 func (s *WiFiServiceTestSuite) parseMAC(macStr string) net.HardwareAddr {
 	hwAddr, err := net.ParseMAC(macStr)
 	s.Require().NoError(err, "failed to parse MAC address: %s", macStr)
+
 	return hwAddr
 }
 
