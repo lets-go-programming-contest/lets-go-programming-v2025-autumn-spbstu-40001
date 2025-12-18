@@ -5,7 +5,6 @@ import (
 	"errors"
 	"strings"
 	"sync"
-	"sync/atomic"
 )
 
 var (
@@ -110,7 +109,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 		return ErrNoOutputChannels
 	}
 
-	var counter int64 = -1
+	var counter = -1
 
 	outputsCount := len(outputs)
 
@@ -123,8 +122,8 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 				return nil
 			}
 
-			idx := atomic.AddInt64(&counter, 1) % int64(outputsCount)
-			out := outputs[idx]
+			counter = (counter + 1) % outputsCount
+			out := outputs[counter]
 
 			select {
 			case out <- val:
