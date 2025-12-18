@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/xml"
 	"flag"
 	"fmt"
 	"log"
@@ -17,6 +18,7 @@ const (
 )
 
 type ValCurs struct {
+	XMLName xml.Name            `xml:"ValCurs"`
 	Valutes []currency.Currency `xml:"Valute"`
 }
 

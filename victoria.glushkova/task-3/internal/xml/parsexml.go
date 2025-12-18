@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-
 	"golang.org/x/net/html/charset"
 )
 

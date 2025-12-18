@@ -20,22 +20,18 @@ func (c *Currency) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 		CharCode string `xml:"CharCode"`
 		Value    string `xml:"Value"`
 	}
-
 	var temp currencyXML
 	if err := d.DecodeElement(&temp, &start); err != nil {
 		return fmt.Errorf("decode element: %w", err)
 	}
-
 	c.NumCode = temp.NumCode
 	c.CharCode = temp.CharCode
-
 	valueString := strings.Replace(temp.Value, ",", ".", 1)
 	value, err := strconv.ParseFloat(valueString, 64)
 	if err != nil {
 		return fmt.Errorf("parse float %q: %w", valueString, err)
 	}
 	c.Value = value
-
 	return nil
 }
 

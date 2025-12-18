@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-
 	"gopkg.in/yaml.v3"
 )
 
@@ -20,7 +19,6 @@ func (c *Config) Validate() error {
 	if c.InputFile == "" || c.OutputFile == "" {
 		return ErrConfigFieldsRequired
 	}
-
 	return nil
 }
 
@@ -29,7 +27,6 @@ func ReadConfig(configPath string) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot open config file: %w", err)
 	}
-
 	defer func() {
 		if err := file.Close(); err != nil {
 			panic(fmt.Sprintf("cannot close config file: %v", err))
