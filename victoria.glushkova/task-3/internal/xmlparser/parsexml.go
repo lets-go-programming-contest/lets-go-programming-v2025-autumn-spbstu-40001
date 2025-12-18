@@ -6,13 +6,20 @@ import (
 	"fmt"
 	"io"
 	"os"
+
 	"golang.org/x/net/html/charset"
 )
 
-func ParseXMLFile[T any](inputFile string) (*T, error) {
-	data, err := os.ReadFile(inputFile)
+func panicIfErr(err error) {
 	if err != nil {
-		return nil, fmt.Errorf("cannot read xml file: %w", err)
+		panic(err)
+	}
+}
+
+func ParseCurrencyRateFromXML[T any](inputFilePath string) (*T, error) {
+	data, err := os.ReadFile(inputFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("can't read file %s: %w", inputFilePath, err)
 	}
 
 	decoder := xml.NewDecoder(bytes.NewReader(data))
@@ -21,9 +28,8 @@ func ParseXMLFile[T any](inputFile string) (*T, error) {
 	}
 
 	var result T
-	err = decoder.Decode(&result)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse XML: %w", err)
+	if err := decoder.Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode XML: %w", err)
 	}
 
 	return &result, nil

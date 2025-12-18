@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/xml"
 	"flag"
 	"fmt"
 	"log"
@@ -9,18 +8,12 @@ import (
 	"github.com/vikaglushkova/task-3/internal/config"
 	"github.com/vikaglushkova/task-3/internal/currency"
 	"github.com/vikaglushkova/task-3/internal/json"
-	"github.com/vikaglushkova/task-3/internal/xmlparser"
 )
 
 const (
 	defaultConfigPath = "config.yaml"
 	dirPermissions    = 0o755
 )
-
-type ValCurs struct {
-	XMLName xml.Name            `xml:"ValCurs"`
-	Valutes []currency.Currency `xml:"Valute"`
-}
 
 func main() {
 	configPath := flag.String("config", defaultConfigPath, "Path to configuration file")
@@ -31,17 +24,17 @@ func main() {
 		log.Fatalf("Error reading config: %v", err)
 	}
 
-	valCurs, err := xmlparser.ParseXMLFile[ValCurs](cfg.InputFile)
+	currencies, err := currency.ParseFromXMLFile(cfg.InputFile)
 	if err != nil {
-		log.Fatalf("Error reading XML data: %v", err)
+		log.Fatalf("Error parsing XML: %v", err)
 	}
 
-	currencies := currency.ConvertAndSort(valCurs.Valutes)
+	sortedCurrencies := currency.ConvertAndSort(currencies)
 
-	err = json.WriteToFile(cfg.OutputFile, currencies, dirPermissions)
+	err = json.WriteCurrencyRateToFile(&sortedCurrencies, cfg.OutputFile, dirPermissions)
 	if err != nil {
-		log.Fatalf("Error saving results: %v", err)
+		log.Fatalf("Error saving JSON: %v", err)
 	}
 
-	fmt.Printf("Successfully processed %d currencies. Results saved to: %s\n", len(currencies), cfg.OutputFile)
+	fmt.Printf("Successfully processed %d currencies. Results saved to: %s\n", len(sortedCurrencies), cfg.OutputFile)
 }
