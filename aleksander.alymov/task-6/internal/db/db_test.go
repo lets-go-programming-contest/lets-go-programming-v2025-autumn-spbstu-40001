@@ -7,7 +7,6 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/netwite/task-6/internal/db"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -33,7 +32,7 @@ func (s *DBServiceTestSuite) TearDownTest() {
 
 func (s *DBServiceTestSuite) TestNew() {
 	service := db.New(s.mockDB)
-	assert.Equal(s.T(), s.mockDB, service.DB)
+	s.Equal(s.mockDB, service.DB)
 }
 
 func (s *DBServiceTestSuite) TestGetNames_Success() {
@@ -41,6 +40,7 @@ func (s *DBServiceTestSuite) TestGetNames_Success() {
 
 	expectedRows := []string{"Alice", "Bob", "Charlie"}
 	rows := sqlmock.NewRows([]string{"name"})
+
 	for _, name := range expectedRows {
 		rows.AddRow(name)
 	}
@@ -49,11 +49,11 @@ func (s *DBServiceTestSuite) TestGetNames_Success() {
 
 	result, err := service.GetNames()
 
-	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), expectedRows, result)
+	s.NoError(err)
+	s.Equal(expectedRows, result)
 
 	err = s.mock.ExpectationsWereMet()
-	assert.NoError(s.T(), err)
+	s.NoError(err)
 }
 
 func (s *DBServiceTestSuite) TestGetNames_EmptyResult() {
@@ -64,28 +64,28 @@ func (s *DBServiceTestSuite) TestGetNames_EmptyResult() {
 
 	result, err := service.GetNames()
 
-	assert.NoError(s.T(), err)
-	assert.Empty(s.T(), result)
+	s.NoError(err)
+	s.Empty(result)
 
 	err = s.mock.ExpectationsWereMet()
-	assert.NoError(s.T(), err)
+	s.NoError(err)
 }
 
 func (s *DBServiceTestSuite) TestGetNames_QueryError() {
 	service := db.DBService{DB: s.mockDB}
 
-	testError := errors.New("connection failed")
+	testError := errors.New("connection failed") //nolint:err113
 	s.mock.ExpectQuery("SELECT name FROM users").WillReturnError(testError)
 
 	result, err := service.GetNames()
 
-	assert.Error(s.T(), err)
-	assert.ErrorContains(s.T(), err, "db query")
-	assert.Contains(s.T(), err.Error(), testError.Error())
-	assert.Nil(s.T(), result)
+	s.Error(err)
+	s.ErrorContains(err, "db query")
+	s.Contains(err.Error(), testError.Error())
+	s.Nil(result)
 
 	err = s.mock.ExpectationsWereMet()
-	assert.NoError(s.T(), err)
+	s.NoError(err)
 }
 
 func (s *DBServiceTestSuite) TestGetNames_ScanError() {
@@ -96,28 +96,28 @@ func (s *DBServiceTestSuite) TestGetNames_ScanError() {
 
 	result, err := service.GetNames()
 
-	assert.Error(s.T(), err)
-	assert.ErrorContains(s.T(), err, "rows scanning")
-	assert.Nil(s.T(), result)
+	s.Error(err)
+	s.ErrorContains(err, "rows scanning")
+	s.Nil(result)
 
 	err = s.mock.ExpectationsWereMet()
-	assert.NoError(s.T(), err)
+	s.NoError(err)
 }
 
 func (s *DBServiceTestSuite) TestGetNames_RowsError() {
 	service := db.DBService{DB: s.mockDB}
 
-	rows := sqlmock.NewRows([]string{"name"}).AddRow("Alice").RowError(0, errors.New("row error"))
+	rows := sqlmock.NewRows([]string{"name"}).AddRow("Alice").RowError(0, errors.New("row error")) //nolint:err113
 	s.mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 
 	result, err := service.GetNames()
 
-	assert.Error(s.T(), err)
-	assert.ErrorContains(s.T(), err, "rows error")
-	assert.Nil(s.T(), result)
+	s.Error(err)
+	s.ErrorContains(err, "rows error")
+	s.Nil(result)
 
 	err = s.mock.ExpectationsWereMet()
-	assert.NoError(s.T(), err)
+	s.NoError(err)
 }
 
 func (s *DBServiceTestSuite) TestGetUniqueNames_Success() {
@@ -134,11 +134,11 @@ func (s *DBServiceTestSuite) TestGetUniqueNames_Success() {
 
 	result, err := service.GetUniqueNames()
 
-	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), uniqueNames, result)
+	s.NoError(err)
+	s.Equal(uniqueNames, result)
 
 	err = s.mock.ExpectationsWereMet()
-	assert.NoError(s.T(), err)
+	s.NoError(err)
 }
 
 func (s *DBServiceTestSuite) TestGetUniqueNames_EmptyResult() {
@@ -149,28 +149,28 @@ func (s *DBServiceTestSuite) TestGetUniqueNames_EmptyResult() {
 
 	result, err := service.GetUniqueNames()
 
-	assert.NoError(s.T(), err)
-	assert.Empty(s.T(), result)
+	s.NoError(err)
+	s.Empty(result)
 
 	err = s.mock.ExpectationsWereMet()
-	assert.NoError(s.T(), err)
+	s.NoError(err)
 }
 
 func (s *DBServiceTestSuite) TestGetUniqueNames_QueryError() {
 	service := db.DBService{DB: s.mockDB}
 
-	testError := errors.New("connection failed")
+	testError := errors.New("connection failed") //nolint:err113
 	s.mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnError(testError)
 
 	result, err := service.GetUniqueNames()
 
-	assert.Error(s.T(), err)
-	assert.ErrorContains(s.T(), err, "db query")
-	assert.Contains(s.T(), err.Error(), testError.Error())
-	assert.Nil(s.T(), result)
+	s.Error(err)
+	s.ErrorContains(err, "db query")
+	s.Contains(err.Error(), testError.Error())
+	s.Nil(result)
 
 	err = s.mock.ExpectationsWereMet()
-	assert.NoError(s.T(), err)
+	s.NoError(err)
 }
 
 func (s *DBServiceTestSuite) TestGetUniqueNames_ScanError() {
@@ -181,28 +181,28 @@ func (s *DBServiceTestSuite) TestGetUniqueNames_ScanError() {
 
 	result, err := service.GetUniqueNames()
 
-	assert.Error(s.T(), err)
-	assert.ErrorContains(s.T(), err, "rows scanning")
-	assert.Nil(s.T(), result)
+	s.Error(err)
+	s.ErrorContains(err, "rows scanning")
+	s.Nil(result)
 
 	err = s.mock.ExpectationsWereMet()
-	assert.NoError(s.T(), err)
+	s.NoError(err)
 }
 
 func (s *DBServiceTestSuite) TestGetUniqueNames_RowsError() {
 	service := db.DBService{DB: s.mockDB}
 
-	rows := sqlmock.NewRows([]string{"name"}).AddRow("Alice").RowError(0, errors.New("row error"))
+	rows := sqlmock.NewRows([]string{"name"}).AddRow("Alice").RowError(0, errors.New("row error")) //nolint:err113
 	s.mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 
 	result, err := service.GetUniqueNames()
 
-	assert.Error(s.T(), err)
-	assert.ErrorContains(s.T(), err, "rows error")
-	assert.Nil(s.T(), result)
+	s.Error(err)
+	s.ErrorContains(err, "rows error")
+	s.Nil(result)
 
 	err = s.mock.ExpectationsWereMet()
-	assert.NoError(s.T(), err)
+	s.NoError(err)
 }
 
 func (s *DBServiceTestSuite) TestGetUniqueNames_ReturnsOnlyUnique() {
@@ -210,6 +210,7 @@ func (s *DBServiceTestSuite) TestGetUniqueNames_ReturnsOnlyUnique() {
 
 	uniqueRows := []string{"John", "Jane"}
 	rows := sqlmock.NewRows([]string{"name"})
+
 	for _, name := range uniqueRows {
 		rows.AddRow(name)
 	}
@@ -218,14 +219,15 @@ func (s *DBServiceTestSuite) TestGetUniqueNames_ReturnsOnlyUnique() {
 
 	result, err := service.GetUniqueNames()
 
-	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), uniqueRows, result)
-	assert.Equal(s.T(), 2, len(result), "Должно вернуть только уникальные значения")
+	s.NoError(err)
+	s.Equal(uniqueRows, result)
+	s.Len(result, 2, "Должно вернуть только уникальные значения")
 
 	err = s.mock.ExpectationsWereMet()
-	assert.NoError(s.T(), err)
+	s.NoError(err)
 }
 
 func TestDBServiceTestSuite(t *testing.T) {
+	t.Parallel()
 	suite.Run(t, new(DBServiceTestSuite))
 }

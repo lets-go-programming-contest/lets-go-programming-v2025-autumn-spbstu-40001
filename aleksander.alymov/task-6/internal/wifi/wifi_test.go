@@ -7,7 +7,6 @@ import (
 
 	"github.com/mdlayher/wifi"
 	myWiFi "github.com/netwite/task-6/internal/wifi"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -30,7 +29,7 @@ type WiFiServiceTestSuite struct {
 func (s *WiFiServiceTestSuite) TestNew() {
 	mockWiFi := &mockWiFiHandle{}
 	service := myWiFi.New(mockWiFi)
-	assert.Equal(s.T(), mockWiFi, service.WiFi)
+	s.Equal(mockWiFi, service.WiFi)
 }
 
 func (s *WiFiServiceTestSuite) TestGetAddresses_Success() {
@@ -59,8 +58,8 @@ func (s *WiFiServiceTestSuite) TestGetAddresses_Success() {
 
 	result, err := service.GetAddresses()
 
-	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), expectedAddrs, result)
+	s.NoError(err)
+	s.Equal(expectedAddrs, result)
 }
 
 func (s *WiFiServiceTestSuite) TestGetAddresses_EmptyResult() {
@@ -71,12 +70,12 @@ func (s *WiFiServiceTestSuite) TestGetAddresses_EmptyResult() {
 
 	result, err := service.GetAddresses()
 
-	assert.NoError(s.T(), err)
-	assert.Empty(s.T(), result)
+	s.NoError(err)
+	s.Empty(result)
 }
 
 func (s *WiFiServiceTestSuite) TestGetAddresses_InterfacesError() {
-	testError := errors.New("interfaces error")
+	testError := errors.New("interfaces error") //nolint:err113
 	mockWiFi := &mockWiFiHandle{
 		err: testError,
 	}
@@ -84,10 +83,10 @@ func (s *WiFiServiceTestSuite) TestGetAddresses_InterfacesError() {
 
 	result, err := service.GetAddresses()
 
-	assert.Error(s.T(), err)
-	assert.ErrorContains(s.T(), err, "getting interfaces")
-	assert.Contains(s.T(), err.Error(), testError.Error())
-	assert.Nil(s.T(), result)
+	s.Error(err)
+	s.ErrorContains(err, "getting interfaces")
+	s.Contains(err.Error(), testError.Error())
+	s.Nil(result)
 }
 
 func (s *WiFiServiceTestSuite) TestGetAddresses_WithNilHardwareAddr() {
@@ -116,8 +115,8 @@ func (s *WiFiServiceTestSuite) TestGetAddresses_WithNilHardwareAddr() {
 
 	result, err := service.GetAddresses()
 
-	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), expectedAddrs, result)
+	s.NoError(err)
+	s.Equal(expectedAddrs, result)
 }
 
 func (s *WiFiServiceTestSuite) TestGetNames_Success() {
@@ -148,8 +147,8 @@ func (s *WiFiServiceTestSuite) TestGetNames_Success() {
 
 	result, err := service.GetNames()
 
-	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), expectedNames, result)
+	s.NoError(err)
+	s.Equal(expectedNames, result)
 }
 
 func (s *WiFiServiceTestSuite) TestGetNames_EmptyResult() {
@@ -160,12 +159,12 @@ func (s *WiFiServiceTestSuite) TestGetNames_EmptyResult() {
 
 	result, err := service.GetNames()
 
-	assert.NoError(s.T(), err)
-	assert.Empty(s.T(), result)
+	s.NoError(err)
+	s.Empty(result)
 }
 
 func (s *WiFiServiceTestSuite) TestGetNames_InterfacesError() {
-	testError := errors.New("interfaces error")
+	testError := errors.New("interfaces error") //nolint:err113
 	mockWiFi := &mockWiFiHandle{
 		err: testError,
 	}
@@ -173,10 +172,10 @@ func (s *WiFiServiceTestSuite) TestGetNames_InterfacesError() {
 
 	result, err := service.GetNames()
 
-	assert.Error(s.T(), err)
-	assert.ErrorContains(s.T(), err, "getting interfaces")
-	assert.Contains(s.T(), err.Error(), testError.Error())
-	assert.Nil(s.T(), result)
+	s.Error(err)
+	s.ErrorContains(err, "getting interfaces")
+	s.Contains(err.Error(), testError.Error())
+	s.Nil(result)
 }
 
 func (s *WiFiServiceTestSuite) TestGetNames_WithEmptyName() {
@@ -202,8 +201,8 @@ func (s *WiFiServiceTestSuite) TestGetNames_WithEmptyName() {
 
 	result, err := service.GetNames()
 
-	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), expectedNames, result)
+	s.NoError(err)
+	s.Equal(expectedNames, result)
 }
 
 func (s *WiFiServiceTestSuite) TestGetNames_SingleInterface() {
@@ -224,8 +223,8 @@ func (s *WiFiServiceTestSuite) TestGetNames_SingleInterface() {
 
 	result, err := service.GetNames()
 
-	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), expectedNames, result)
+	s.NoError(err)
+	s.Equal(expectedNames, result)
 }
 
 func (s *WiFiServiceTestSuite) TestGetNames_SpecialCharacterNames() {
@@ -251,8 +250,8 @@ func (s *WiFiServiceTestSuite) TestGetNames_SpecialCharacterNames() {
 
 	result, err := service.GetNames()
 
-	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), expectedNames, result)
+	s.NoError(err)
+	s.Equal(expectedNames, result)
 }
 
 func (s *WiFiServiceTestSuite) TestGetAddresses_SingleInterface() {
@@ -273,8 +272,8 @@ func (s *WiFiServiceTestSuite) TestGetAddresses_SingleInterface() {
 
 	result, err := service.GetAddresses()
 
-	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), []net.HardwareAddr{expectedAddr}, result)
+	s.NoError(err)
+	s.Equal([]net.HardwareAddr{expectedAddr}, result)
 }
 
 func (s *WiFiServiceTestSuite) TestGetAddresses_ZeroMACAddress() {
@@ -295,16 +294,19 @@ func (s *WiFiServiceTestSuite) TestGetAddresses_ZeroMACAddress() {
 
 	result, err := service.GetAddresses()
 
-	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), []net.HardwareAddr{zeroMAC}, result)
+	s.NoError(err)
+	s.Equal([]net.HardwareAddr{zeroMAC}, result)
 }
 
 func parseMAC(t *testing.T, s string) net.HardwareAddr {
+	t.Helper()
 	hwAddr, err := net.ParseMAC(s)
 	require.NoError(t, err, "failed to parse MAC address: %s", s)
+
 	return hwAddr
 }
 
 func TestWiFiServiceTestSuite(t *testing.T) {
+	t.Parallel()
 	suite.Run(t, new(WiFiServiceTestSuite))
 }
