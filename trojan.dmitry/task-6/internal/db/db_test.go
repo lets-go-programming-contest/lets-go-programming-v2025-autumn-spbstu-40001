@@ -11,7 +11,6 @@ import (
 	"github.com/DimasFantomasA/task-6/internal/db"
 )
 
-// Тест для конструктора New
 func TestNew(t *testing.T) {
 	mockDB, _, _ := sqlmock.New()
 	service := db.New(mockDB)
@@ -36,16 +35,33 @@ func TestGetNames_Success(t *testing.T) {
 	require.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestGetNames_QueryError(t *testing.T) {
+func TestGetNames_Empty(t *testing.T) {
 	mockDB, mock, _ := sqlmock.New()
 	service := db.New(mockDB)
 
 	mock.ExpectQuery("SELECT name FROM users").
-		WillReturnError(errors.New("query error"))
+		WillReturnRows(sqlmock.NewRows([]string{"name"}))
+
+	names, err := service.GetNames()
+
+	require.NoError(t, err)
+	require.Empty(t, names)
+	require.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetNames_QueryError(t *testing.T) {
+	mockDB, mock, _ := sqlmock.New()
+	service := db.New(mockDB)
+
+	expectedErr := errors.New("query error")
+	mock.ExpectQuery("SELECT name FROM users").
+		WillReturnError(expectedErr)
 
 	names, err := service.GetNames()
 
 	require.Error(t, err)
+	require.Contains(t, err.Error(), "db query")
+	require.Contains(t, err.Error(), expectedErr.Error())
 	require.Nil(t, names)
 	require.NoError(t, mock.ExpectationsWereMet())
 }
@@ -63,6 +79,7 @@ func TestGetNames_ScanError(t *testing.T) {
 	names, err := service.GetNames()
 
 	require.Error(t, err)
+	require.Contains(t, err.Error(), "rows scanning")
 	require.Nil(t, names)
 	require.NoError(t, mock.ExpectationsWereMet())
 }
@@ -73,7 +90,8 @@ func TestGetNames_RowsError(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Ivan").
-		RowError(0, errors.New("rows error"))
+		AddRow("Petr").
+		RowError(1, errors.New("rows error"))
 
 	mock.ExpectQuery("SELECT name FROM users").
 		WillReturnRows(rows)
@@ -81,6 +99,7 @@ func TestGetNames_RowsError(t *testing.T) {
 	names, err := service.GetNames()
 
 	require.Error(t, err)
+	require.Contains(t, err.Error(), "rows error")
 	require.Nil(t, names)
 	require.NoError(t, mock.ExpectationsWereMet())
 }
@@ -93,16 +112,17 @@ func TestGetUniqueNames_Success(t *testing.T) {
 		WillReturnRows(sqlmock.NewRows([]string{"name"}).
 			AddRow("Ivan").
 			AddRow("Petr").
-			AddRow("Ivan"))
+			AddRow("Ivan").
+			AddRow("Anna"))
 
 	names, err := service.GetUniqueNames()
 
 	require.NoError(t, err)
-	require.Equal(t, []string{"Ivan", "Petr"}, names)
+	require.Equal(t, []string{"Ivan", "Petr", "Ivan", "Anna"}, names)
 	require.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestGetUniqueNames_EmptyResult(t *testing.T) {
+func TestGetUniqueNames_Empty(t *testing.T) {
 	mockDB, mock, _ := sqlmock.New()
 	service := db.New(mockDB)
 
@@ -120,12 +140,15 @@ func TestGetUniqueNames_QueryError(t *testing.T) {
 	mockDB, mock, _ := sqlmock.New()
 	service := db.New(mockDB)
 
+	expectedErr := errors.New("query error")
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").
-		WillReturnError(errors.New("query error"))
+		WillReturnError(expectedErr)
 
 	names, err := service.GetUniqueNames()
 
 	require.Error(t, err)
+	require.Contains(t, err.Error(), "db query")
+	require.Contains(t, err.Error(), expectedErr.Error())
 	require.Nil(t, names)
 	require.NoError(t, mock.ExpectationsWereMet())
 }
@@ -143,6 +166,7 @@ func TestGetUniqueNames_ScanError(t *testing.T) {
 	names, err := service.GetUniqueNames()
 
 	require.Error(t, err)
+	require.Contains(t, err.Error(), "rows scanning")
 	require.Nil(t, names)
 	require.NoError(t, mock.ExpectationsWereMet())
 }
@@ -153,7 +177,8 @@ func TestGetUniqueNames_RowsError(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Ivan").
-		RowError(0, errors.New("rows error"))
+		AddRow("Petr").
+		RowError(1, errors.New("rows error"))
 
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").
 		WillReturnRows(rows)
@@ -161,6 +186,47 @@ func TestGetUniqueNames_RowsError(t *testing.T) {
 	names, err := service.GetUniqueNames()
 
 	require.Error(t, err)
+	require.Contains(t, err.Error(), "rows error")
+	require.Nil(t, names)
+	require.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetNames_MultipleRowsWithLateError(t *testing.T) {
+	mockDB, mock, _ := sqlmock.New()
+	service := db.New(mockDB)
+
+	rows := sqlmock.NewRows([]string{"name"}).
+		AddRow("Ivan").
+		AddRow("Petr").
+		AddRow("Anna").
+		RowError(2, errors.New("error on third row"))
+
+	mock.ExpectQuery("SELECT name FROM users").
+		WillReturnRows(rows)
+
+	names, err := service.GetNames()
+
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "rows error")
+	require.Nil(t, names)
+	require.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetNames_ScanErrorClosesRows(t *testing.T) {
+	mockDB, mock, _ := sqlmock.New()
+	service := db.New(mockDB)
+
+	mock.ExpectQuery("SELECT name FROM users").
+		WillReturnRows(
+			sqlmock.NewRows([]string{"name"}).
+				AddRow("Ivan").
+				AddRow(driver.Value(123)),
+		)
+
+	names, err := service.GetNames()
+
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "rows scanning")
 	require.Nil(t, names)
 	require.NoError(t, mock.ExpectationsWereMet())
 }
