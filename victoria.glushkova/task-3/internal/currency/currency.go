@@ -11,37 +11,54 @@ import (
 type Currency struct {
 	NumCode  int     `json:"num_code" xml:"NumCode"`
 	CharCode string  `json:"char_code" xml:"CharCode"`
-	Value    float64 `json:"value"     xml:"Value"`
+	Value    float64 `json:"value" xml:"Value"`
 }
 
-type valCursXML struct {
-	Valutes []struct {
-		NumCode  int    `xml:"NumCode"`
-		CharCode string `xml:"CharCode"`
-		Value    string `xml:"Value"`
-	} `xml:"Valute"`
+type ValueWithComma float64
+
+func (v *ValueWithComma) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	var valueStr string
+	if err := d.DecodeElement(&valueStr, &start); err != nil {
+		return err
+	}
+
+	valueStr = strings.Replace(valueStr, ",", ".", 1)
+	value, err := strconv.ParseFloat(valueStr, 64)
+	if err != nil {
+		return err
+	}
+
+	*v = ValueWithComma(value)
+	return nil
+}
+
+type currencyXML struct {
+	NumCode  int           `xml:"NumCode"`
+	CharCode string        `xml:"CharCode"`
+	Value    ValueWithComma `xml:"Value"`
+}
+
+func (c currencyXML) ToCurrency() Currency {
+	return Currency{
+		NumCode:  c.NumCode,
+		CharCode: c.CharCode,
+		Value:    float64(c.Value),
+	}
+}
+
+type ValCursXML struct {
+	Valutes []currencyXML `xml:"Valute"`
 }
 
 func ParseFromXMLFile(inputFilePath string) ([]Currency, error) {
-	valCurs, err := xmlparser.ParseCurrencyRateFromXML[valCursXML](inputFilePath)
+	valCurs, err := xmlparser.ParseCurrencyRateFromXML[ValCursXML](inputFilePath)
 	if err != nil {
 		return nil, err
 	}
 
 	currencies := make([]Currency, len(valCurs.Valutes))
-
-	for i, v := range valCurs.Valutes {
-		valueStr := strings.Replace(v.Value, ",", ".", 1)
-		value, err := strconv.ParseFloat(valueStr, 64)
-		if err != nil {
-			return nil, err
-		}
-
-		currencies[i] = Currency{
-			NumCode:  v.NumCode,
-			CharCode: v.CharCode,
-			Value:    value,
-		}
+	for i, xmlCurr := range valCurs.Valutes {
+		currencies[i] = xmlCurr.ToCurrency()
 	}
 
 	return currencies, nil
