@@ -25,20 +25,20 @@ func (_m *WiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 		return rf()
 	}
 
-	if rf, ok := ret.Get(0).(func() []*wifi.Interface); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			if val, ok := ret.Get(0).([]*wifi.Interface); ok {
-				r0 = val
-			}
+	if val := ret.Get(0); val != nil {
+		if rf, ok := val.(func() []*wifi.Interface); ok {
+			r0 = rf()
+		} else if arr, ok := val.([]*wifi.Interface); ok {
+			r0 = arr
 		}
 	}
 
 	if rf, ok := ret.Get(1).(func() error); ok {
 		r1 = rf()
 	} else {
-		r1 = fmt.Errorf("mock error: %w", ret.Error(1))
+		if err := ret.Error(1); err != nil {
+			r1 = fmt.Errorf("mock error: %w", err)
+		}
 	}
 
 	return r0, r1
