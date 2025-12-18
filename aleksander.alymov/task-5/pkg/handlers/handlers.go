@@ -109,7 +109,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 		return ErrNoOutputChannels
 	}
 
-	var counter = -1
+	counter := -1
 
 	outputsCount := len(outputs)
 
