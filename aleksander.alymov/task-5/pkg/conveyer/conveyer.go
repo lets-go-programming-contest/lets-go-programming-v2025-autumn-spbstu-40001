@@ -30,9 +30,11 @@ type conveyer struct {
 
 func New(size int) *conveyer {
 	return &conveyer{
-		size:  size,
-		chans: make(map[string]chan string),
-		tasks: []taskFunc{},
+		size:    size,
+		chans:   make(map[string]chan string),
+		tasks:   []taskFunc{},
+		running: atomic.Bool{},
+		mu:      sync.RWMutex{},
 	}
 }
 
