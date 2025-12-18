@@ -1,6 +1,8 @@
 package currency
 
 import (
+	"encoding/xml"
+	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -14,40 +16,35 @@ type Currency struct {
 	Value    float64 `json:"value" xml:"Value"`
 }
 
-type ValueWithComma float64
+type xmlCurrency Currency
 
-func (v *ValueWithComma) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	var valueStr string
-	if err := d.DecodeElement(&valueStr, &start); err != nil {
-		return err
+func (xc *xmlCurrency) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	type rawCurrency struct {
+		NumCode  int    `xml:"NumCode"`
+		CharCode string `xml:"CharCode"`
+		Value    string `xml:"Value"`
 	}
 
-	valueStr = strings.Replace(valueStr, ",", ".", 1)
+	var raw rawCurrency
+	if err := d.DecodeElement(&raw, &start); err != nil {
+		return fmt.Errorf("decode element: %w", err)
+	}
+
+	valueStr := strings.Replace(raw.Value, ",", ".", 1)
 	value, err := strconv.ParseFloat(valueStr, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("parse value %q: %w", raw.Value, err)
 	}
 
-	*v = ValueWithComma(value)
+	xc.NumCode = raw.NumCode
+	xc.CharCode = raw.CharCode
+	xc.Value = value
+
 	return nil
 }
 
-type currencyXML struct {
-	NumCode  int           `xml:"NumCode"`
-	CharCode string        `xml:"CharCode"`
-	Value    ValueWithComma `xml:"Value"`
-}
-
-func (c currencyXML) ToCurrency() Currency {
-	return Currency{
-		NumCode:  c.NumCode,
-		CharCode: c.CharCode,
-		Value:    float64(c.Value),
-	}
-}
-
 type ValCursXML struct {
-	Valutes []currencyXML `xml:"Valute"`
+	Valutes []xmlCurrency `xml:"Valute"`
 }
 
 func ParseFromXMLFile(inputFilePath string) ([]Currency, error) {
@@ -57,8 +54,8 @@ func ParseFromXMLFile(inputFilePath string) ([]Currency, error) {
 	}
 
 	currencies := make([]Currency, len(valCurs.Valutes))
-	for i, xmlCurr := range valCurs.Valutes {
-		currencies[i] = xmlCurr.ToCurrency()
+	for i, xc := range valCurs.Valutes {
+		currencies[i] = Currency(xc)
 	}
 
 	return currencies, nil
