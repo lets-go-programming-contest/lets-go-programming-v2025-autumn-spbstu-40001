@@ -11,7 +11,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var errWiFiError = errors.New("wifi error")
+
 func TestNew(t *testing.T) {
+	t.Parallel() // Добавлено
+
 	mockWiFi := NewWiFiHandle(t)
 	service := wifi.New(mockWiFi)
 
@@ -20,6 +24,8 @@ func TestNew(t *testing.T) {
 }
 
 func TestWiFiService_GetAddresses_Success(t *testing.T) {
+	t.Parallel() // Добавлено
+
 	mockWiFi := NewWiFiHandle(t)
 	service := wifi.New(mockWiFi)
 
@@ -38,10 +44,12 @@ func TestWiFiService_GetAddresses_Success(t *testing.T) {
 }
 
 func TestWiFiService_GetAddresses_Error(t *testing.T) {
+	t.Parallel() // Добавлено
+
 	mockWiFi := NewWiFiHandle(t)
 	service := wifi.New(mockWiFi)
 
-	expectedErr := errors.New("wifi error")
+	expectedErr := errWiFiError
 	mockWiFi.On("Interfaces").Return(([]*mdwifi.Interface)(nil), expectedErr)
 
 	result, err := service.GetAddresses()
@@ -53,6 +61,8 @@ func TestWiFiService_GetAddresses_Error(t *testing.T) {
 }
 
 func TestWiFiService_GetAddresses_Empty(t *testing.T) {
+	t.Parallel() // Добавлено
+
 	mockWiFi := NewWiFiHandle(t)
 	service := wifi.New(mockWiFi)
 
@@ -65,6 +75,8 @@ func TestWiFiService_GetAddresses_Empty(t *testing.T) {
 }
 
 func TestWiFiService_GetNames_Success(t *testing.T) {
+	t.Parallel() // Добавлено
+
 	mockWiFi := NewWiFiHandle(t)
 	service := wifi.New(mockWiFi)
 
@@ -81,10 +93,12 @@ func TestWiFiService_GetNames_Success(t *testing.T) {
 }
 
 func TestWiFiService_GetNames_Error(t *testing.T) {
+	t.Parallel() // Добавлено
+
 	mockWiFi := NewWiFiHandle(t)
 	service := wifi.New(mockWiFi)
 
-	expectedErr := errors.New("wifi error")
+	expectedErr := errWiFiError
 	mockWiFi.On("Interfaces").Return(([]*mdwifi.Interface)(nil), expectedErr)
 
 	result, err := service.GetNames()
@@ -96,6 +110,8 @@ func TestWiFiService_GetNames_Error(t *testing.T) {
 }
 
 func TestWiFiService_GetNames_Empty(t *testing.T) {
+	t.Parallel()
+
 	mockWiFi := NewWiFiHandle(t)
 	service := wifi.New(mockWiFi)
 
@@ -112,5 +128,6 @@ func mustMAC(s string) net.HardwareAddr {
 	if err != nil {
 		panic(err)
 	}
+
 	return mac
 }
