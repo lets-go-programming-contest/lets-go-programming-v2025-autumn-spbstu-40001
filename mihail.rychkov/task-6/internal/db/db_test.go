@@ -9,10 +9,10 @@ import "github.com/Rychmick/task-6/internal/db";
 const queryUsual = "SELECT name FROM users";
 const queryDistinct = "SELECT DISTINCT name FROM users";
 
-var defaultError = errors.New("something went wrong...");
+var errDefault = errors.New("something went wrong...");
 var headings = []string{"name"};
 
-var getNamesCases = []struct {
+var testCases = []struct {
 	useGetUnique bool;
 	rows           *sqlmock.Rows;
 	names          []string;
@@ -21,16 +21,16 @@ var getNamesCases = []struct {
 	errQuery       error;
 	} {
 	{false, sqlmock.NewRows(headings).AddRow("1"), []string{"1"}, "", nil, nil},
-	{false, sqlmock.NewRows(headings).AddRow("1"), nil, "db query", defaultError, defaultError},
+	{false, sqlmock.NewRows(headings).AddRow("1"), nil, "db query", errDefault, errDefault},
 	{false, sqlmock.NewRows(headings).AddRow(nil), nil, "rows scanning", nil, nil},
-	{false, sqlmock.NewRows(headings).AddRow("1").RowError(0, defaultError), nil, "rows error", defaultError, nil},
+	{false, sqlmock.NewRows(headings).AddRow("1").RowError(0, errDefault), nil, "rows error", errDefault, nil},
 	{true, sqlmock.NewRows(headings).AddRow("1"), []string{"1"}, "", nil, nil},
-	{true, sqlmock.NewRows(headings).AddRow("1"), nil, "db query", defaultError, defaultError},
+	{true, sqlmock.NewRows(headings).AddRow("1"), nil, "db query", errDefault, errDefault},
 	{true, sqlmock.NewRows(headings).AddRow(nil), nil, "rows scanning", nil, nil},
-	{true, sqlmock.NewRows(headings).AddRow("1").RowError(0, defaultError), nil, "rows error", defaultError, nil},
+	{true, sqlmock.NewRows(headings).AddRow("1").RowError(0, errDefault), nil, "rows error", errDefault, nil},
 };
 
-func TestGetNames(t *testing.T) {
+func TestDatabase(t *testing.T) {
 	t.Parallel();
 
 	mockDB, mock, err := sqlmock.New();
@@ -40,7 +40,7 @@ func TestGetNames(t *testing.T) {
 	defer mockDB.Close();
 
 	libDB := db.New(mockDB);
-	for _, testData := range(getNamesCases) {
+	for _, testData := range(testCases) {
 		var names []string;
 		if (testData.useGetUnique) {
 			mock.ExpectQuery(queryDistinct).WillReturnRows(testData.rows).WillReturnError(testData.errQuery);
