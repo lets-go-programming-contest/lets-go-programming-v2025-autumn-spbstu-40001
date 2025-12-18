@@ -7,15 +7,10 @@ import (
 	"io"
 	"os"
 
-	"github.com/vikaglushkova/task-3/internal/currency"
 	"golang.org/x/net/html/charset"
 )
 
-type ValCurs struct {
-	Valutes []currency.Currency `xml:"Valute"`
-}
-
-func ParseXMLFile(inputFile string) (*ValCurs, error) {
+func ParseXMLFile[T any](inputFile string) (*T, error) {
 	data, err := os.ReadFile(inputFile)
 	if err != nil {
 		return nil, fmt.Errorf("cannot read xml file: %w", err)
@@ -26,12 +21,11 @@ func ParseXMLFile(inputFile string) (*ValCurs, error) {
 		return charset.NewReader(input, encoding)
 	}
 
-	var valCurs ValCurs
-
-	err = decoder.Decode(&valCurs)
+	var result T
+	err = decoder.Decode(&result)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse XML: %w", err)
 	}
 
-	return &valCurs, nil
+	return &result, nil
 }

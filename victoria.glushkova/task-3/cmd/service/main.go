@@ -16,6 +16,10 @@ const (
 	dirPermissions    = 0o755
 )
 
+type ValCurs struct {
+	Valutes []currency.Currency `xml:"Valute"`
+}
+
 func main() {
 	configPath := flag.String("config", defaultConfigPath, "Path to configuration file")
 	flag.Parse()
@@ -25,7 +29,7 @@ func main() {
 		log.Fatalf("Error reading config: %v", err)
 	}
 
-	valCurs, err := xml.ParseXMLFile(cfg.InputFile)
+	valCurs, err := xml.ParseXMLFile[ValCurs](cfg.InputFile)
 	if err != nil {
 		log.Fatalf("Error reading XML data: %v", err)
 	}
