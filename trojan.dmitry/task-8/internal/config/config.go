@@ -2,9 +2,12 @@ package config
 
 import (
 	"errors"
+	"fmt"
 
 	"gopkg.in/yaml.v3"
 )
+
+var errEmptyConfig = errors.New("empty config")
 
 type Config struct {
 	Environment string `yaml:"environment"`
@@ -13,12 +16,12 @@ type Config struct {
 
 func Load() (*Config, error) {
 	if len(rawConfig) == 0 {
-		return nil, errors.New("empty config")
+		return nil, errEmptyConfig
 	}
 
 	cfg := new(Config)
 	if err := yaml.Unmarshal(rawConfig, cfg); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to unmarshal YAML config: %w", err)
 	}
 
 	return cfg, nil
