@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"sync/atomic"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -24,16 +25,14 @@ type conveyer struct {
 	mu      sync.RWMutex
 	chans   map[string]chan string
 	tasks   []taskFunc
-	running bool
+	running atomic.Bool
 }
 
 func New(size int) *conveyer {
 	return &conveyer{
-		size:    size,
-		chans:   make(map[string]chan string),
-		tasks:   []taskFunc{},
-		running: false,
-		mu:      sync.RWMutex{},
+		size:  size,
+		chans: make(map[string]chan string),
+		tasks: []taskFunc{},
 	}
 }
 
@@ -121,27 +120,23 @@ func (c *conveyer) RegisterSeparator(
 	c.mu.Unlock()
 }
 
-func (c *conveyer) Run(ctx context.Context) error {
+func (c *conveyer) cleanup() {
 	c.mu.Lock()
-	if c.running {
-		c.mu.Unlock()
+	defer c.mu.Unlock()
 
+	for _, ch := range c.chans {
+		close(ch)
+	}
+
+	c.running.Store(false)
+}
+
+func (c *conveyer) Run(ctx context.Context) error {
+	if !c.running.CompareAndSwap(false, true) {
 		return ErrConveyerRunning
 	}
 
-	c.running = true
-	c.mu.Unlock()
-
-	defer func() {
-		c.mu.Lock()
-		defer c.mu.Unlock()
-
-		for _, ch := range c.chans {
-			close(ch)
-		}
-
-		c.running = false
-	}()
+	defer c.cleanup()
 
 	errGroup, ctx := errgroup.WithContext(ctx)
 

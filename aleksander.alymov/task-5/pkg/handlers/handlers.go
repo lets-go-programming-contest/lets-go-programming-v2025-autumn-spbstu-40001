@@ -11,6 +11,8 @@ import (
 var (
 	ErrCannotBeDecorated = errors.New("can't be decorated")
 	ErrCannotMultiplex   = errors.New("can't multiplex")
+	ErrNoInputChannels   = errors.New("no input channels")
+	ErrNoOutputChannels  = errors.New("no output channels")
 )
 
 const (
@@ -48,7 +50,7 @@ func PrefixDecoratorFunc(ctx context.Context, input, output chan string) error {
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	if len(inputs) == 0 {
-		return nil
+		return ErrNoInputChannels
 	}
 
 	var waitGroup sync.WaitGroup
@@ -105,7 +107,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	if len(outputs) == 0 {
-		return nil
+		return ErrNoOutputChannels
 	}
 
 	var counter int64 = -1
