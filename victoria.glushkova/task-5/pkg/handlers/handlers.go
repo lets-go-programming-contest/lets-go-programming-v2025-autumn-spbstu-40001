@@ -26,19 +26,24 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
         select {
         case <-ctx.Done():
             return nil
+
         case data, ok := <-input:
             if !ok {
                 return nil
             }
+
             if strings.Contains(data, noDecoratorData) {
                 return ErrNoDecorator
             }
+
             if !strings.HasPrefix(data, decoratorPrefix) {
                 data = decoratorPrefix + data
             }
+
             select {
             case <-ctx.Done():
                 return nil
+
             case output <- data:
             }
         }
@@ -58,17 +63,21 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
     }
 
     currentIndex := 0
+
     for {
         select {
         case <-ctx.Done():
             return nil
+
         case data, ok := <-input:
             if !ok {
                 return nil
             }
+
             select {
             case <-ctx.Done():
                 return nil
+
             case outputs[currentIndex%outputCount] <- data:
                 currentIndex++
             }
@@ -88,28 +97,36 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
     for _, inputChannel := range inputs {
         localInputChannel := inputChannel
+
         go func(currentChannel chan string) {
             defer waitGroup.Done()
+
             for {
                 select {
                 case <-ctx.Done():
                     return
+
                 case data, ok := <-currentChannel:
                     if !ok {
                         return
                     }
+
                     if strings.Contains(data, noMultiplexerData) {
                         continue
                     }
+
                     select {
                     case <-ctx.Done():
                         return
+
                     case output <- data:
                     }
                 }
             }
         }(localInputChannel)
     }
+
     waitGroup.Wait()
+
     return nil
 }

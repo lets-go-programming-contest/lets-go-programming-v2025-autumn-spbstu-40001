@@ -5,10 +5,15 @@ import (
     "errors"
     "fmt"
     "sync"
+
     "golang.org/x/sync/errgroup"
 )
 
-var ErrChanNotFound = errors.New("chan not found")
+var (
+    ErrChanNotFound  = errors.New("chan not found")
+    ErrChannelFull   = errors.New("channel is full")
+    ErrNoData        = errors.New("no data available in channel")
+)
 
 const (
     UndefinedValue = "undefined"
@@ -35,7 +40,9 @@ func New(size int) *conveyerImpl {
 func (c *conveyerImpl) getChannel(name string) (chan string, bool) {
     c.mu.RLock()
     defer c.mu.RUnlock()
+
     ch, exists := c.channels[name]
+
     return ch, exists
 }
 
@@ -43,8 +50,10 @@ func (c *conveyerImpl) getOrCreateChannel(name string) chan string {
     if ch, exists := c.channels[name]; exists {
         return ch
     }
+
     ch := make(chan string, c.size)
     c.channels[name] = ch
+
     return ch
 }
 
@@ -74,6 +83,7 @@ func (c *conveyerImpl) RegisterMultiplexer(
     for i, name := range inputNames {
         inputs[i] = c.getOrCreateChannel(name)
     }
+
     outputChan := c.getOrCreateChannel(outputName)
 
     c.handlers = append(c.handlers, func(ctx context.Context) error {
@@ -90,6 +100,7 @@ func (c *conveyerImpl) RegisterSeparator(
 
     inputChan := c.getOrCreateChannel(inputName)
     outputs := make([]chan string, len(outputNames))
+
     for i, name := range outputNames {
         outputs[i] = c.getOrCreateChannel(name)
     }
@@ -104,6 +115,7 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 
     for _, handler := range c.handlers {
         currentHandler := handler
+
         errorGroup.Go(func() error {
             return currentHandler(groupContext)
         })
@@ -112,27 +124,28 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
     if err := errorGroup.Wait(); err != nil {
         return fmt.Errorf("conveyer run: %w", err)
     }
+
     return nil
 }
 
 func (c *conveyerImpl) Send(inputName string, data string) error {
     channel, exists := c.getChannel(inputName)
     if !exists {
-        return ErrChanNotFound
+        return fmt.Errorf("%s: %w", inputName, ErrChanNotFound)
     }
 
     select {
     case channel <- data:
         return nil
     default:
-        return fmt.Errorf("channel %s is full", inputName)
+        return fmt.Errorf("%s: %w", inputName, ErrChannelFull)
     }
 }
 
 func (c *conveyerImpl) Recv(outputName string) (string, error) {
     channel, exists := c.getChannel(outputName)
     if !exists {
-        return "", ErrChanNotFound
+        return "", fmt.Errorf("%s: %w", outputName, ErrChanNotFound)
     }
 
     select {
@@ -140,8 +153,9 @@ func (c *conveyerImpl) Recv(outputName string) (string, error) {
         if !ok {
             return UndefinedValue, nil
         }
+
         return val, nil
     default:
-        return "", fmt.Errorf("no data available in channel %s", outputName)
+        return "", fmt.Errorf("%s: %w", outputName, ErrNoData)
     }
 }
