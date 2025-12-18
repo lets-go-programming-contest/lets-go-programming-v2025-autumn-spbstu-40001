@@ -7,7 +7,6 @@ import (
 
 	"github.com/mdlayher/wifi"
 	myWiFi "github.com/netwite/task-6/internal/wifi"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -34,8 +33,8 @@ func (s *WiFiServiceTestSuite) TestNew() {
 
 func (s *WiFiServiceTestSuite) TestGetAddresses_Success() {
 	expectedAddrs := []net.HardwareAddr{
-		parseMAC(s.T(), "00:11:22:33:44:55"),
-		parseMAC(s.T(), "aa:bb:cc:dd:ee:ff"),
+		s.parseMAC("00:11:22:33:44:55"),
+		s.parseMAC("aa:bb:cc:dd:ee:ff"),
 	}
 
 	mockInterfaces := []*wifi.Interface{
@@ -58,7 +57,7 @@ func (s *WiFiServiceTestSuite) TestGetAddresses_Success() {
 
 	result, err := service.GetAddresses()
 
-	require.NoError(s.T(), err)
+	s.Require().NoError(err)
 	s.Equal(expectedAddrs, result)
 }
 
@@ -70,7 +69,7 @@ func (s *WiFiServiceTestSuite) TestGetAddresses_EmptyResult() {
 
 	result, err := service.GetAddresses()
 
-	require.NoError(s.T(), err)
+	s.Require().NoError(err)
 	s.Empty(result)
 }
 
@@ -83,8 +82,8 @@ func (s *WiFiServiceTestSuite) TestGetAddresses_InterfacesError() {
 
 	result, err := service.GetAddresses()
 
-	require.Error(s.T(), err)
-	require.ErrorContains(s.T(), err, "getting interfaces")
+	s.Require().Error(err)
+	s.Require().ErrorContains(err, "getting interfaces")
 	s.Contains(err.Error(), testError.Error())
 	s.Nil(result)
 }
@@ -99,13 +98,13 @@ func (s *WiFiServiceTestSuite) TestGetAddresses_WithNilHardwareAddr() {
 		{
 			Index:        2,
 			Name:         "eth0",
-			HardwareAddr: parseMAC(s.T(), "aa:bb:cc:dd:ee:ff"),
+			HardwareAddr: s.parseMAC("aa:bb:cc:dd:ee:ff"),
 		},
 	}
 
 	expectedAddrs := []net.HardwareAddr{
 		nil,
-		parseMAC(s.T(), "aa:bb:cc:dd:ee:ff"),
+		s.parseMAC("aa:bb:cc:dd:ee:ff"),
 	}
 
 	mockWiFi := &mockWiFiHandle{
@@ -115,7 +114,7 @@ func (s *WiFiServiceTestSuite) TestGetAddresses_WithNilHardwareAddr() {
 
 	result, err := service.GetAddresses()
 
-	require.NoError(s.T(), err)
+	s.Require().NoError(err)
 	s.Equal(expectedAddrs, result)
 }
 
@@ -126,17 +125,17 @@ func (s *WiFiServiceTestSuite) TestGetNames_Success() {
 		{
 			Index:        1,
 			Name:         "wlan0",
-			HardwareAddr: parseMAC(s.T(), "00:11:22:33:44:55"),
+			HardwareAddr: s.parseMAC("00:11:22:33:44:55"),
 		},
 		{
 			Index:        2,
 			Name:         "eth0",
-			HardwareAddr: parseMAC(s.T(), "aa:bb:cc:dd:ee:ff"),
+			HardwareAddr: s.parseMAC("aa:bb:cc:dd:ee:ff"),
 		},
 		{
 			Index:        3,
 			Name:         "wlan1",
-			HardwareAddr: parseMAC(s.T(), "11:22:33:44:55:66"),
+			HardwareAddr: s.parseMAC("11:22:33:44:55:66"),
 		},
 	}
 
@@ -147,7 +146,7 @@ func (s *WiFiServiceTestSuite) TestGetNames_Success() {
 
 	result, err := service.GetNames()
 
-	require.NoError(s.T(), err)
+	s.Require().NoError(err)
 	s.Equal(expectedNames, result)
 }
 
@@ -159,7 +158,7 @@ func (s *WiFiServiceTestSuite) TestGetNames_EmptyResult() {
 
 	result, err := service.GetNames()
 
-	require.NoError(s.T(), err)
+	s.Require().NoError(err)
 	s.Empty(result)
 }
 
@@ -172,8 +171,8 @@ func (s *WiFiServiceTestSuite) TestGetNames_InterfacesError() {
 
 	result, err := service.GetNames()
 
-	require.Error(s.T(), err)
-	require.ErrorContains(s.T(), err, "getting interfaces")
+	s.Require().Error(err)
+	s.Require().ErrorContains(err, "getting interfaces")
 	s.Contains(err.Error(), testError.Error())
 	s.Nil(result)
 }
@@ -183,12 +182,12 @@ func (s *WiFiServiceTestSuite) TestGetNames_WithEmptyName() {
 		{
 			Index:        1,
 			Name:         "",
-			HardwareAddr: parseMAC(s.T(), "00:11:22:33:44:55"),
+			HardwareAddr: s.parseMAC("00:11:22:33:44:55"),
 		},
 		{
 			Index:        2,
 			Name:         "eth0",
-			HardwareAddr: parseMAC(s.T(), "aa:bb:cc:dd:ee:ff"),
+			HardwareAddr: s.parseMAC("aa:bb:cc:dd:ee:ff"),
 		},
 	}
 
@@ -201,7 +200,7 @@ func (s *WiFiServiceTestSuite) TestGetNames_WithEmptyName() {
 
 	result, err := service.GetNames()
 
-	require.NoError(s.T(), err)
+	s.Require().NoError(err)
 	s.Equal(expectedNames, result)
 }
 
@@ -210,7 +209,7 @@ func (s *WiFiServiceTestSuite) TestGetNames_SingleInterface() {
 		{
 			Index:        1,
 			Name:         "wlan0",
-			HardwareAddr: parseMAC(s.T(), "00:11:22:33:44:55"),
+			HardwareAddr: s.parseMAC("00:11:22:33:44:55"),
 		},
 	}
 
@@ -223,7 +222,7 @@ func (s *WiFiServiceTestSuite) TestGetNames_SingleInterface() {
 
 	result, err := service.GetNames()
 
-	require.NoError(s.T(), err)
+	s.Require().NoError(err)
 	s.Equal(expectedNames, result)
 }
 
@@ -232,12 +231,12 @@ func (s *WiFiServiceTestSuite) TestGetNames_SpecialCharacterNames() {
 		{
 			Index:        1,
 			Name:         "wlan-0",
-			HardwareAddr: parseMAC(s.T(), "00:11:22:33:44:55"),
+			HardwareAddr: s.parseMAC("00:11:22:33:44:55"),
 		},
 		{
 			Index:        2,
 			Name:         "eth_1",
-			HardwareAddr: parseMAC(s.T(), "aa:bb:cc:dd:ee:ff"),
+			HardwareAddr: s.parseMAC("aa:bb:cc:dd:ee:ff"),
 		},
 	}
 
@@ -250,12 +249,12 @@ func (s *WiFiServiceTestSuite) TestGetNames_SpecialCharacterNames() {
 
 	result, err := service.GetNames()
 
-	require.NoError(s.T(), err)
+	s.Require().NoError(err)
 	s.Equal(expectedNames, result)
 }
 
 func (s *WiFiServiceTestSuite) TestGetAddresses_SingleInterface() {
-	expectedAddr := parseMAC(s.T(), "00:11:22:33:44:55")
+	expectedAddr := s.parseMAC("00:11:22:33:44:55")
 
 	mockInterfaces := []*wifi.Interface{
 		{
@@ -272,12 +271,12 @@ func (s *WiFiServiceTestSuite) TestGetAddresses_SingleInterface() {
 
 	result, err := service.GetAddresses()
 
-	require.NoError(s.T(), err)
+	s.Require().NoError(err)
 	s.Equal([]net.HardwareAddr{expectedAddr}, result)
 }
 
 func (s *WiFiServiceTestSuite) TestGetAddresses_ZeroMACAddress() {
-	zeroMAC := parseMAC(s.T(), "00:00:00:00:00:00")
+	zeroMAC := s.parseMAC("00:00:00:00:00:00")
 
 	mockInterfaces := []*wifi.Interface{
 		{
@@ -294,16 +293,13 @@ func (s *WiFiServiceTestSuite) TestGetAddresses_ZeroMACAddress() {
 
 	result, err := service.GetAddresses()
 
-	require.NoError(s.T(), err)
+	s.Require().NoError(err)
 	s.Equal([]net.HardwareAddr{zeroMAC}, result)
 }
 
-func parseMAC(t *testing.T, s string) net.HardwareAddr {
-	t.Helper()
-
-	hwAddr, err := net.ParseMAC(s)
-	require.NoError(t, err, "failed to parse MAC address: %s", s)
-
+func (s *WiFiServiceTestSuite) parseMAC(macStr string) net.HardwareAddr {
+	hwAddr, err := net.ParseMAC(macStr)
+	s.Require().NoError(err, "failed to parse MAC address: %s", macStr)
 	return hwAddr
 }
 
