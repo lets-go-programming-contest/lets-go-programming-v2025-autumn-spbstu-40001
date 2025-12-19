@@ -19,21 +19,6 @@ func New(wifi WiFiHandle) WiFiService {
 	return WiFiService{WiFi: wifi}
 }
 
-func (service WiFiService) GetNames() ([]string, error) {
-	interfaces, err := service.WiFi.Interfaces()
-	if err != nil {
-		return nil, fmt.Errorf("getting interfaces: %w", err)
-	}
-
-	names := make([]string, 0, len(interfaces))
-
-	for _, iface := range interfaces {
-		names = append(names, iface.Name)
-	}
-
-	return names, nil
-}
-
 func (service WiFiService) GetAddresses() ([]net.HardwareAddr, error) {
 	interfaces, err := service.WiFi.Interfaces()
 	if err != nil {
@@ -47,4 +32,19 @@ func (service WiFiService) GetAddresses() ([]net.HardwareAddr, error) {
 	}
 
 	return addrs, nil
+}
+
+func (service WiFiService) GetNames() ([]string, error) {
+	interfaces, err := service.WiFi.Interfaces()
+	if err != nil {
+		return nil, fmt.Errorf("getting interfaces: %w", err)
+	}
+
+	names := make([]string, 0, len(interfaces))
+
+	for _, iface := range interfaces {
+		names = append(names, iface.Name)
+	}
+
+	return names, nil
 }
