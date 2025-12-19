@@ -14,18 +14,21 @@ type xmlFloat float64
 
 func (xf *xmlFloat) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
 	var content string
+
 	err := decoder.DecodeElement(&content, &start)
 	if err != nil {
 		return fmt.Errorf("cannot decode element: %w", err)
 	}
 
 	content = strings.Replace(content, ",", ".", 1)
+
 	value, err := strconv.ParseFloat(content, 64)
 	if err != nil {
 		return fmt.Errorf("cannot parse float %s: %w", content, err)
 	}
 
 	*xf = xmlFloat(value)
+
 	return nil
 }
 
