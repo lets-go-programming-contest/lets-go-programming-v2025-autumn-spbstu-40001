@@ -12,28 +12,29 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var ErrExpected = errors.New("expected error")
+var (
+	ErrExpected      = errors.New("expected error")
+	ErrGettingIF     = errors.New("getting interfaces")
+	ErrGetInterfaces = errors.New("get interfaces")
+)
 
 func TestWiFiServiceGetAddressesSuccess(t *testing.T) {
+	const numberOfData = 3
+
 	t.Parallel()
 
 	mockWiFi := new(WiFiHandle)
 
-	hwAddr1, _ := net.ParseMAC("00:11:22:33:44:55")
-	hwAddr2, _ := net.ParseMAC("aa:bb:cc:dd:ee:ff")
-
-	numberOfData := 3
+	hwAddrs := []net.HardwareAddr{
+		mustParseMAC("00:11:22:33:44:55"),
+		mustParseMAC("aa:bb:cc:dd:ee:ff"),
+		mustParseMAC("aa:bb:cc:dd:ee:ff"),
+	}
 
 	interfaces := []*wifi.Interface{
-		{
-			Name: "wlan0", HardwareAddr: hwAddr1,
-		},
-		{
-			Name: "wlan1", HardwareAddr: hwAddr2,
-		},
-		{
-			Name: "wlan2", HardwareAddr: hwAddr2,
-		},
+		{Name: "wlan0", HardwareAddr: hwAddrs[0]},
+		{Name: "wlan1", HardwareAddr: hwAddrs[1]},
+		{Name: "wlan2", HardwareAddr: hwAddrs[2]},
 	}
 
 	mockWiFi.On("Interfaces").Return(interfaces, nil)
@@ -43,9 +44,10 @@ func TestWiFiServiceGetAddressesSuccess(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Len(t, addrs, numberOfData)
-	assert.Equal(t, hwAddr1, addrs[0])
-	assert.Equal(t, hwAddr2, addrs[1])
-	assert.Equal(t, hwAddr2, addrs[2])
+
+	for i, addr := range hwAddrs {
+		assert.Equal(t, addr, addrs[i])
+	}
 
 	mockWiFi.AssertExpectations(t)
 }
@@ -61,7 +63,7 @@ func TestWiFiServiceGetAddressesError(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Nil(t, addrs)
-	assert.Contains(t, err.Error(), "getting interfaces")
+	assert.Contains(t, err.Error(), ErrGettingIF.Error())
 
 	mockWiFi.AssertExpectations(t)
 }
@@ -73,13 +75,12 @@ func TestWiFiServiceGetNamesSuccess(t *testing.T) {
 
 	mockWiFi := new(WiFiHandle)
 
-	hwAddr, _ := net.ParseMAC("13:37:de:ad:be:ef")
+	ifNames := []string{"wlan0", "wlan1", "eth0"}
+	hwAddr := mustParseMAC("13:37:de:ad:be:ef")
 	interfaces := []*wifi.Interface{
-		{
-			Name: "wlan0", HardwareAddr: hwAddr,
-		},
-		{Name: "wlan1"},
-		{Name: "eth0"},
+		{Name: ifNames[0], HardwareAddr: hwAddr},
+		{Name: ifNames[1]},
+		{Name: ifNames[2]},
 	}
 
 	mockWiFi.On("Interfaces").Return(interfaces, nil)
@@ -89,7 +90,7 @@ func TestWiFiServiceGetNamesSuccess(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Len(t, names, numberOfData)
-	assert.Equal(t, []string{"wlan0", "wlan1", "eth0"}, names)
+	assert.Equal(t, ifNames, names)
 
 	mockWiFi.AssertExpectations(t)
 }
@@ -122,7 +123,7 @@ func TestWiFiServiceGetNamesError(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Nil(t, names)
-	assert.Contains(t, err.Error(), "get interfaces")
+	assert.Contains(t, err.Error(), ErrGetInterfaces.Error())
 
 	mockWiFi.AssertExpectations(t)
 }
@@ -135,4 +136,12 @@ func TestNew(t *testing.T) {
 
 	assert.NotNil(t, service)
 	assert.Equal(t, mockWiFi, service.WiFi)
+}
+
+// if you want arrays, then we also need this
+// (or i could make for loop, but this is more universal (i pretend that there is no error to throw)).
+func mustParseMAC(addr string) net.HardwareAddr {
+	hw, _ := net.ParseMAC(addr)
+
+	return hw
 }
