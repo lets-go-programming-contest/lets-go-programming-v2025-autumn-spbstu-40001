@@ -217,6 +217,24 @@ func TestDBServiceGetUniqueNamesRowsError(t *testing.T) {
 	assert.Contains(t, err.Error(), "rows error")
 }
 
+func TestDBServiceGetUniqueNamesQueryError(t *testing.T) {
+	t.Parallel()
+
+	mockDB, mock, err := sqlmock.New()
+	require.NoError(t, err)
+
+	defer mockDB.Close()
+
+	mock.ExpectQuery(sqlGetUniqueNames).WillReturnError(ErrQueryError)
+
+	service := taskDbPack.New(mockDB)
+	names, err := service.GetUniqueNames()
+
+	require.Error(t, err)
+	assert.Nil(t, names)
+	assert.Contains(t, err.Error(), "db query")
+}
+
 func TestNew(t *testing.T) {
 	t.Parallel()
 
