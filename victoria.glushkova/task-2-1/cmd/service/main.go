@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 )
@@ -8,6 +9,10 @@ import (
 const (
 	minTemperature = 15
 	maxTemperature = 30
+)
+
+var (
+	ErrInvalidOperation = errors.New("invalid operation")
 )
 
 type Temperature struct {
@@ -51,8 +56,7 @@ func (temp *Temperature) getSuitableTemperature(operand string, preferredTempera
 			temp.Max = preferredTemperature
 		}
 	default:
-
-		return 0, fmt.Errorf("invalid operation: %s", operand)
+		return 0, fmt.Errorf("%w: %s", ErrInvalidOperation, operand)
 	}
 
 	if temp.Min > temp.Max {
