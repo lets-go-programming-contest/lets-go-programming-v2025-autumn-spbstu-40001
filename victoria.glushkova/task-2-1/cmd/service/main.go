@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 )
 
 const (
@@ -21,9 +22,9 @@ func NewTemperature(minTemperature, maxTemperature int) Temperature {
 	}
 }
 
-func (temp *Temperature) getSuitableTemperature(operand string, preferredTemperature int) int {
+func (temp *Temperature) getSuitableTemperature(operand string, preferredTemperature int) (int, error) {
 	if temp.Min > temp.Max {
-		return -1
+		return -1, nil
 	}
 
 	switch operand {
@@ -32,7 +33,7 @@ func (temp *Temperature) getSuitableTemperature(operand string, preferredTempera
 			temp.Min = 1
 			temp.Max = 0
 
-			return -1
+			return -1, nil
 		}
 
 		if preferredTemperature > temp.Min {
@@ -43,24 +44,22 @@ func (temp *Temperature) getSuitableTemperature(operand string, preferredTempera
 			temp.Min = 1
 			temp.Max = 0
 
-			return -1
+			return -1, nil
 		}
 
 		if preferredTemperature < temp.Max {
 			temp.Max = preferredTemperature
 		}
 	default:
-		temp.Min = 1
-		temp.Max = 0
 
-		return -1
+		return 0, fmt.Errorf("invalid operation: %s", operand)
 	}
 
 	if temp.Min > temp.Max {
-		return -1
+		return -1, nil
 	}
 
-	return temp.Min
+	return temp.Min, nil
 }
 
 func main() {
@@ -68,7 +67,7 @@ func main() {
 
 	_, err := fmt.Scan(&departmentNum)
 	if err != nil {
-		return
+		os.Exit(1)
 	}
 
 	for range departmentNum {
@@ -76,7 +75,7 @@ func main() {
 
 		_, err := fmt.Scan(&workerNum)
 		if err != nil {
-			return
+			os.Exit(1)
 		}
 
 		currentTemperature := NewTemperature(minTemperature, maxTemperature)
@@ -89,10 +88,14 @@ func main() {
 
 			_, err := fmt.Scan(&operand, &preferredTemperature)
 			if err != nil {
-				return
+				os.Exit(1)
 			}
 
-			result := currentTemperature.getSuitableTemperature(operand, preferredTemperature)
+			result, err := currentTemperature.getSuitableTemperature(operand, preferredTemperature)
+			if err != nil {
+				os.Exit(1)
+			}
+
 			fmt.Println(result)
 		}
 	}
