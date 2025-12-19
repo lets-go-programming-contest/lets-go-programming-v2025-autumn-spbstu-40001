@@ -4,6 +4,7 @@ package wifi_test
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"testing"
 
@@ -12,81 +13,92 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func generateInterfaces() []*wifi.Interface {
+	return []*wifi.Interface{getInterface("device1", "00:01:02:03:04:05")}
+}
+
+func getInterface(name, mac string) *wifi.Interface {
+	parsedMAC, err := net.ParseMAC(mac)
+	if err != nil {
+		panic(err)
+	}
+
+	return &wifi.Interface{
+		Name:         name,
+		HardwareAddr: parsedMAC,
+	}
+}
+
+func queryNames(t *testing.T, serviceObj service.WiFiService, ifaces []*wifi.Interface, checkResult bool) error {
+	t.Helper()
+
+	receivedNames, err := serviceObj.GetNames()
+
+	if checkResult {
+		require.NoError(t, err)
+
+		for i, device := range ifaces {
+			require.Equal(t, device.Name, receivedNames[i])
+		}
+	}
+
+	return fmt.Errorf("received error: %w", err)
+}
+
+func queryAddresses(t *testing.T, serviceObj service.WiFiService, ifaces []*wifi.Interface, checkResult bool) error {
+	t.Helper()
+
+	recievedMacs, err := serviceObj.GetAddresses()
+
+	if checkResult {
+		require.NoError(t, err)
+
+		for i, device := range ifaces {
+			require.Equal(t, device.HardwareAddr, recievedMacs[i])
+		}
+	}
+
+	return fmt.Errorf("received error: %w", err)
+}
+
 var errDefault = errors.New("something went wrong")
 
 var testCases = []struct { //nolint:gochecknoglobals
-	useGetNames    bool
-	names          []string
-	macs           []string
+	method         func(t *testing.T, serviceObj service.WiFiService, ifaces []*wifi.Interface, checkResult bool) error
+	interfaces     []*wifi.Interface
 	errExpectedMsg string
 	errExpected    error
 	errQuery       error
 }{
-	{false, []string{"device1"}, []string{"00:01:02:03:04:05"}, "", nil, nil},
-	{false, nil, nil, "getting interfaces", errDefault, errDefault},
-	{true, []string{"device1"}, []string{"00:01:02:03:04:05"}, "", nil, nil},
-	{true, nil, nil, "getting interfaces", errDefault, errDefault},
+	{queryAddresses, generateInterfaces(), "", nil, nil},
+	{queryAddresses, nil, "getting interfaces", errDefault, errDefault},
+	{queryNames, generateInterfaces(), "", nil, nil},
+	{queryNames, nil, "getting interfaces", errDefault, errDefault},
 }
 
 func TestWiFi(t *testing.T) {
 	t.Parallel()
 
-	for _, testData := range testCases {
-		mock := NewWiFiHandle(t)
-		serviceObj := service.New(mock)
-		expectError := (testData.errExpected != nil) || (testData.errExpectedMsg != "")
+	for i, testData := range testCases {
+		t.Run(fmt.Sprintf("testcase #%d", i), func(t *testing.T) {
+			t.Parallel()
+			mock := NewWiFiHandle(t)
+			serviceObj := service.New(mock)
+			expectError := (testData.errExpected != nil) || (testData.errExpectedMsg != "")
 
-		require.Len(t, testData.macs, len(testData.names))
-		interfaces := make([]*wifi.Interface, 0, len(testData.macs))
+			mock.On("Interfaces").Return(testData.interfaces, testData.errQuery)
 
-		expectedMacs := make([]net.HardwareAddr, 0)
-
-		for i := range len(testData.macs) {
-			parsedMAC, err := net.ParseMAC(testData.macs[i])
-			require.NoError(t, err)
-
-			expectedMacs = append(expectedMacs, parsedMAC)
-			interfaces = append(interfaces, &wifi.Interface{
-				Index:        i,
-				Name:         testData.names[i],
-				HardwareAddr: parsedMAC,
-			})
-		}
-
-		mock.On("Interfaces").Return(interfaces, testData.errQuery)
-
-		var err error
-
-		if testData.useGetNames {
-			names, err1 := serviceObj.GetNames()
+			err := testData.method(t, serviceObj, testData.interfaces, !expectError)
 
 			if !expectError {
-				require.NoError(t, err)
-				require.Equal(t, testData.names, names)
-
-				continue
+				return
 			}
 
-			err = err1
-		} else {
-			macs, err1 := serviceObj.GetAddresses()
-
-			if !expectError {
-				require.NoError(t, err)
-				require.Equal(t, expectedMacs, macs)
-
-				continue
+			if testData.errExpected != nil {
+				require.ErrorIs(t, err, testData.errExpected)
 			}
 
-			err = err1
-		}
-
-		if testData.errExpected != nil {
-			require.ErrorIs(t, err, testData.errExpected)
-		} else {
-			require.Error(t, err)
-		}
-
-		require.ErrorContains(t, err, testData.errExpectedMsg)
+			require.ErrorContains(t, err, testData.errExpectedMsg)
+		})
 	}
 }

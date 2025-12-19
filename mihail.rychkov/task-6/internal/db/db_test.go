@@ -2,6 +2,7 @@ package db_test
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -19,64 +20,89 @@ var (
 	headings   = []string{"name"} //nolint:gochecknoglobals
 )
 
+func generateRows() *sqlmock.Rows {
+	return sqlmock.NewRows(headings).AddRow("1")
+}
+
+func generateErrRows() *sqlmock.Rows {
+	return generateRows().RowError(0, errDefault)
+}
+
+func generateNilRows() *sqlmock.Rows {
+	return generateRows().AddRow(nil)
+}
+
+func usualQuery(mock sqlmock.Sqlmock, service db.DBService, rows *sqlmock.Rows, errQuery error) ([]string, error) {
+	mock.ExpectQuery(queryUsual).WillReturnRows(rows).WillReturnError(errQuery)
+
+	names, err := service.GetNames()
+	if err != nil {
+		return names, fmt.Errorf("received error: %w", err)
+	}
+
+	return names, nil
+}
+
+func distinctQuery(mock sqlmock.Sqlmock, service db.DBService, rows *sqlmock.Rows, errQuery error) ([]string, error) {
+	mock.ExpectQuery(queryDistinct).WillReturnRows(rows).WillReturnError(errQuery)
+
+	names, err := service.GetUniqueNames()
+	if err != nil {
+		return names, fmt.Errorf("received error: %w", err)
+	}
+
+	return names, nil
+}
+
 var testCases = []struct { //nolint:gochecknoglobals
-	useGetUnique   bool
+	method         func(mock sqlmock.Sqlmock, service db.DBService, rows *sqlmock.Rows, errQuery error) ([]string, error)
 	rows           *sqlmock.Rows
+	errQuery       error
 	names          []string
 	errExpectedMsg string
 	errExpected    error
-	errQuery       error
 }{
-	{false, sqlmock.NewRows(headings).AddRow("1"), []string{"1"}, "", nil, nil},
-	{false, sqlmock.NewRows(headings).AddRow("1"), nil, "db query", errDefault, errDefault},
-	{false, sqlmock.NewRows(headings).AddRow(nil), nil, "rows scanning", nil, nil},
-	{false, sqlmock.NewRows(headings).AddRow("1").RowError(0, errDefault), nil, "rows error", errDefault, nil},
-	{true, sqlmock.NewRows(headings).AddRow("1"), []string{"1"}, "", nil, nil},
-	{true, sqlmock.NewRows(headings).AddRow("1"), nil, "db query", errDefault, errDefault},
-	{true, sqlmock.NewRows(headings).AddRow(nil), nil, "rows scanning", nil, nil},
-	{true, sqlmock.NewRows(headings).AddRow("1").RowError(0, errDefault), nil, "rows error", errDefault, nil},
+	{usualQuery, generateRows(), nil, []string{"1"}, "", nil},
+	{usualQuery, generateRows(), errDefault, nil, "db query", errDefault},
+	{usualQuery, generateErrRows(), nil, nil, "rows error", errDefault},
+	{usualQuery, generateNilRows(), nil, nil, "rows scanning", nil},
+	{distinctQuery, generateRows(), nil, []string{"1"}, "", nil},
+	{distinctQuery, generateRows(), errDefault, nil, "db query", errDefault},
+	{distinctQuery, generateErrRows(), nil, nil, "rows error", errDefault},
+	{distinctQuery, generateNilRows(), nil, nil, "rows scanning", nil},
 }
 
 func TestDatabase(t *testing.T) {
 	t.Parallel()
 
-	mockDB, mock, err := sqlmock.New()
-	if err != nil {
-		require.NoError(t, err)
-	}
-	defer mockDB.Close()
+	for i, testData := range testCases {
+		t.Run(fmt.Sprintf("testcase #%d", i), func(t *testing.T) {
+			t.Parallel()
 
-	libDB := db.New(mockDB)
+			mockDB, mock, err := sqlmock.New()
+			require.NoError(t, err)
 
-	for _, testData := range testCases {
-		var names []string
+			defer mockDB.Close()
 
-		if testData.useGetUnique {
-			mock.ExpectQuery(queryDistinct).WillReturnRows(testData.rows).WillReturnError(testData.errQuery)
+			service := db.New(mockDB)
 
-			names, err = libDB.GetUniqueNames()
-		} else {
-			mock.ExpectQuery(queryUsual).WillReturnRows(testData.rows).WillReturnError(testData.errQuery)
+			names, err := testData.method(mock, service, testData.rows, testData.errQuery)
 
-			names, err = libDB.GetNames()
-		}
+			require.NoError(t, mock.ExpectationsWereMet())
 
-		require.NoError(t, mock.ExpectationsWereMet())
+			if (testData.errExpected != nil) || (testData.errExpectedMsg != "") {
+				if testData.errExpected != nil {
+					require.ErrorIs(t, err, testData.errExpected)
+				}
 
-		if (testData.errExpected != nil) || (testData.errExpectedMsg != "") {
-			if testData.errExpected != nil {
-				require.ErrorIs(t, err, testData.errExpected)
-			} else {
-				require.Error(t, err)
+				require.ErrorContains(t, err, testData.errExpectedMsg)
+				require.Empty(t, names)
+
+				return
 			}
 
-			require.ErrorContains(t, err, testData.errExpectedMsg)
-			require.Empty(t, names)
-
-			continue
-		}
-
-		require.NoError(t, err)
-		require.Equal(t, testData.names, names)
+			require.NoError(t, err)
+			require.Equal(t, testData.names, names)
+		})
 	}
 }
