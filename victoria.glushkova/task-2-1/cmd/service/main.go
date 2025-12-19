@@ -29,6 +29,7 @@ func (ot *OfficeThermostat) Process(operation string, temperature int) int {
 		if temperature > ot.max {
 			return -1
 		}
+
 		if temperature > ot.min {
 			ot.min = temperature
 		}
@@ -36,6 +37,7 @@ func (ot *OfficeThermostat) Process(operation string, temperature int) int {
 		if temperature < ot.min {
 			return -1
 		}
+
 		if temperature < ot.max {
 			ot.max = temperature
 		}
@@ -52,6 +54,7 @@ func (ot *OfficeThermostat) Process(operation string, temperature int) int {
 
 func main() {
 	var departmentCount int
+
 	_, err := fmt.Scan(&departmentCount)
 	if err != nil {
 		log.Printf("Error reading department count: %v", err)
@@ -60,6 +63,7 @@ func main() {
 
 	for range departmentCount {
 		var staffCount int
+
 		_, err := fmt.Scan(&staffCount)
 		if err != nil {
 			log.Printf("Error reading staff count: %v", err)
