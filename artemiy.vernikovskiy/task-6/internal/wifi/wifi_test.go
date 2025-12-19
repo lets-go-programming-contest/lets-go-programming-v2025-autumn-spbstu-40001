@@ -67,11 +67,11 @@ func TestWiFiServiceGetAddressesError(t *testing.T) {
 }
 
 func TestWiFiServiceGetNamesSuccess(t *testing.T) {
+	const numberOfData = 3
+
 	t.Parallel()
 
 	mockWiFi := new(WiFiHandle)
-
-	numberOfData := 3
 
 	hwAddr, _ := net.ParseMAC("13:37:de:ad:be:ef")
 	interfaces := []*wifi.Interface{

@@ -12,7 +12,12 @@ import (
 	taskDbPack "github.com/Aapng-cmd/task-6/internal/db"
 )
 
-var ErrQueryError = errors.New("we got the news for you, you are doomed")
+var (
+	ErrQueryError   = errors.New("we got the news for you, you are doomed")
+	ErrRowsScanning = errors.New("rows scanning")
+	ErrRowsError    = errors.New("rows error")
+	ErrDBQuery      = errors.New("db query")
+)
 
 const (
 	sqlGetNames       = "SELECT name FROM users"
@@ -20,6 +25,10 @@ const (
 )
 
 func TestDBServiceGetNamesSuccess(t *testing.T) {
+	const numberOfData = 3
+
+	testNames := []string{"Petya", "Vanya", "Punk"}
+
 	t.Parallel()
 
 	mockDB, mock, err := sqlmock.New()
@@ -27,12 +36,10 @@ func TestDBServiceGetNamesSuccess(t *testing.T) {
 
 	defer mockDB.Close()
 
-	numberOfData := 3
-
-	rows := sqlmock.NewRows([]string{"name"}).
-		AddRow("Petya").
-		AddRow("Vanya").
-		AddRow("Punk")
+	rows := sqlmock.NewRows([]string{"name"})
+	for _, name := range testNames {
+		rows.AddRow(name)
+	}
 
 	mock.ExpectQuery(sqlGetNames).WillReturnRows(rows)
 
@@ -41,9 +48,10 @@ func TestDBServiceGetNamesSuccess(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Len(t, names, numberOfData)
-	assert.Equal(t, "Petya", names[0])
-	assert.Equal(t, "Vanya", names[1])
-	assert.Equal(t, "Punk", names[2])
+
+	for i, expectedName := range testNames {
+		assert.Equal(t, expectedName, names[i])
+	}
 }
 
 func TestDBServiceGetNamesEmpty(t *testing.T) {
@@ -72,10 +80,13 @@ func TestDBServiceGetNamesScanError(t *testing.T) {
 
 	defer mockDB.Close()
 
-	rows := sqlmock.NewRows([]string{"name"}).
-		AddRow("Fuagra").
-		AddRow(nil).
-		AddRow("Fukh")
+	testNames := []interface{}{"Fuagra", nil, "Fukh"}
+
+	rows := sqlmock.NewRows([]string{"name"})
+
+	for _, name := range testNames {
+		rows.AddRow(name)
+	}
 
 	mock.ExpectQuery(sqlGetNames).WillReturnRows(rows)
 
@@ -84,7 +95,7 @@ func TestDBServiceGetNamesScanError(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Nil(t, names)
-	assert.Contains(t, err.Error(), "rows scanning")
+	assert.Contains(t, err.Error(), ErrRowsScanning.Error())
 }
 
 func TestDBServiceGetNamesRowsError(t *testing.T) {
@@ -95,8 +106,8 @@ func TestDBServiceGetNamesRowsError(t *testing.T) {
 
 	defer mockDB.Close()
 
-	rows := sqlmock.NewRows([]string{"name"})
-	rows.AddRow("Pihta")
+	rows := sqlmock.NewRows([]string{"name"}).
+		AddRow("Pihta")
 	rows.RowError(0, sql.ErrTxDone)
 
 	mock.ExpectQuery(sqlGetNames).WillReturnRows(rows)
@@ -106,7 +117,7 @@ func TestDBServiceGetNamesRowsError(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Nil(t, names)
-	assert.Contains(t, err.Error(), "rows error")
+	assert.Contains(t, err.Error(), ErrRowsError.Error())
 }
 
 func TestDBServiceGetNamesQueryError(t *testing.T) {
@@ -124,10 +135,14 @@ func TestDBServiceGetNamesQueryError(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Nil(t, names)
-	assert.Contains(t, err.Error(), "db query")
+	assert.Contains(t, err.Error(), ErrDBQuery.Error())
 }
 
 func TestDBServiceGetUniqueNamesSuccess(t *testing.T) {
+	const numberOfData = 3
+
+	testNames := []string{"UniqueName1FantasyDied", "AgroCultureIsTheBest", "GodLovesNumber3Large"} // not a blasphemy
+
 	t.Parallel()
 
 	mockDB, mock, err := sqlmock.New()
@@ -135,12 +150,10 @@ func TestDBServiceGetUniqueNamesSuccess(t *testing.T) {
 
 	defer mockDB.Close()
 
-	numberOfData := 3
-
-	rows := sqlmock.NewRows([]string{"name"}).
-		AddRow("UniqueName1FantasyDied").
-		AddRow("AgroCultureIsTheBest").
-		AddRow("GodLovesNumber3Large") // not a blasphemy
+	rows := sqlmock.NewRows([]string{"name"})
+	for _, name := range testNames {
+		rows.AddRow(name)
+	}
 
 	mock.ExpectQuery(sqlGetUniqueNames).WillReturnRows(rows)
 
@@ -149,9 +162,10 @@ func TestDBServiceGetUniqueNamesSuccess(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Len(t, names, numberOfData)
-	assert.Equal(t, "UniqueName1FantasyDied", names[0])
-	assert.Equal(t, "AgroCultureIsTheBest", names[1])
-	assert.Equal(t, "GodLovesNumber3Large", names[2])
+
+	for i, expectedName := range testNames {
+		assert.Equal(t, expectedName, names[i])
+	}
 }
 
 func TestDBServiceGetUniqueNamesEmpty(t *testing.T) {
@@ -180,10 +194,13 @@ func TestDBServiceGetUniqueNamesScanError(t *testing.T) {
 
 	defer mockDB.Close()
 
-	rows := sqlmock.NewRows([]string{"name"}).
-		AddRow("GetReadyForNil").
-		AddRow(nil).
-		AddRow("Gotcha")
+	testNames := []interface{}{"GetReadyForNil", nil, "Gotcha"}
+
+	rows := sqlmock.NewRows([]string{"name"})
+
+	for _, name := range testNames {
+		rows.AddRow(name)
+	}
 
 	mock.ExpectQuery(sqlGetUniqueNames).WillReturnRows(rows)
 
@@ -192,7 +209,7 @@ func TestDBServiceGetUniqueNamesScanError(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Nil(t, names)
-	assert.Contains(t, err.Error(), "rows scanning")
+	assert.Contains(t, err.Error(), ErrRowsScanning.Error())
 }
 
 func TestDBServiceGetUniqueNamesRowsError(t *testing.T) {
@@ -203,8 +220,8 @@ func TestDBServiceGetUniqueNamesRowsError(t *testing.T) {
 
 	defer mockDB.Close()
 
-	rows := sqlmock.NewRows([]string{"name"})
-	rows.AddRow("OhohSneaky")
+	rows := sqlmock.NewRows([]string{"name"}).
+		AddRow("OhohSneaky")
 	rows.RowError(0, sql.ErrTxDone)
 
 	mock.ExpectQuery(sqlGetUniqueNames).WillReturnRows(rows)
@@ -214,7 +231,7 @@ func TestDBServiceGetUniqueNamesRowsError(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Nil(t, names)
-	assert.Contains(t, err.Error(), "rows error")
+	assert.Contains(t, err.Error(), ErrRowsError.Error())
 }
 
 func TestDBServiceGetUniqueNamesQueryError(t *testing.T) {
@@ -232,7 +249,7 @@ func TestDBServiceGetUniqueNamesQueryError(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Nil(t, names)
-	assert.Contains(t, err.Error(), "db query")
+	assert.Contains(t, err.Error(), ErrDBQuery.Error())
 }
 
 func TestNew(t *testing.T) {
