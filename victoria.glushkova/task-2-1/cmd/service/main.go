@@ -2,89 +2,94 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"os"
 )
 
 const (
-	minTemp = 15
-	maxTemp = 30
+	minTemperature = 15
+	maxTemperature = 30
 )
 
-type OfficeThermostat struct {
-	min int
-	max int
+type Temperature struct {
+	Min int
+	Max int
 }
 
-func NewOfficeThermostat(minTemp, maxTemp int) *OfficeThermostat {
-	return &OfficeThermostat{
-		min: minTemp,
-		max: maxTemp,
+func NewTemperature(minTemperature, maxTemperature int) Temperature {
+	return Temperature{
+		Min: minTemperature,
+		Max: maxTemperature,
 	}
 }
 
-func (ot *OfficeThermostat) Process(operation string, temperature int) int {
-	switch operation {
+func (temp *Temperature) getSuitableTemperature(operand string, preferredTemperature int) int {
+	if temp.Min > temp.Max {
+		return -1
+	}
+
+	switch operand {
 	case ">=":
-		if temperature > ot.max {
+		if preferredTemperature > temp.Max {
+			temp.Min = 1
+			temp.Max = 0
 			return -1
 		}
 
-		if temperature > ot.min {
-			ot.min = temperature
+		if preferredTemperature > temp.Min {
+			temp.Min = preferredTemperature
 		}
 	case "<=":
-		if temperature < ot.min {
+		if preferredTemperature < temp.Min {
+			temp.Min = 1
+			temp.Max = 0
 			return -1
 		}
 
-		if temperature < ot.max {
-			ot.max = temperature
+		if preferredTemperature < temp.Max {
+			temp.Max = preferredTemperature
 		}
 	default:
+		temp.Min = 1
+		temp.Max = 0
 		return -1
 	}
 
-	if ot.min > ot.max {
+	if temp.Min > temp.Max {
 		return -1
 	}
 
-	return ot.min
+	return temp.Min
 }
 
 func main() {
-	var departmentCount int
+	var departmentNum int
 
-	_, err := fmt.Scan(&departmentCount)
+	_, err := fmt.Scan(&departmentNum)
 	if err != nil {
-		log.Printf("Error reading department count: %v", err)
-		os.Exit(1)
+		return
 	}
 
-	for range departmentCount {
-		var staffCount int
+	for range departmentNum {
+		var workerNum int
 
-		_, err := fmt.Scan(&staffCount)
+		_, err := fmt.Scan(&workerNum)
 		if err != nil {
-			log.Printf("Error reading staff count: %v", err)
-			os.Exit(1)
+			return
 		}
 
-		thermostat := NewOfficeThermostat(minTemp, maxTemp)
+		currentTemperature := NewTemperature(minTemperature, maxTemperature)
 
-		for range staffCount {
+		for range workerNum {
 			var (
-				operation   string
-				temperature int
+				preferredTemperature int
+				operand              string
 			)
 
-			_, err := fmt.Scanf("%s %d\n", &operation, &temperature)
+			_, err := fmt.Scan(&operand, &preferredTemperature)
 			if err != nil {
-				log.Printf("Error reading operation and temperature: %v", err)
-				os.Exit(1)
+				return
 			}
 
-			result := thermostat.Process(operation, temperature)
+			result := currentTemperature.getSuitableTemperature(operand, preferredTemperature)
 			fmt.Println(result)
 		}
 	}
