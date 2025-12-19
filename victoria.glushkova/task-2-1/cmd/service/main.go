@@ -31,6 +31,7 @@ func (temp *Temperature) getSuitableTemperature(operand string, preferredTempera
 		if preferredTemperature > temp.Max {
 			temp.Min = 1
 			temp.Max = 0
+
 			return -1
 		}
 
@@ -41,6 +42,7 @@ func (temp *Temperature) getSuitableTemperature(operand string, preferredTempera
 		if preferredTemperature < temp.Min {
 			temp.Min = 1
 			temp.Max = 0
+
 			return -1
 		}
 
@@ -50,6 +52,7 @@ func (temp *Temperature) getSuitableTemperature(operand string, preferredTempera
 	default:
 		temp.Min = 1
 		temp.Max = 0
+
 		return -1
 	}
 
