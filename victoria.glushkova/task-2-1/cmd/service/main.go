@@ -12,50 +12,38 @@ const (
 )
 
 type OfficeThermostat struct {
-	min      int
-	max      int
-	hasError bool
+	min int
+	max int
 }
 
 func NewOfficeThermostat(minTemp, maxTemp int) *OfficeThermostat {
 	return &OfficeThermostat{
-		min:      minTemp,
-		max:      maxTemp,
-		hasError: false,
+		min: minTemp,
+		max: maxTemp,
 	}
 }
 
 func (ot *OfficeThermostat) Process(operation string, temperature int) int {
-	if ot.hasError {
-		return -1
-	}
-
 	switch operation {
 	case ">=":
 		if temperature > ot.max {
-			ot.hasError = true
-
 			return -1
 		}
-
 		if temperature > ot.min {
 			ot.min = temperature
 		}
 	case "<=":
 		if temperature < ot.min {
-			ot.hasError = true
-
 			return -1
 		}
-
 		if temperature < ot.max {
 			ot.max = temperature
 		}
+	default:
+		return -1
 	}
 
 	if ot.min > ot.max {
-		ot.hasError = true
-
 		return -1
 	}
 
@@ -64,7 +52,6 @@ func (ot *OfficeThermostat) Process(operation string, temperature int) int {
 
 func main() {
 	var departmentCount int
-
 	_, err := fmt.Scan(&departmentCount)
 	if err != nil {
 		log.Printf("Error reading department count: %v", err)
@@ -73,7 +60,6 @@ func main() {
 
 	for range departmentCount {
 		var staffCount int
-
 		_, err := fmt.Scan(&staffCount)
 		if err != nil {
 			log.Printf("Error reading staff count: %v", err)
@@ -92,10 +78,6 @@ func main() {
 			if err != nil {
 				log.Printf("Error reading operation and temperature: %v", err)
 				os.Exit(1)
-			}
-
-			if operation != ">=" && operation != "<=" {
-				continue
 			}
 
 			result := thermostat.Process(operation, temperature)
