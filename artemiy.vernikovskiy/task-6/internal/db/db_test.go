@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"testing"
 
-	"github.com/Aapng-cmd/task-6/internal/db"
+	taskDbPack "github.com/Aapng-cmd/task-6/internal/db"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
@@ -33,7 +33,7 @@ func TestDBServiceGetNamesSuccess(t *testing.T) {
 
 	mock.ExpectQuery(sqlGetNames).WillReturnRows(rows)
 
-	service := db.New(mockDB)
+	service := taskDbPack.New(mockDB)
 	names, err := service.GetNames()
 
 	require.NoError(t, err)
@@ -54,7 +54,7 @@ func TestDBServiceGetNamesEmpty(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"name"})
 	mock.ExpectQuery(sqlGetNames).WillReturnRows(rows)
 
-	service := db.New(mockDB)
+	service := taskDbPack.New(mockDB)
 	names, err := service.GetNames()
 
 	require.NoError(t, err)
@@ -76,7 +76,7 @@ func TestDBServiceGetNamesScanError(t *testing.T) {
 
 	mock.ExpectQuery(sqlGetNames).WillReturnRows(rows)
 
-	service := db.New(mockDB)
+	service := taskDbPack.New(mockDB)
 	names, err := service.GetNames()
 
 	require.Error(t, err)
@@ -98,7 +98,7 @@ func TestDBServiceGetNamesRowsError(t *testing.T) {
 
 	mock.ExpectQuery(sqlGetNames).WillReturnRows(rows)
 
-	service := db.New(mockDB)
+	service := taskDbPack.New(mockDB)
 	names, err := service.GetNames()
 
 	require.Error(t, err)
@@ -123,7 +123,7 @@ func TestDBServiceGetUniqueNamesSuccess(t *testing.T) {
 
 	mock.ExpectQuery(sqlGetUniqueNames).WillReturnRows(rows)
 
-	service := db.New(mockDB)
+	service := taskDbPack.New(mockDB)
 	names, err := service.GetUniqueNames()
 
 	require.NoError(t, err)
@@ -144,7 +144,7 @@ func TestDBServiceGetUniqueNamesEmpty(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"name"})
 	mock.ExpectQuery(sqlGetUniqueNames).WillReturnRows(rows)
 
-	service := db.New(mockDB)
+	service := taskDbPack.New(mockDB)
 	names, err := service.GetUniqueNames()
 
 	require.NoError(t, err)
@@ -161,7 +161,7 @@ func TestDBServiceGetUniqueNamesQueryError(t *testing.T) {
 
 	mock.ExpectQuery(sqlGetUniqueNames).WillReturnError(sql.ErrConnDone)
 
-	service := db.New(mockDB)
+	service := taskDbPack.New(mockDB)
 	names, err := service.GetUniqueNames()
 
 	require.Error(t, err)
@@ -184,7 +184,7 @@ func TestDBServiceGetUniqueNamesScanError(t *testing.T) {
 
 	mock.ExpectQuery(sqlGetUniqueNames).WillReturnRows(rows)
 
-	service := db.New(mockDB)
+	service := taskDbPack.New(mockDB)
 	names, err := service.GetUniqueNames()
 
 	require.Error(t, err)
@@ -206,7 +206,7 @@ func TestDBServiceGetUniqueNamesRowsError(t *testing.T) {
 
 	mock.ExpectQuery(sqlGetUniqueNames).WillReturnRows(rows)
 
-	service := db.New(mockDB)
+	service := taskDbPack.New(mockDB)
 	names, err := service.GetUniqueNames()
 
 	require.Error(t, err)
@@ -222,6 +222,6 @@ func TestNew(t *testing.T) {
 
 	defer mockDB.Close()
 
-	service := db.New(mockDB)
+	service := taskDbPack.New(mockDB)
 	assert.Equal(t, mockDB, service.DB)
 }
