@@ -5,7 +5,6 @@ import (
 	"net"
 
 	"github.com/mdlayher/wifi"
-	"github.com/stretchr/testify/mock"
 )
 
 type WiFiInterfaces interface {
@@ -48,27 +47,4 @@ func (service WiFiService) GetNames() ([]string, error) {
 	}
 
 	return names, nil
-}
-
-type WiFiHandle struct {
-	mock.Mock
-}
-
-func (m *WiFiHandle) Interfaces() ([]*wifi.Interface, error) {
-	args := m.Called()
-
-	var err error
-	if args.Error(1) != nil {
-		err = fmt.Errorf("mock error: %w", args.Error(1))
-	}
-
-	if args.Get(0) == nil {
-		return nil, err
-	}
-
-	if ifaces, ok := args.Get(0).([]*wifi.Interface); ok {
-		return ifaces, err
-	}
-
-	return nil, err
 }

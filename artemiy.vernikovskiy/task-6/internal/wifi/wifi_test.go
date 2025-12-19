@@ -17,7 +17,7 @@ var ErrExpected = errors.New("expected error")
 func TestWiFiServiceGetAddressesSuccess(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := new(taskWifiPack.WiFiHandle)
+	mockWiFi := new(WiFiHandle)
 
 	hwAddr1, _ := net.ParseMAC("00:11:22:33:44:55")
 	hwAddr2, _ := net.ParseMAC("aa:bb:cc:dd:ee:ff")
@@ -53,7 +53,7 @@ func TestWiFiServiceGetAddressesSuccess(t *testing.T) {
 func TestWiFiServiceGetAddressesError(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := new(taskWifiPack.WiFiHandle)
+	mockWiFi := new(WiFiHandle)
 	mockWiFi.On("Interfaces").Return([]*wifi.Interface{}, ErrExpected)
 
 	service := taskWifiPack.New(mockWiFi)
@@ -69,7 +69,7 @@ func TestWiFiServiceGetAddressesError(t *testing.T) {
 func TestWiFiServiceGetNamesSuccess(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := new(taskWifiPack.WiFiHandle)
+	mockWiFi := new(WiFiHandle)
 
 	numberOfData := 3
 
@@ -97,7 +97,7 @@ func TestWiFiServiceGetNamesSuccess(t *testing.T) {
 func TestWiFiServiceGetNamesEmpty(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := new(taskWifiPack.WiFiHandle)
+	mockWiFi := new(WiFiHandle)
 	interfaces := []*wifi.Interface{}
 
 	mockWiFi.On("Interfaces").Return(interfaces, nil)
@@ -114,7 +114,7 @@ func TestWiFiServiceGetNamesEmpty(t *testing.T) {
 func TestWiFiServiceGetNamesError(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := new(taskWifiPack.WiFiHandle)
+	mockWiFi := new(WiFiHandle)
 	mockWiFi.On("Interfaces").Return([]*wifi.Interface{}, ErrExpected)
 
 	service := taskWifiPack.New(mockWiFi)
@@ -130,7 +130,7 @@ func TestWiFiServiceGetNamesError(t *testing.T) {
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := new(taskWifiPack.WiFiHandle)
+	mockWiFi := new(WiFiHandle)
 	service := taskWifiPack.New(mockWiFi)
 
 	assert.NotNil(t, service)
