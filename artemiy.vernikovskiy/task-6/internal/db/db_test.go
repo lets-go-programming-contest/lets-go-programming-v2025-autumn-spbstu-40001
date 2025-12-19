@@ -1,4 +1,4 @@
-package dbtests
+package db_test
 
 import (
 	"database/sql"
