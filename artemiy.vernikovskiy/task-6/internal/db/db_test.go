@@ -2,6 +2,7 @@ package db_test
 
 import (
 	"database/sql"
+	"errors"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -10,6 +11,8 @@ import (
 
 	taskDbPack "github.com/Aapng-cmd/task-6/internal/db"
 )
+
+var ErrQueryError = errors.New("we got the news for you, you are doomed")
 
 const (
 	sqlGetNames       = "SELECT name FROM users"
@@ -106,6 +109,24 @@ func TestDBServiceGetNamesRowsError(t *testing.T) {
 	assert.Contains(t, err.Error(), "rows error")
 }
 
+func TestDBServiceGetNamesQueryError(t *testing.T) {
+	t.Parallel()
+
+	mockDB, mock, err := sqlmock.New()
+	require.NoError(t, err)
+
+	defer mockDB.Close()
+
+	mock.ExpectQuery(sqlGetNames).WillReturnError(ErrQueryError)
+
+	service := taskDbPack.New(mockDB)
+	names, err := service.GetNames()
+
+	require.Error(t, err)
+	assert.Nil(t, names)
+	assert.Contains(t, err.Error(), "db query")
+}
+
 func TestDBServiceGetUniqueNamesSuccess(t *testing.T) {
 	t.Parallel()
 
@@ -149,24 +170,6 @@ func TestDBServiceGetUniqueNamesEmpty(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Empty(t, names)
-}
-
-func TestDBServiceGetUniqueNamesQueryError(t *testing.T) {
-	t.Parallel()
-
-	mockDB, mock, err := sqlmock.New()
-	require.NoError(t, err)
-
-	defer mockDB.Close()
-
-	mock.ExpectQuery(sqlGetUniqueNames).WillReturnError(sql.ErrConnDone)
-
-	service := taskDbPack.New(mockDB)
-	names, err := service.GetUniqueNames()
-
-	require.Error(t, err)
-	assert.Nil(t, names)
-	assert.Contains(t, err.Error(), "db query")
 }
 
 func TestDBServiceGetUniqueNamesScanError(t *testing.T) {
