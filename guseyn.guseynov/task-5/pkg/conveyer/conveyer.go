@@ -12,14 +12,12 @@ import (
 const (
 	errSendChanNotFoundMsg = "conveyer.Send: chan not found"
 	errRecvChanNotFoundMsg = "conveyer.Recv: chan not found"
-	errChannelClosedMsg    = "channel is closed"
 	undefinedValue         = "undefined"
 )
 
 var (
 	ErrSendChanNotFound = errors.New(errSendChanNotFoundMsg)
 	ErrRecvChanNotFound = errors.New(errRecvChanNotFoundMsg)
-	ErrChannelClosed    = errors.New(errChannelClosedMsg)
 )
 
 type Decorator func(
@@ -205,12 +203,9 @@ func (conveyer *Conveyer) Send(input string, data string) error {
 	}
 
 	channel := conveyer.channels.GetOrCreate(input)
-	select {
-	case channel <- data:
-		return nil
-	default:
-		return ErrChannelClosed
-	}
+	channel <- data
+
+	return nil
 }
 
 func (conveyer *Conveyer) Recv(output string) (string, error) {
