@@ -100,24 +100,12 @@ func (cr *ChannelRegistry) Get(name string) (chan string, bool) {
 	return ch, typeOk
 }
 
-func (cr *ChannelRegistry) GetAllChannels() []chan string {
-	var channels []chan string
-
-	cr.channels.Range(func(key, value interface{}) bool {
-		if ch, ok := value.(chan string); ok {
-			channels = append(channels, ch)
-		}
-		return true
-	})
-
-	return channels
-}
-
 func (cr *ChannelRegistry) CloseAllChannels() {
 	cr.channels.Range(func(key, value interface{}) bool {
 		if ch, ok := value.(chan string); ok {
 			close(ch)
 		}
+
 		return true
 	})
 }
@@ -200,6 +188,7 @@ func (conveyer *Conveyer) Run(ctx context.Context) error {
 
 	if err := group.Wait(); err != nil {
 		conveyer.channels.CloseAllChannels()
+
 		return fmt.Errorf("failed to run workers: %w", err)
 	}
 

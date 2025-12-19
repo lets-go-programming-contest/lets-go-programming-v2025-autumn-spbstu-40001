@@ -63,6 +63,7 @@ func MultiplexerFunc(
 	errGroup, ctx := errgroup.WithContext(ctx)
 
 	for _, inputChan := range inputs {
+		inputChan := inputChan
 		errGroup.Go(func() error {
 			for {
 				select {
