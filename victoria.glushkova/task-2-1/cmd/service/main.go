@@ -11,9 +11,7 @@ const (
 	maxTemperature = 30
 )
 
-var (
-	ErrInvalidOperation = errors.New("invalid operation")
-)
+var ErrInvalidOperation = errors.New("invalid operation")
 
 type Temperature struct {
 	Min int
