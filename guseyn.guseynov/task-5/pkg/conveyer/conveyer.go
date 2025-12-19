@@ -12,6 +12,7 @@ import (
 const (
 	errSendChanNotFoundMsg = "conveyer.Send: chan not found"
 	errRecvChanNotFoundMsg = "conveyer.Recv: chan not found"
+	undefinedValue         = "undefined"
 )
 
 var (
@@ -99,6 +100,28 @@ func (cr *ChannelRegistry) Get(name string) (chan string, bool) {
 	return ch, typeOk
 }
 
+func (cr *ChannelRegistry) GetAllChannels() []chan string {
+	var channels []chan string
+
+	cr.channels.Range(func(key, value interface{}) bool {
+		if ch, ok := value.(chan string); ok {
+			channels = append(channels, ch)
+		}
+		return true
+	})
+
+	return channels
+}
+
+func (cr *ChannelRegistry) CloseAllChannels() {
+	cr.channels.Range(func(key, value interface{}) bool {
+		if ch, ok := value.(chan string); ok {
+			close(ch)
+		}
+		return true
+	})
+}
+
 type Conveyer struct {
 	channelSize int
 	channels    *ChannelRegistry
@@ -176,8 +199,11 @@ func (conveyer *Conveyer) Run(ctx context.Context) error {
 	}
 
 	if err := group.Wait(); err != nil {
+		conveyer.channels.CloseAllChannels()
 		return fmt.Errorf("failed to run workers: %w", err)
 	}
+
+	conveyer.channels.CloseAllChannels()
 
 	return nil
 }
@@ -201,7 +227,7 @@ func (conveyer *Conveyer) Recv(output string) (string, error) {
 
 	data, ok := <-channel
 	if !ok {
-		return "undefined", nil
+		return undefinedValue, nil
 	}
 
 	return data, nil
