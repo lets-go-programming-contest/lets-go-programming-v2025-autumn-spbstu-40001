@@ -67,16 +67,27 @@ func (wp *WorkerPool) GetAll() []func(context.Context) error {
 type ChannelRegistry struct {
 	channels sync.Map
 	size     int
+	closed   bool
+	mu       sync.RWMutex
 }
 
 func NewChannelRegistry(size int) *ChannelRegistry {
 	return &ChannelRegistry{
 		channels: sync.Map{},
 		size:     size,
+		closed:   false,
+		mu:       sync.RWMutex{},
 	}
 }
 
 func (cr *ChannelRegistry) GetOrCreate(name string) chan string {
+	cr.mu.RLock()
+	if cr.closed {
+		cr.mu.RUnlock()
+		return nil
+	}
+	cr.mu.RUnlock()
+
 	if channel, ok := cr.channels.Load(name); ok {
 		if ch, typeOk := channel.(chan string); typeOk {
 			return ch
@@ -101,6 +112,14 @@ func (cr *ChannelRegistry) Get(name string) (chan string, bool) {
 }
 
 func (cr *ChannelRegistry) CloseAllChannels() {
+	cr.mu.Lock()
+	defer cr.mu.Unlock()
+
+	if cr.closed {
+		return
+	}
+
+	cr.closed = true
 	cr.channels.Range(func(key, value interface{}) bool {
 		if ch, ok := value.(chan string); ok {
 			close(ch)
@@ -192,8 +211,6 @@ func (conveyer *Conveyer) Run(ctx context.Context) error {
 		return fmt.Errorf("failed to run workers: %w", err)
 	}
 
-	conveyer.channels.CloseAllChannels()
-
 	return nil
 }
 
@@ -203,6 +220,10 @@ func (conveyer *Conveyer) Send(input string, data string) error {
 	}
 
 	channel := conveyer.channels.GetOrCreate(input)
+	if channel == nil {
+		return errors.New("channel is closed")
+	}
+
 	channel <- data
 
 	return nil
@@ -220,4 +241,8 @@ func (conveyer *Conveyer) Recv(output string) (string, error) {
 	}
 
 	return data, nil
+}
+
+func (conveyer *Conveyer) Close() {
+	conveyer.channels.CloseAllChannels()
 }
