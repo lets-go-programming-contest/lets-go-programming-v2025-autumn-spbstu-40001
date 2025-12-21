@@ -25,7 +25,7 @@ type DataServiceTestSuite struct {
 func (s *DataServiceTestSuite) SetupSuite() {
 	var setupErr error
 	s.dbConnection, s.sqlMock, setupErr = sqlmock.New()
-	s.NoError(setupErr)
+	s.Require().NoError(setupErr)
 }
 
 func (s *DataServiceTestSuite) TearDownSuite() {
@@ -36,7 +36,7 @@ func (s *DataServiceTestSuite) TearDownSuite() {
 
 func (s *DataServiceTestSuite) TestConstructor() {
 	dataService := db.New(s.dbConnection)
-	s.Equal(s.dbConnection, dataService.DB)
+	s.Require().Equal(s.dbConnection, dataService.DB)
 }
 
 func (s *DataServiceTestSuite) TestFetchAllUsers() {
@@ -53,9 +53,9 @@ func (s *DataServiceTestSuite) TestFetchAllUsers() {
 
 	actualResult, fetchErr := dataHandler.GetNames()
 
-	s.NoError(fetchErr)
-	s.Equal(expectedData, actualResult)
-	s.NoError(s.sqlMock.ExpectationsWereMet())
+	s.Require().NoError(fetchErr)
+	s.Require().Equal(expectedData, actualResult)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
 }
 
 func (s *DataServiceTestSuite) TestFetchAllUsers_EmptyDataset() {
@@ -66,9 +66,9 @@ func (s *DataServiceTestSuite) TestFetchAllUsers_EmptyDataset() {
 
 	resultData, fetchErr := dataHandler.GetNames()
 
-	s.NoError(fetchErr)
-	s.Empty(resultData)
-	s.NoError(s.sqlMock.ExpectationsWereMet())
+	s.Require().NoError(fetchErr)
+	s.Require().Empty(resultData)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
 }
 
 func (s *DataServiceTestSuite) TestFetchAllUsers_DatabaseFailure() {
@@ -79,10 +79,11 @@ func (s *DataServiceTestSuite) TestFetchAllUsers_DatabaseFailure() {
 
 	resultData, fetchErr := dataHandler.GetNames()
 
-	s.Require().EqualError(fetchErr, "db query")
-	s.Contains(fetchErr.Error(), connectionFailure.Error())
-	s.Nil(resultData)
-	s.NoError(s.sqlMock.ExpectationsWereMet())
+	s.Require().Error(fetchErr)
+	s.Require().Contains(fetchErr.Error(), "db query")
+	s.Require().Contains(fetchErr.Error(), connectionFailure.Error())
+	s.Require().Nil(resultData)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
 }
 
 func (s *DataServiceTestSuite) TestFetchAllUsers_RowParsingFailure() {
@@ -93,10 +94,10 @@ func (s *DataServiceTestSuite) TestFetchAllUsers_RowParsingFailure() {
 
 	resultData, fetchErr := dataHandler.GetNames()
 
-	s.Error(fetchErr)
-	s.Require().EqualError(fetchErr, "rows scanning")
-	s.Nil(resultData)
-	s.NoError(s.sqlMock.ExpectationsWereMet())
+	s.Require().Error(fetchErr)
+	s.Require().Contains(fetchErr.Error(), "rows scanning")
+	s.Require().Nil(resultData)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
 }
 
 func (s *DataServiceTestSuite) TestFetchAllUsers_RowIterationFailure() {
@@ -107,10 +108,10 @@ func (s *DataServiceTestSuite) TestFetchAllUsers_RowIterationFailure() {
 
 	resultData, fetchErr := dataHandler.GetNames()
 
-	s.Error(fetchErr)
-	s.Require().EqualError(fetchErr, "rows error")
-	s.Nil(resultData)
-	s.NoError(s.sqlMock.ExpectationsWereMet())
+	s.Require().Error(fetchErr)
+	s.Require().Contains(fetchErr.Error(), "rows error")
+	s.Require().Nil(resultData)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
 }
 
 func (s *DataServiceTestSuite) TestRetrieveDistinctUsers() {
@@ -127,9 +128,9 @@ func (s *DataServiceTestSuite) TestRetrieveDistinctUsers() {
 
 	actualResult, fetchErr := dataHandler.GetUniqueNames()
 
-	s.Nil(fetchErr)
-	s.Equal(uniqueData, actualResult)
-	s.NoError(s.sqlMock.ExpectationsWereMet())
+	s.Require().NoError(fetchErr)
+	s.Require().Equal(uniqueData, actualResult)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
 }
 
 func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_EmptyDataset() {
@@ -140,9 +141,9 @@ func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_EmptyDataset() {
 
 	resultData, fetchErr := dataHandler.GetUniqueNames()
 
-	s.Nil(fetchErr)
-	s.Empty(resultData)
-	s.NoError(s.sqlMock.ExpectationsWereMet())
+	s.Require().NoError(fetchErr)
+	s.Require().Empty(resultData)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
 }
 
 func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_DatabaseFailure() {
@@ -153,11 +154,11 @@ func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_DatabaseFailure() {
 
 	resultData, fetchErr := dataHandler.GetUniqueNames()
 
-	s.NotNil(fetchErr)
-	s.Require().EqualError(fetchErr, "db query")
-	s.Contains(fetchErr.Error(), connectionFailure.Error())
-	s.Nil(resultData)
-	s.NoError(s.sqlMock.ExpectationsWereMet())
+	s.Require().Error(fetchErr)
+	s.Require().Contains(fetchErr.Error(), "db query")
+	s.Require().Contains(fetchErr.Error(), connectionFailure.Error())
+	s.Require().Nil(resultData)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
 }
 
 func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_RowParsingFailure() {
@@ -168,10 +169,10 @@ func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_RowParsingFailure() {
 
 	resultData, fetchErr := dataHandler.GetUniqueNames()
 
-	s.NotNil(fetchErr)
-	s.Require().EqualError(fetchErr, "rows scanning")
-	s.Nil(resultData)
-	s.NoError(s.sqlMock.ExpectationsWereMet())
+	s.Require().Error(fetchErr)
+	s.Require().Contains(fetchErr.Error(), "rows scanning")
+	s.Require().Nil(resultData)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
 }
 
 func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_RowIterationFailure() {
@@ -182,10 +183,10 @@ func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_RowIterationFailure() {
 
 	resultData, fetchErr := dataHandler.GetUniqueNames()
 
-	s.NotNil(fetchErr)
-	s.Require().EqualError(fetchErr, "rows error")
-	s.Nil(resultData)
-	s.NoError(s.sqlMock.ExpectationsWereMet())
+	s.Require().Error(fetchErr)
+	s.Require().Contains(fetchErr.Error(), "rows error")
+	s.Require().Nil(resultData)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
 }
 
 func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_DuplicateFiltering() {
@@ -202,10 +203,10 @@ func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_DuplicateFiltering() {
 
 	actualResult, fetchErr := dataHandler.GetUniqueNames()
 
-	s.Nil(fetchErr)
-	s.Equal(uniqueEntries, actualResult)
-	s.Len(actualResult, 2)
-	s.NoError(s.sqlMock.ExpectationsWereMet())
+	s.Require().NoError(fetchErr)
+	s.Require().Equal(uniqueEntries, actualResult)
+	s.Require().Len(actualResult, 2)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
 }
 
 func (s *DataServiceTestSuite) TestService_HandlesMultipleInvocations() {
@@ -218,14 +219,14 @@ func (s *DataServiceTestSuite) TestService_HandlesMultipleInvocations() {
 	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(secondRows)
 
 	firstResult, firstErr := dataHandler.GetNames()
-	s.Nil(firstErr)
-	s.Equal([]string{"Thomas"}, firstResult)
+	s.Require().NoError(firstErr)
+	s.Require().Equal([]string{"Thomas"}, firstResult)
 
 	secondResult, secondErr := dataHandler.GetUniqueNames()
-	s.Nil(secondErr)
-	s.Equal([]string{"Emma"}, secondResult)
+	s.Require().NoError(secondErr)
+	s.Require().Equal([]string{"Emma"}, secondResult)
 
-	s.NoError(s.sqlMock.ExpectationsWereMet())
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
 }
 
 func (s *DataServiceTestSuite) TestService_WithInvalidConnection() {
@@ -235,7 +236,7 @@ func (s *DataServiceTestSuite) TestService_WithInvalidConnection() {
 	dataHandler := db.DBService{DB: brokenConnection}
 
 	_, fetchErr := dataHandler.GetNames()
-	s.NotNil(fetchErr)
+	s.Require().Error(fetchErr)
 }
 
 func (s *DataServiceTestSuite) TestService_WithSpecialCharacters() {
@@ -252,9 +253,9 @@ func (s *DataServiceTestSuite) TestService_WithSpecialCharacters() {
 
 	actualResult, fetchErr := dataHandler.GetNames()
 
-	s.Nil(fetchErr)
-	s.Equal(testData, actualResult)
-	s.NoError(s.sqlMock.ExpectationsWereMet())
+	s.Require().NoError(fetchErr)
+	s.Require().Equal(testData, actualResult)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
 }
 
 func (s *DataServiceTestSuite) TestService_WithMixedCaseData() {
@@ -271,9 +272,9 @@ func (s *DataServiceTestSuite) TestService_WithMixedCaseData() {
 
 	actualResult, fetchErr := dataHandler.GetUniqueNames()
 
-	s.Nil(fetchErr)
-	s.Equal(testData, actualResult)
-	s.NoError(s.sqlMock.ExpectationsWereMet())
+	s.Require().NoError(fetchErr)
+	s.Require().Equal(testData, actualResult)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
 }
 
 func TestDataServiceTestSuite(t *testing.T) {
