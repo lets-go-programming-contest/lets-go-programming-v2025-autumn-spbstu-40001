@@ -3,7 +3,6 @@ package db_test
 import (
 	"database/sql"
 	"errors"
-	"regexp"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -11,200 +10,268 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-const (
-	testQuerySelectNames       = "SELECT name FROM users"
-	testQuerySelectUniqueNames = "SELECT DISTINCT name FROM users"
-)
-
-var (
-	testNames       = []string{"Alice", "Bob", "Charlie", "Alice", "Bob"}
-	testUniqueNames = []string{"Alice", "Bob", "Charlie"}
-)
-
-var (
-	errDB           = errors.New("db error")
-	errRowIteration = errors.New("row iteration error")
-)
-
-type DBServiceTestSuite struct {
+type DataServiceTestSuite struct {
 	suite.Suite
-	mockDB  *sql.DB
-	mock    sqlmock.Sqlmock
-	service db.DBService
+	dbConnection *sql.DB
+	sqlMock      sqlmock.Sqlmock
 }
 
-func (s *DBServiceTestSuite) SetupTest() {
-	var err error
-	s.mockDB, s.mock, err = sqlmock.New()
-	s.Require().NoError(err, "failed to create sqlmock")
-	s.service = db.New(s.mockDB)
+func (s *DataServiceTestSuite) SetupSuite() {
+	var setupErr error
+	s.dbConnection, s.sqlMock, setupErr = sqlmock.New()
+	s.Require().Nil(setupErr)
 }
 
-func (s *DBServiceTestSuite) TearDownTest() {
-	if s.mockDB != nil {
-		s.mockDB.Close()
+func (s *DataServiceTestSuite) TearDownSuite() {
+	if s.dbConnection != nil {
+		s.dbConnection.Close()
 	}
 }
 
-func TestDBServiceTestSuite(t *testing.T) {
-	suite.Run(t, new(DBServiceTestSuite))
+func (s *DataServiceTestSuite) TestConstructor() {
+	dataService := db.New(s.dbConnection)
+	s.Equal(s.dbConnection, dataService.DB)
 }
 
-func (s *DBServiceTestSuite) TestNew() {
-	service := db.New(s.mockDB)
-	s.NotNil(service)
-	s.Equal(s.mockDB, service.DB)
-}
+func (s *DataServiceTestSuite) TestFetchAllUsers() {
+	dataHandler := db.DBService{DB: s.dbConnection}
 
-func (s *DBServiceTestSuite) TestGetNames_SuccessWithData() {
-	rows := sqlmock.NewRows([]string{"name"})
-	for _, name := range testNames {
-		rows.AddRow(name)
+	expectedData := []string{"Michael", "Sarah", "William"}
+	mockRows := sqlmock.NewRows([]string{"name"})
+
+	for _, item := range expectedData {
+		mockRows.AddRow(item)
 	}
 
-	s.mock.ExpectQuery(regexp.QuoteMeta(testQuerySelectNames)).WillReturnRows(rows)
+	s.sqlMock.ExpectQuery("SELECT name FROM users").WillReturnRows(mockRows)
 
-	names, err := s.service.GetNames()
+	actualResult, fetchErr := dataHandler.GetNames()
 
-	s.Require().NoError(err)
-	s.Equal(testNames, names)
-	s.NoError(s.mock.ExpectationsWereMet())
+	s.Nil(fetchErr)
+	s.Equal(expectedData, actualResult)
+	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DBServiceTestSuite) TestGetNames_EmptyResult() {
-	rows := sqlmock.NewRows([]string{"name"})
+func (s *DataServiceTestSuite) TestFetchAllUsersEmptyDataset() {
+	dataHandler := db.DBService{DB: s.dbConnection}
 
-	s.mock.ExpectQuery(regexp.QuoteMeta(testQuerySelectNames)).WillReturnRows(rows)
+	emptyRows := sqlmock.NewRows([]string{"name"})
+	s.sqlMock.ExpectQuery("SELECT name FROM users").WillReturnRows(emptyRows)
 
-	names, err := s.service.GetNames()
+	resultData, fetchErr := dataHandler.GetNames()
 
-	s.Require().NoError(err)
-	s.Empty(names)
-	s.Len(names, 0)
-	s.NoError(s.mock.ExpectationsWereMet())
+	s.Nil(fetchErr)
+	s.Empty(resultData)
+	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DBServiceTestSuite) TestGetNames_DBError() {
-	s.mock.ExpectQuery(regexp.QuoteMeta(testQuerySelectNames)).
-		WillReturnError(errDB)
+func (s *DataServiceTestSuite) TestFetchAllUsersDatabaseFailure() {
+	dataHandler := db.DBService{DB: s.dbConnection}
 
-	names, err := s.service.GetNames()
+	connectionFailure := errors.New("database unreachable")
+	s.sqlMock.ExpectQuery("SELECT name FROM users").WillReturnError(connectionFailure)
 
-	s.Require().Error(err)
-	s.Nil(names)
-	s.Contains(err.Error(), "db query")
-	s.NoError(s.mock.ExpectationsWereMet())
+	resultData, fetchErr := dataHandler.GetNames()
+
+	s.NotNil(fetchErr)
+	s.ErrorContains(fetchErr, "db query")
+	s.Contains(fetchErr.Error(), connectionFailure.Error())
+	s.Nil(resultData)
+	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DBServiceTestSuite) TestGetNames_RowsScanningError() {
-	rows := sqlmock.NewRows([]string{"name"}).
-		AddRow("Alice").
-		AddRow(nil).
-		RowError(1, errors.New("scan error"))
+func (s *DataServiceTestSuite) TestFetchAllUsersRowParsingFailure() {
+	dataHandler := db.DBService{DB: s.dbConnection}
 
-	s.mock.ExpectQuery(regexp.QuoteMeta(testQuerySelectNames)).
-		WillReturnRows(rows)
+	faultyRows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
+	s.sqlMock.ExpectQuery("SELECT name FROM users").WillReturnRows(faultyRows)
 
-	names, err := s.service.GetNames()
+	resultData, fetchErr := dataHandler.GetNames()
 
-	s.Require().Error(err)
-	s.Nil(names)
-	s.Contains(err.Error(), "rows scanning")
-	s.NoError(s.mock.ExpectationsWereMet())
+	s.NotNil(fetchErr)
+	s.ErrorContains(fetchErr, "rows scanning")
+	s.Nil(resultData)
+	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DBServiceTestSuite) TestGetNames_RowsIterationError() {
-	rows := sqlmock.NewRows([]string{"name"}).
-		AddRow("Alice").
-		AddRow("Bob").
-		AddRow("Charlie").
-		CloseError(errRowIteration)
+func (s *DataServiceTestSuite) TestFetchAllUsersRowIterationFailure() {
+	dataHandler := db.DBService{DB: s.dbConnection}
 
-	s.mock.ExpectQuery(regexp.QuoteMeta(testQuerySelectNames)).
-		WillReturnRows(rows)
+	problematicRows := sqlmock.NewRows([]string{"name"}).AddRow("Michael").RowError(0, errors.New("iterator broken"))
+	s.sqlMock.ExpectQuery("SELECT name FROM users").WillReturnRows(problematicRows)
 
-	names, err := s.service.GetNames()
+	resultData, fetchErr := dataHandler.GetNames()
 
-	s.Require().Error(err)
-	s.Nil(names)
-	s.Contains(err.Error(), "rows error")
-	s.NoError(s.mock.ExpectationsWereMet())
+	s.NotNil(fetchErr)
+	s.ErrorContains(fetchErr, "rows error")
+	s.Nil(resultData)
+	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DBServiceTestSuite) TestGetUniqueNames_SuccessWithData() {
-	rows := sqlmock.NewRows([]string{"name"})
-	for _, name := range testUniqueNames {
-		rows.AddRow(name)
+func (s *DataServiceTestSuite) TestRetrieveDistinctUsers() {
+	dataHandler := db.DBService{DB: s.dbConnection}
+
+	uniqueData := []string{"Elizabeth", "James", "Olivia"}
+	mockRows := sqlmock.NewRows([]string{"name"})
+
+	for _, item := range uniqueData {
+		mockRows.AddRow(item)
 	}
 
-	s.mock.ExpectQuery(regexp.QuoteMeta(testQuerySelectUniqueNames)).
-		WillReturnRows(rows)
+	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(mockRows)
 
-	names, err := s.service.GetUniqueNames()
+	actualResult, fetchErr := dataHandler.GetUniqueNames()
 
-	s.Require().NoError(err)
-	s.Equal(testUniqueNames, names)
-	s.NoError(s.mock.ExpectationsWereMet())
+	s.Nil(fetchErr)
+	s.Equal(uniqueData, actualResult)
+	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DBServiceTestSuite) TestGetUniqueNames_EmptyResult() {
-	rows := sqlmock.NewRows([]string{"name"})
+func (s *DataServiceTestSuite) TestRetrieveDistinctUsersEmptyDataset() {
+	dataHandler := db.DBService{DB: s.dbConnection}
 
-	s.mock.ExpectQuery(regexp.QuoteMeta(testQuerySelectUniqueNames)).
-		WillReturnRows(rows)
+	emptyRows := sqlmock.NewRows([]string{"name"})
+	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(emptyRows)
 
-	names, err := s.service.GetUniqueNames()
+	resultData, fetchErr := dataHandler.GetUniqueNames()
 
-	s.Require().NoError(err)
-	s.Empty(names)
-	s.Len(names, 0)
-	s.NoError(s.mock.ExpectationsWereMet())
+	s.Nil(fetchErr)
+	s.Empty(resultData)
+	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DBServiceTestSuite) TestGetUniqueNames_DBError() {
-	s.mock.ExpectQuery(regexp.QuoteMeta(testQuerySelectUniqueNames)).
-		WillReturnError(errDB)
+func (s *DataServiceTestSuite) TestRetrieveDistinctUsersDatabaseFailure() {
+	dataHandler := db.DBService{DB: s.dbConnection}
 
-	names, err := s.service.GetUniqueNames()
+	connectionFailure := errors.New("query execution failed")
+	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnError(connectionFailure)
 
-	s.Require().Error(err)
-	s.Nil(names)
-	s.Contains(err.Error(), "db query")
-	s.NoError(s.mock.ExpectationsWereMet())
+	resultData, fetchErr := dataHandler.GetUniqueNames()
+
+	s.NotNil(fetchErr)
+	s.ErrorContains(fetchErr, "db query")
+	s.Contains(fetchErr.Error(), connectionFailure.Error())
+	s.Nil(resultData)
+	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DBServiceTestSuite) TestGetUniqueNames_WithDuplicatesInDB() {
-	dbRows := sqlmock.NewRows([]string{"name"}).
-		AddRow("Alice").
-		AddRow("Bob").
-		AddRow("Alice").
-		AddRow("Charlie").
-		AddRow("Bob")
+func (s *DataServiceTestSuite) TestRetrieveDistinctUsersRowParsingFailure() {
+	dataHandler := db.DBService{DB: s.dbConnection}
 
-	expectedUnique := []string{"Alice", "Bob", "Charlie"}
+	faultyRows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
+	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(faultyRows)
 
-	s.mock.ExpectQuery(regexp.QuoteMeta(testQuerySelectUniqueNames)).
-		WillReturnRows(dbRows)
+	resultData, fetchErr := dataHandler.GetUniqueNames()
 
-	names, err := s.service.GetUniqueNames()
-
-	s.Require().NoError(err)
-	s.Equal(expectedUnique, names)
-	s.NoError(s.mock.ExpectationsWereMet())
+	s.NotNil(fetchErr)
+	s.ErrorContains(fetchErr, "rows scanning")
+	s.Nil(resultData)
+	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DBServiceTestSuite) TestServiceMethodsUseConstants() {
-	rows1 := sqlmock.NewRows([]string{"name"}).AddRow("test")
-	s.mock.ExpectQuery(regexp.QuoteMeta(testQuerySelectNames)).WillReturnRows(rows1)
+func (s *DataServiceTestSuite) TestRetrieveDistinctUsersRowIterationFailure() {
+	dataHandler := db.DBService{DB: s.dbConnection}
 
-	_, err := s.service.GetNames()
-	s.Require().NoError(err)
+	problematicRows := sqlmock.NewRows([]string{"name"}).AddRow("Elizabeth").RowError(0, errors.New("iterator malfunction"))
+	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(problematicRows)
 
-	rows2 := sqlmock.NewRows([]string{"name"}).AddRow("test")
-	s.mock.ExpectQuery(regexp.QuoteMeta(testQuerySelectUniqueNames)).WillReturnRows(rows2)
+	resultData, fetchErr := dataHandler.GetUniqueNames()
 
-	_, err = s.service.GetUniqueNames()
-	s.Require().NoError(err)
+	s.NotNil(fetchErr)
+	s.ErrorContains(fetchErr, "rows error")
+	s.Nil(resultData)
+	s.Nil(s.sqlMock.ExpectationsWereMet())
+}
 
-	s.NoError(s.mock.ExpectationsWereMet())
+func (s *DataServiceTestSuite) TestRetrieveDistinctUsersDuplicateFiltering() {
+	dataHandler := db.DBService{DB: s.dbConnection}
+
+	uniqueEntries := []string{"Benjamin", "Charlotte"}
+	mockRows := sqlmock.NewRows([]string{"name"})
+
+	for _, entry := range uniqueEntries {
+		mockRows.AddRow(entry)
+	}
+
+	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(mockRows)
+
+	actualResult, fetchErr := dataHandler.GetUniqueNames()
+
+	s.Nil(fetchErr)
+	s.Equal(uniqueEntries, actualResult)
+	s.Len(actualResult, 2)
+	s.Nil(s.sqlMock.ExpectationsWereMet())
+}
+
+func (s *DataServiceTestSuite) TestServiceHandlesMultipleInvocations() {
+	dataHandler := db.DBService{DB: s.dbConnection}
+
+	firstRows := sqlmock.NewRows([]string{"name"}).AddRow("Thomas")
+	secondRows := sqlmock.NewRows([]string{"name"}).AddRow("Emma")
+
+	s.sqlMock.ExpectQuery("SELECT name FROM users").WillReturnRows(firstRows)
+	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(secondRows)
+
+	firstResult, firstErr := dataHandler.GetNames()
+	s.Nil(firstErr)
+	s.Equal([]string{"Thomas"}, firstResult)
+
+	secondResult, secondErr := dataHandler.GetUniqueNames()
+	s.Nil(secondErr)
+	s.Equal([]string{"Emma"}, secondResult)
+
+	s.Nil(s.sqlMock.ExpectationsWereMet())
+}
+
+func (s *DataServiceTestSuite) TestServiceWithInvalidConnection() {
+	brokenConnection, _, _ := sqlmock.New()
+	brokenConnection.Close()
+
+	dataHandler := db.DBService{DB: brokenConnection}
+
+	_, fetchErr := dataHandler.GetNames()
+	s.NotNil(fetchErr)
+}
+
+func (s *DataServiceTestSuite) TestServiceWithSpecialCharacters() {
+	dataHandler := db.DBService{DB: s.dbConnection}
+
+	testData := []string{"José", "Renée", "Björn", "Siobhán"}
+	mockRows := sqlmock.NewRows([]string{"name"})
+
+	for _, item := range testData {
+		mockRows.AddRow(item)
+	}
+
+	s.sqlMock.ExpectQuery("SELECT name FROM users").WillReturnRows(mockRows)
+
+	actualResult, fetchErr := dataHandler.GetNames()
+
+	s.Nil(fetchErr)
+	s.Equal(testData, actualResult)
+	s.Nil(s.sqlMock.ExpectationsWereMet())
+}
+
+func (s *DataServiceTestSuite) TestServiceWithMixedCaseData() {
+	dataHandler := db.DBService{DB: s.dbConnection}
+
+	testData := []string{"alex", "ALEX", "Alex", "aLeX"}
+	mockRows := sqlmock.NewRows([]string{"name"})
+
+	for _, item := range testData {
+		mockRows.AddRow(item)
+	}
+
+	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(mockRows)
+
+	actualResult, fetchErr := dataHandler.GetUniqueNames()
+
+	s.Nil(fetchErr)
+	s.Equal(testData, actualResult)
+	s.Nil(s.sqlMock.ExpectationsWereMet())
+}
+
+func TestDataServiceTestSuite(t *testing.T) {
+	t.Parallel()
+	suite.Run(t, new(DataServiceTestSuite))
 }
