@@ -25,7 +25,7 @@ type DataServiceTestSuite struct {
 func (s *DataServiceTestSuite) SetupSuite() {
 	var setupErr error
 	s.dbConnection, s.sqlMock, setupErr = sqlmock.New()
-	s.Require().Nil(setupErr)
+	s.NoError(setupErr)
 }
 
 func (s *DataServiceTestSuite) TearDownSuite() {
@@ -53,7 +53,7 @@ func (s *DataServiceTestSuite) TestFetchAllUsers() {
 
 	actualResult, fetchErr := dataHandler.GetNames()
 
-	s.Nil(fetchErr)
+	s.NoError(fetchErr)
 	s.Equal(expectedData, actualResult)
 	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
@@ -66,7 +66,7 @@ func (s *DataServiceTestSuite) TestFetchAllUsers_EmptyDataset() {
 
 	resultData, fetchErr := dataHandler.GetNames()
 
-	s.Nil(fetchErr)
+	s.NoError(fetchErr)
 	s.Empty(resultData)
 	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
@@ -79,8 +79,8 @@ func (s *DataServiceTestSuite) TestFetchAllUsers_DatabaseFailure() {
 
 	resultData, fetchErr := dataHandler.GetNames()
 
-	s.NotNil(fetchErr)
-	s.ErrorContains(fetchErr, "db query")
+	s.Error(fetchErr)
+	s.Require().EqualError(fetchErr, "db query")
 	s.Contains(fetchErr.Error(), connectionFailure.Error())
 	s.Nil(resultData)
 	s.Nil(s.sqlMock.ExpectationsWereMet())
@@ -94,8 +94,8 @@ func (s *DataServiceTestSuite) TestFetchAllUsers_RowParsingFailure() {
 
 	resultData, fetchErr := dataHandler.GetNames()
 
-	s.NotNil(fetchErr)
-	s.ErrorContains(fetchErr, "rows scanning")
+	s.Error(fetchErr)
+	s.Require().EqualError(fetchErr, "rows scanning")
 	s.Nil(resultData)
 	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
@@ -108,7 +108,7 @@ func (s *DataServiceTestSuite) TestFetchAllUsers_RowIterationFailure() {
 
 	resultData, fetchErr := dataHandler.GetNames()
 
-	s.NotNil(fetchErr)
+	s.Error(fetchErr)
 	s.ErrorContains(fetchErr, "rows error")
 	s.Nil(resultData)
 	s.Nil(s.sqlMock.ExpectationsWereMet())
@@ -184,7 +184,7 @@ func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_RowIterationFailure() {
 	resultData, fetchErr := dataHandler.GetUniqueNames()
 
 	s.NotNil(fetchErr)
-	s.ErrorContains(fetchErr, "rows error")
+	s.Require().EqualError(fetchErr, "rows error")
 	s.Nil(resultData)
 	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
