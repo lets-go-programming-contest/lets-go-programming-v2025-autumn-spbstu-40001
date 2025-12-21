@@ -10,6 +10,12 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+var (
+	errUnreachableDB  = errors.New("database is unreachable")
+	errBadQueryExec   = errors.New("query execution failed")
+	errBrokenIterator = errors.New("iterator broken")
+)
+
 type DataServiceTestSuite struct {
 	suite.Suite
 	dbConnection *sql.DB
@@ -52,7 +58,7 @@ func (s *DataServiceTestSuite) TestFetchAllUsers() {
 	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DataServiceTestSuite) TestFetchAllUsersEmptyDataset() {
+func (s *DataServiceTestSuite) TestFetchAllUsers_EmptyDataset() {
 	dataHandler := db.DBService{DB: s.dbConnection}
 
 	emptyRows := sqlmock.NewRows([]string{"name"})
@@ -65,10 +71,10 @@ func (s *DataServiceTestSuite) TestFetchAllUsersEmptyDataset() {
 	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DataServiceTestSuite) TestFetchAllUsersDatabaseFailure() {
+func (s *DataServiceTestSuite) TestFetchAllUsers_DatabaseFailure() {
 	dataHandler := db.DBService{DB: s.dbConnection}
 
-	connectionFailure := errors.New("database unreachable")
+	connectionFailure := errUnreachableDB
 	s.sqlMock.ExpectQuery("SELECT name FROM users").WillReturnError(connectionFailure)
 
 	resultData, fetchErr := dataHandler.GetNames()
@@ -80,7 +86,7 @@ func (s *DataServiceTestSuite) TestFetchAllUsersDatabaseFailure() {
 	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DataServiceTestSuite) TestFetchAllUsersRowParsingFailure() {
+func (s *DataServiceTestSuite) TestFetchAllUsers_RowParsingFailure() {
 	dataHandler := db.DBService{DB: s.dbConnection}
 
 	faultyRows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
@@ -94,10 +100,10 @@ func (s *DataServiceTestSuite) TestFetchAllUsersRowParsingFailure() {
 	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DataServiceTestSuite) TestFetchAllUsersRowIterationFailure() {
+func (s *DataServiceTestSuite) TestFetchAllUsers_RowIterationFailure() {
 	dataHandler := db.DBService{DB: s.dbConnection}
 
-	problematicRows := sqlmock.NewRows([]string{"name"}).AddRow("Michael").RowError(0, errors.New("iterator broken"))
+	problematicRows := sqlmock.NewRows([]string{"name"}).AddRow("Michael").RowError(0, errBrokenIterator)
 	s.sqlMock.ExpectQuery("SELECT name FROM users").WillReturnRows(problematicRows)
 
 	resultData, fetchErr := dataHandler.GetNames()
@@ -127,7 +133,7 @@ func (s *DataServiceTestSuite) TestRetrieveDistinctUsers() {
 	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DataServiceTestSuite) TestRetrieveDistinctUsersEmptyDataset() {
+func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_EmptyDataset() {
 	dataHandler := db.DBService{DB: s.dbConnection}
 
 	emptyRows := sqlmock.NewRows([]string{"name"})
@@ -140,10 +146,10 @@ func (s *DataServiceTestSuite) TestRetrieveDistinctUsersEmptyDataset() {
 	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DataServiceTestSuite) TestRetrieveDistinctUsersDatabaseFailure() {
+func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_DatabaseFailure() {
 	dataHandler := db.DBService{DB: s.dbConnection}
 
-	connectionFailure := errors.New("query execution failed")
+	connectionFailure := errBadQueryExec
 	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnError(connectionFailure)
 
 	resultData, fetchErr := dataHandler.GetUniqueNames()
@@ -155,7 +161,7 @@ func (s *DataServiceTestSuite) TestRetrieveDistinctUsersDatabaseFailure() {
 	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DataServiceTestSuite) TestRetrieveDistinctUsersRowParsingFailure() {
+func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_RowParsingFailure() {
 	dataHandler := db.DBService{DB: s.dbConnection}
 
 	faultyRows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
@@ -169,10 +175,10 @@ func (s *DataServiceTestSuite) TestRetrieveDistinctUsersRowParsingFailure() {
 	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DataServiceTestSuite) TestRetrieveDistinctUsersRowIterationFailure() {
+func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_RowIterationFailure() {
 	dataHandler := db.DBService{DB: s.dbConnection}
 
-	problematicRows := sqlmock.NewRows([]string{"name"}).AddRow("Elizabeth").RowError(0, errors.New("iterator malfunction"))
+	problematicRows := sqlmock.NewRows([]string{"name"}).AddRow("Elizabeth").RowError(0, errBrokenIterator)
 	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(problematicRows)
 
 	resultData, fetchErr := dataHandler.GetUniqueNames()
@@ -183,7 +189,7 @@ func (s *DataServiceTestSuite) TestRetrieveDistinctUsersRowIterationFailure() {
 	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DataServiceTestSuite) TestRetrieveDistinctUsersDuplicateFiltering() {
+func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_DuplicateFiltering() {
 	dataHandler := db.DBService{DB: s.dbConnection}
 
 	uniqueEntries := []string{"Benjamin", "Charlotte"}
@@ -203,7 +209,7 @@ func (s *DataServiceTestSuite) TestRetrieveDistinctUsersDuplicateFiltering() {
 	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DataServiceTestSuite) TestServiceHandlesMultipleInvocations() {
+func (s *DataServiceTestSuite) TestService_HandlesMultipleInvocations() {
 	dataHandler := db.DBService{DB: s.dbConnection}
 
 	firstRows := sqlmock.NewRows([]string{"name"}).AddRow("Thomas")
@@ -223,7 +229,7 @@ func (s *DataServiceTestSuite) TestServiceHandlesMultipleInvocations() {
 	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DataServiceTestSuite) TestServiceWithInvalidConnection() {
+func (s *DataServiceTestSuite) TestService_WithInvalidConnection() {
 	brokenConnection, _, _ := sqlmock.New()
 	brokenConnection.Close()
 
@@ -233,7 +239,7 @@ func (s *DataServiceTestSuite) TestServiceWithInvalidConnection() {
 	s.NotNil(fetchErr)
 }
 
-func (s *DataServiceTestSuite) TestServiceWithSpecialCharacters() {
+func (s *DataServiceTestSuite) TestService_WithSpecialCharacters() {
 	dataHandler := db.DBService{DB: s.dbConnection}
 
 	testData := []string{"José", "Renée", "Björn", "Siobhán"}
@@ -252,7 +258,7 @@ func (s *DataServiceTestSuite) TestServiceWithSpecialCharacters() {
 	s.Nil(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DataServiceTestSuite) TestServiceWithMixedCaseData() {
+func (s *DataServiceTestSuite) TestService_WithMixedCaseData() {
 	dataHandler := db.DBService{DB: s.dbConnection}
 
 	testData := []string{"alex", "ALEX", "Alex", "aLeX"}
