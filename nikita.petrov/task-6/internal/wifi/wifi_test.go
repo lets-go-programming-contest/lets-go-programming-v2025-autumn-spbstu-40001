@@ -6,88 +6,121 @@ import (
 	"net"
 	"testing"
 
-	myWifi "github.com/Nekich06/task-6/internal/wifi"
-
-	"github.com/mdlayher/wifi"
+	"github.com/Nekich06/task-6/internal/wifi"
+	wifipkg "github.com/mdlayher/wifi"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
-//go:generate mockery --all --testonly --quiet --outpkg wifi_test --output .
+var errIface = errors.New("iface error")
 
-type rowTestSysInfo struct {
-	addrs       []string
-	errExpected error
+type WiFiHandleMock struct {
+	mock.Mock
 }
 
-var testTable = []rowTestSysInfo{
-	{
-		addrs: []string{"00:11:22:33:44:55", "aa:bb:cc:dd:ee:ff"},
-	},
-	{
-		errExpected: errors.New("ExpectedError"),
-	},
+func NewWiFiHandle(t *testing.T) *WiFiHandleMock {
+	t.Helper()
+
+	return &WiFiHandleMock{}
 }
 
-func TestGetName(t *testing.T) {
-	mockWifi := NewWiFi(t)
-	wifiService := myWifi.WiFiService{WiFi: mockWifi}
+func (m *WiFiHandleMock) Interfaces() ([]*wifipkg.Interface, error) {
+	args := m.Called()
 
-	for i, row := range testTable {
-		mockWifi.On("Interfaces").Unset()
-		mockWifi.On("Interfaces").Return(mockIfaces(row.addrs), row.errExpected)
-		actualAddrs, err := wifiService.GetAddresses()
+	ifaces, _ := args.Get(0).([]*wifipkg.Interface)
 
-		if row.errExpected != nil {
-			require.ErrorIs(t, err, row.errExpected, "row: %d, expected error: %w, actual error: %w", i,
-				row.errExpected, err)
-			continue
-		}
-
-		require.NoError(t, err, "row: %d, error must be nil", i)
-		require.Equal(t, parseMACs(row.addrs), actualAddrs,
-			"row: %d, expected addrs: %s, actual addrs: %s", i,
-			parseMACs(row.addrs), actualAddrs)
-	}
-}
-
-func mockIfaces(addrs []string) []*wifi.Interface {
-	var interfaces []*wifi.Interface
-
-	for i, addrStr := range addrs {
-		hwAddr := parseMAC(addrStr)
-		if hwAddr == nil {
-			continue
-		}
-
-		iface := &wifi.Interface{
-			Index:        i + 1,
-			Name:         fmt.Sprintf("eth%d", i+1),
-			HardwareAddr: hwAddr,
-			PHY:          1,
-			Device:       1,
-			Type:         wifi.InterfaceTypeAPVLAN,
-			Frequency:    0,
-		}
-		interfaces = append(interfaces, iface)
-	}
-
-	return interfaces
-}
-
-func parseMACs(macStr []string) []net.HardwareAddr {
-	var addrs []net.HardwareAddr
-
-	for _, addr := range macStr {
-		addrs = append(addrs, parseMAC(addr))
-	}
-
-	return addrs
-}
-
-func parseMAC(macStr string) net.HardwareAddr {
-	hwAddr, err := net.ParseMAC(macStr)
+	err := args.Error(1)
 	if err != nil {
-		return nil
+		return nil, fmt.Errorf("interfaces mock error: %w", err)
 	}
-	return hwAddr
+
+	return ifaces, nil
+}
+
+func TestGetAddresses(t *testing.T) {
+	t.Parallel()
+
+	mockWiFi := NewWiFiHandle(t)
+
+	ifaces := []*wifipkg.Interface{
+		{
+			Name:         "eth0",
+			HardwareAddr: mustMAC("00:11:22:33:44:55"),
+		},
+		{
+			Name:         "wlan0",
+			HardwareAddr: mustMAC("aa:bb:cc:dd:ee:ff"),
+		},
+	}
+
+	mockWiFi.On("Interfaces").Return(ifaces, nil)
+
+	service := wifi.New(mockWiFi)
+
+	addrs, err := service.GetAddresses()
+
+	require.NoError(t, err)
+	require.Equal(t, []net.HardwareAddr{
+		mustMAC("00:11:22:33:44:55"),
+		mustMAC("aa:bb:cc:dd:ee:ff"),
+	}, addrs)
+}
+
+func TestGetAddresses_Error(t *testing.T) {
+	t.Parallel()
+
+	mockWiFi := NewWiFiHandle(t)
+
+	mockWiFi.On("Interfaces").Return(nil, errIface)
+
+	service := wifi.New(mockWiFi)
+
+	addrs, err := service.GetAddresses()
+
+	require.Error(t, err)
+	require.Nil(t, addrs)
+}
+
+func TestGetNames(t *testing.T) {
+	t.Parallel()
+
+	mockWiFi := NewWiFiHandle(t)
+
+	ifaces := []*wifipkg.Interface{
+		{Name: "eth0"},
+		{Name: "wlan0"},
+	}
+
+	mockWiFi.On("Interfaces").Return(ifaces, nil)
+
+	service := wifi.New(mockWiFi)
+
+	names, err := service.GetNames()
+
+	require.NoError(t, err)
+	require.Equal(t, []string{"eth0", "wlan0"}, names)
+}
+
+func TestGetNames_Error(t *testing.T) {
+	t.Parallel()
+
+	mockWiFi := NewWiFiHandle(t)
+
+	mockWiFi.On("Interfaces").Return(nil, errIface)
+
+	service := wifi.New(mockWiFi)
+
+	names, err := service.GetNames()
+
+	require.Error(t, err)
+	require.Nil(t, names)
+}
+
+func mustMAC(s string) net.HardwareAddr {
+	m, err := net.ParseMAC(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return m
 }
