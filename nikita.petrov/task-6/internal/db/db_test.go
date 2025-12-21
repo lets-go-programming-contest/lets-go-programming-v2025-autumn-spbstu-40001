@@ -4,10 +4,21 @@ import (
 	"database/sql"
 	"errors"
 	"regexp"
+	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/Nekich06/task-6/internal/db"
 	"github.com/stretchr/testify/suite"
+)
+
+const (
+	testQuerySelectNames       = "SELECT name FROM users"
+	testQuerySelectUniqueNames = "SELECT DISTINCT name FROM users"
+)
+
+var (
+	testNames       = []string{"Alice", "Bob", "Charlie", "Alice", "Bob"}
+	testUniqueNames = []string{"Alice", "Bob", "Charlie"}
 )
 
 var (
@@ -35,6 +46,10 @@ func (s *DBServiceTestSuite) TearDownTest() {
 	}
 }
 
+func TestDBServiceTestSuite(t *testing.T) {
+	suite.Run(t, new(DBServiceTestSuite))
+}
+
 func (s *DBServiceTestSuite) TestNew() {
 	service := db.New(s.mockDB)
 	s.NotNil(service)
@@ -42,17 +57,154 @@ func (s *DBServiceTestSuite) TestNew() {
 }
 
 func (s *DBServiceTestSuite) TestGetNames_SuccessWithData() {
-	expectedNames := []string{"Alice", "Bob", "Charlie"}
 	rows := sqlmock.NewRows([]string{"name"})
-	for _, name := range expectedNames {
+	for _, name := range testNames {
 		rows.AddRow(name)
 	}
 
-	s.mock.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnRows(rows)
+	s.mock.ExpectQuery(regexp.QuoteMeta(testQuerySelectNames)).WillReturnRows(rows)
 
 	names, err := s.service.GetNames()
 
 	s.Require().NoError(err)
-	s.Equal(expectedNames, names)
+	s.Equal(testNames, names)
+	s.NoError(s.mock.ExpectationsWereMet())
+}
+
+func (s *DBServiceTestSuite) TestGetNames_EmptyResult() {
+	rows := sqlmock.NewRows([]string{"name"})
+
+	s.mock.ExpectQuery(regexp.QuoteMeta(testQuerySelectNames)).WillReturnRows(rows)
+
+	names, err := s.service.GetNames()
+
+	s.Require().NoError(err)
+	s.Empty(names)
+	s.Len(names, 0)
+	s.NoError(s.mock.ExpectationsWereMet())
+}
+
+func (s *DBServiceTestSuite) TestGetNames_DBError() {
+	s.mock.ExpectQuery(regexp.QuoteMeta(testQuerySelectNames)).
+		WillReturnError(errDB)
+
+	names, err := s.service.GetNames()
+
+	s.Require().Error(err)
+	s.Nil(names)
+	s.Contains(err.Error(), "db query")
+	s.NoError(s.mock.ExpectationsWereMet())
+}
+
+func (s *DBServiceTestSuite) TestGetNames_RowsScanningError() {
+	rows := sqlmock.NewRows([]string{"name"}).
+		AddRow("Alice").
+		AddRow(nil).
+		RowError(1, errors.New("scan error"))
+
+	s.mock.ExpectQuery(regexp.QuoteMeta(testQuerySelectNames)).
+		WillReturnRows(rows)
+
+	names, err := s.service.GetNames()
+
+	s.Require().Error(err)
+	s.Nil(names)
+	s.Contains(err.Error(), "rows scanning")
+	s.NoError(s.mock.ExpectationsWereMet())
+}
+
+func (s *DBServiceTestSuite) TestGetNames_RowsIterationError() {
+	rows := sqlmock.NewRows([]string{"name"}).
+		AddRow("Alice").
+		AddRow("Bob").
+		AddRow("Charlie").
+		CloseError(errRowIteration)
+
+	s.mock.ExpectQuery(regexp.QuoteMeta(testQuerySelectNames)).
+		WillReturnRows(rows)
+
+	names, err := s.service.GetNames()
+
+	s.Require().Error(err)
+	s.Nil(names)
+	s.Contains(err.Error(), "rows error")
+	s.NoError(s.mock.ExpectationsWereMet())
+}
+
+func (s *DBServiceTestSuite) TestGetUniqueNames_SuccessWithData() {
+	rows := sqlmock.NewRows([]string{"name"})
+	for _, name := range testUniqueNames {
+		rows.AddRow(name)
+	}
+
+	s.mock.ExpectQuery(regexp.QuoteMeta(testQuerySelectUniqueNames)).
+		WillReturnRows(rows)
+
+	names, err := s.service.GetUniqueNames()
+
+	s.Require().NoError(err)
+	s.Equal(testUniqueNames, names)
+	s.NoError(s.mock.ExpectationsWereMet())
+}
+
+func (s *DBServiceTestSuite) TestGetUniqueNames_EmptyResult() {
+	rows := sqlmock.NewRows([]string{"name"})
+
+	s.mock.ExpectQuery(regexp.QuoteMeta(testQuerySelectUniqueNames)).
+		WillReturnRows(rows)
+
+	names, err := s.service.GetUniqueNames()
+
+	s.Require().NoError(err)
+	s.Empty(names)
+	s.Len(names, 0)
+	s.NoError(s.mock.ExpectationsWereMet())
+}
+
+func (s *DBServiceTestSuite) TestGetUniqueNames_DBError() {
+	s.mock.ExpectQuery(regexp.QuoteMeta(testQuerySelectUniqueNames)).
+		WillReturnError(errDB)
+
+	names, err := s.service.GetUniqueNames()
+
+	s.Require().Error(err)
+	s.Nil(names)
+	s.Contains(err.Error(), "db query")
+	s.NoError(s.mock.ExpectationsWereMet())
+}
+
+func (s *DBServiceTestSuite) TestGetUniqueNames_WithDuplicatesInDB() {
+	dbRows := sqlmock.NewRows([]string{"name"}).
+		AddRow("Alice").
+		AddRow("Bob").
+		AddRow("Alice").
+		AddRow("Charlie").
+		AddRow("Bob")
+
+	expectedUnique := []string{"Alice", "Bob", "Charlie"}
+
+	s.mock.ExpectQuery(regexp.QuoteMeta(testQuerySelectUniqueNames)).
+		WillReturnRows(dbRows)
+
+	names, err := s.service.GetUniqueNames()
+
+	s.Require().NoError(err)
+	s.Equal(expectedUnique, names)
+	s.NoError(s.mock.ExpectationsWereMet())
+}
+
+func (s *DBServiceTestSuite) TestServiceMethodsUseConstants() {
+	rows1 := sqlmock.NewRows([]string{"name"}).AddRow("test")
+	s.mock.ExpectQuery(regexp.QuoteMeta(testQuerySelectNames)).WillReturnRows(rows1)
+
+	_, err := s.service.GetNames()
+	s.Require().NoError(err)
+
+	rows2 := sqlmock.NewRows([]string{"name"}).AddRow("test")
+	s.mock.ExpectQuery(regexp.QuoteMeta(testQuerySelectUniqueNames)).WillReturnRows(rows2)
+
+	_, err = s.service.GetUniqueNames()
+	s.Require().NoError(err)
+
 	s.NoError(s.mock.ExpectationsWereMet())
 }
