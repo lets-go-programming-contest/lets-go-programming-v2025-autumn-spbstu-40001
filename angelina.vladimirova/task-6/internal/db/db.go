@@ -17,21 +17,25 @@ func New(db Database) DBService {
 	return DBService{DB: db}
 }
 
-// GetNames возвращает всех пользователей из таблицы
 func (service DBService) GetNames() ([]string, error) {
 	query := "SELECT name FROM users"
+
 	rows, err := service.DB.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("db query: %w", err)
 	}
+
 	defer rows.Close()
 
 	var names []string
+
 	for rows.Next() {
 		var name string
+
 		if err := rows.Scan(&name); err != nil {
 			return nil, fmt.Errorf("rows scanning: %w", err)
 		}
+
 		names = append(names, name)
 	}
 
@@ -44,18 +48,23 @@ func (service DBService) GetNames() ([]string, error) {
 
 func (service DBService) GetUniqueNames() ([]string, error) {
 	query := "SELECT DISTINCT name FROM users"
+
 	rows, err := service.DB.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("db query: %w", err)
 	}
+
 	defer rows.Close()
 
 	var names []string
+
 	for rows.Next() {
 		var name string
+
 		if err := rows.Scan(&name); err != nil {
 			return nil, fmt.Errorf("rows scanning: %w", err)
 		}
+
 		names = append(names, name)
 	}
 

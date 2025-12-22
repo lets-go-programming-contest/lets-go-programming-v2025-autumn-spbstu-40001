@@ -1,6 +1,8 @@
 package wifi_test
 
 import (
+	"fmt"
+
 	wifi "github.com/mdlayher/wifi"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -18,14 +20,18 @@ func (_m *WiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 
 	var r0 []*wifi.Interface
 	var r1 error
+
 	if rf, ok := ret.Get(0).(func() ([]*wifi.Interface, error)); ok {
 		return rf()
 	}
+
 	if rf, ok := ret.Get(0).(func() []*wifi.Interface); ok {
 		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*wifi.Interface)
+	} else if ret.Get(0) != nil {
+		var ok bool
+		r0, ok = ret.Get(0).([]*wifi.Interface)
+		if !ok {
+			panic("failed to cast to []*wifi.Interface")
 		}
 	}
 
@@ -35,12 +41,16 @@ func (_m *WiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 		r1 = ret.Error(1)
 	}
 
-	return r0, r1
+	if r1 != nil {
+		return r0, fmt.Errorf("mock error: %w", r1)
+	}
+
+	return r0, nil
 }
 
 func NewWiFiHandle(t interface {
 	mock.TestingT
-	Cleanup(func())
+	Cleanup(f func())
 }) *WiFiHandle {
 	mock := &WiFiHandle{}
 	mock.Mock.Test(t)

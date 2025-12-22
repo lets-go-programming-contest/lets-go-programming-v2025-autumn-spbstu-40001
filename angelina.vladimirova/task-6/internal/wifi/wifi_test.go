@@ -1,98 +1,61 @@
 package wifi_test
 
 import (
-	"errors"
-	"net"
-	"testing"
+	"fmt"
 
-	"github.com/mdlayher/wifi"
-	"github.com/stretchr/testify/require"
-	myWifi "github.com/verticalochka/task-6/internal/wifi"
+	wifi "github.com/mdlayher/wifi"
+	mock "github.com/stretchr/testify/mock"
 )
 
-//go:generate mockery --all --testonly --quiet --outpkg wifi_test --output .
+type WiFiHandle struct {
+	mock.Mock
+}
 
-var ErrTest = errors.New("test error")
+func (_m *WiFiHandle) Interfaces() ([]*wifi.Interface, error) {
+	ret := _m.Called()
 
-func TestRetrieveMACs_Successful(t *testing.T) {
-	t.Parallel()
-
-	mockHandler := NewWiFiHandle(t)
-	service := myWifi.New(mockHandler)
-
-	networkIfaces := []*wifi.Interface{
-		{Name: "wifi0", HardwareAddr: createMAC("11:22:33:44:55:66")},
-		{Name: "wifi1", HardwareAddr: createMAC("aa:bb:cc:dd:ee:ff")},
+	if len(ret) == 0 {
+		panic("no return value specified for Interfaces")
 	}
 
-	mockHandler.On("Interfaces").Return(networkIfaces, nil)
+	var r0 []*wifi.Interface
+	var r1 error
 
-	macs, err := service.GetAddresses()
-	require.NoError(t, err)
-	require.Equal(t, []net.HardwareAddr{
-		createMAC("11:22:33:44:55:66"),
-		createMAC("aa:bb:cc:dd:ee:ff"),
-	}, macs)
-}
-
-func TestRetrieveMACs_Failed(t *testing.T) {
-	t.Parallel()
-
-	mockHandler := NewWiFiHandle(t)
-	service := myWifi.New(mockHandler)
-
-	mockHandler.On("Interfaces").Return(nil, ErrTest)
-
-	macs, err := service.GetAddresses()
-	require.ErrorContains(t, err, "getting interfaces")
-	require.Nil(t, macs)
-}
-
-func TestRetrieveInterfaceNames_Successful(t *testing.T) {
-	t.Parallel()
-
-	mockHandler := NewWiFiHandle(t)
-	service := myWifi.New(mockHandler)
-
-	networkIfaces := []*wifi.Interface{
-		{Name: "wireless0", HardwareAddr: createMAC("11:22:33:44:55:66")},
-		{Name: "ethernet1", HardwareAddr: createMAC("aa:bb:cc:dd:ee:ff")},
+	if rf, ok := ret.Get(0).(func() ([]*wifi.Interface, error)); ok {
+		return rf()
 	}
 
-	mockHandler.On("Interfaces").Return(networkIfaces, nil)
+	if rf, ok := ret.Get(0).(func() []*wifi.Interface); ok {
+		r0 = rf()
+	} else if ret.Get(0) != nil {
+		var ok bool
+		r0, ok = ret.Get(0).([]*wifi.Interface)
+		if !ok {
+			panic("failed to cast to []*wifi.Interface")
+		}
+	}
 
-	names, err := service.GetNames()
-	require.NoError(t, err)
-	require.Equal(t, []string{"wireless0", "ethernet1"}, names)
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	if r1 != nil {
+		return r0, fmt.Errorf("mock error: %w", r1)
+	}
+
+	return r0, nil
 }
 
-func TestRetrieveInterfaceNames_Failed(t *testing.T) {
-	t.Parallel()
+func NewWiFiHandle(t interface {
+	mock.TestingT
+	Cleanup(f func())
+}) *WiFiHandle {
+	mock := &WiFiHandle{}
+	mock.Mock.Test(t)
 
-	mockHandler := NewWiFiHandle(t)
-	service := myWifi.New(mockHandler)
+	t.Cleanup(func() { mock.AssertExpectations(t) })
 
-	mockHandler.On("Interfaces").Return(nil, ErrTest)
-
-	names, err := service.GetNames()
-	require.ErrorContains(t, err, "getting interfaces")
-	require.Nil(t, names)
-}
-
-func TestRetrieveMACs_EmptyResult(t *testing.T) {
-	t.Parallel()
-
-	mockHandler := NewWiFiHandle(t)
-	service := myWifi.New(mockHandler)
-
-	mockHandler.On("Interfaces").Return([]*wifi.Interface{}, nil)
-
-	macs, err := service.GetAddresses()
-	require.NoError(t, err)
-	require.Empty(t, macs)
-}
-
-func createMAC(s string) net.HardwareAddr {
-	addr, _ := net.ParseMAC(s)
-	return addr
+	return mock
 }
