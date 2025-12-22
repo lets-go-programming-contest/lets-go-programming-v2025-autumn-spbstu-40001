@@ -21,6 +21,7 @@ func (s *Service) GetNames() ([]string, error) {
 	defer rows.Close()
 
 	var result []string
+
 	for rows.Next() {
 		var name string
 		if err := rows.Scan(&name); err != nil {
@@ -45,6 +46,7 @@ func (s *Service) GetUniqueNames() ([]string, error) {
 	defer rows.Close()
 
 	var result []string
+
 	for rows.Next() {
 		var name string
 		if err := rows.Scan(&name); err != nil {
