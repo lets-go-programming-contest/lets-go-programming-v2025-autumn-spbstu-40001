@@ -14,6 +14,7 @@ var errWiFi = errors.New("wifi error")
 
 func mac(s string) net.HardwareAddr {
 	addr, _ := net.ParseMAC(s)
+
 	return addr
 }
 
@@ -51,7 +52,6 @@ func TestGetAddresses(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 

@@ -26,6 +26,7 @@ func (s *Service) GetNames() ([]string, error) {
 		if err := rows.Scan(&name); err != nil {
 			return nil, fmt.Errorf("rows scanning: %w", err)
 		}
+
 		result = append(result, name)
 	}
 
@@ -49,6 +50,7 @@ func (s *Service) GetUniqueNames() ([]string, error) {
 		if err := rows.Scan(&name); err != nil {
 			return nil, fmt.Errorf("rows scanning: %w", err)
 		}
+
 		result = append(result, name)
 	}
 

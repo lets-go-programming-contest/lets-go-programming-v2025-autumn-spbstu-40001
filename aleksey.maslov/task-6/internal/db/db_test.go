@@ -74,7 +74,6 @@ func TestGetNames(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -83,6 +82,7 @@ func TestGetNames(t *testing.T) {
 			defer dbConn.Close()
 
 			service := db.New(dbConn)
+
 			tt.mockSetup(mock)
 
 			result, err := service.GetNames()
@@ -151,7 +151,6 @@ func TestGetUniqueNames(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -160,6 +159,7 @@ func TestGetUniqueNames(t *testing.T) {
 			defer dbConn.Close()
 
 			service := db.New(dbConn)
+
 			tt.mockSetup(mock)
 
 			result, err := service.GetUniqueNames()
