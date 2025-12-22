@@ -11,15 +11,13 @@ type mockWiFiHandle struct {
 
 func (m *mockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 	args := m.Called()
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
 	return args.Get(0).([]*wifi.Interface), args.Error(1)
 }
 
-func (m *mockWiFiHandle) StationInfo(ifi *wifi.Interface) (*wifi.StationInfo, error) {
-	args := m.Called(ifi)
-	return args.Get(0).(*wifi.StationInfo), args.Error(1)
-}
-
-func newMockWiFiHandle(t mock.TestingT) *mockWiFiHandle {
+func NewWiFiHandle(t mock.TestingT) *mockWiFiHandle {
 	mock := &mockWiFiHandle{}
 	mock.Test(t)
 	return mock

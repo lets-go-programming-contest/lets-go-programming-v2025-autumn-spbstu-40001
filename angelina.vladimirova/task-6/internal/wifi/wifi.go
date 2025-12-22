@@ -9,7 +9,6 @@ import (
 
 type WiFiHandle interface {
 	Interfaces() ([]*wifi.Interface, error)
-	StationInfo(ifi *wifi.Interface) (*wifi.StationInfo, error)
 }
 
 type WiFiService struct {
@@ -20,41 +19,30 @@ func New(wifi WiFiHandle) WiFiService {
 	return WiFiService{WiFi: wifi}
 }
 
-func (service WiFiService) GetConnectedDevices() ([]net.HardwareAddr, error) {
+func (service WiFiService) GetAddresses() ([]net.HardwareAddr, error) {
 	interfaces, err := service.WiFi.Interfaces()
 	if err != nil {
-		return nil, fmt.Errorf("get interfaces: %w", err)
+		return nil, fmt.Errorf("getting interfaces: %w", err)
 	}
 
-	devices := make([]net.HardwareAddr, 0, len(interfaces))
+	addrs := make([]net.HardwareAddr, 0, len(interfaces))
 	for _, iface := range interfaces {
-		info, err := service.WiFi.StationInfo(iface)
-		if err != nil {
-			continue
-		}
-
-		if info.Connected {
-			devices = append(devices, iface.HardwareAddr)
-		}
+		addrs = append(addrs, iface.HardwareAddr)
 	}
 
-	return devices, nil
+	return addrs, nil
 }
 
-func (service WiFiService) GetInterfaceSpeeds() (map[string]int, error) {
+func (service WiFiService) GetNames() ([]string, error) {
 	interfaces, err := service.WiFi.Interfaces()
 	if err != nil {
-		return nil, fmt.Errorf("get interfaces: %w", err)
+		return nil, fmt.Errorf("getting interfaces: %w", err)
 	}
 
-	speeds := make(map[string]int)
+	names := make([]string, 0, len(interfaces))
 	for _, iface := range interfaces {
-		info, err := service.WiFi.StationInfo(iface)
-		if err != nil {
-			continue
-		}
-		speeds[iface.Name] = info.TXBitrate / 1000000
+		names = append(names, iface.Name)
 	}
 
-	return speeds, nil
+	return names, nil
 }

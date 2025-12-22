@@ -1,0 +1,14 @@
+linters:
+  enable:
+    - errcheck
+    - govet
+    - staticcheck
+    
+  disable-all: true
+
+run:
+  timeout: 5m
+  tests: true
+
+output:
+  format: colored-line-number

@@ -9,7 +9,7 @@ import (
 	"github.com/verticalochka/task-6/internal/db"
 )
 
-func TestGetActiveUsers(t *testing.T) {
+func TestGetNames(t *testing.T) {
 	t.Parallel()
 
 	dbMock, mock, err := sqlmock.New()
@@ -18,27 +18,36 @@ func TestGetActiveUsers(t *testing.T) {
 
 	service := db.New(dbMock)
 
-	rows := sqlmock.NewRows([]string{"username"}).
-		AddRow("alice").
-		AddRow("bob")
+	rows := sqlmock.NewRows([]string{"name"}).
+		AddRow("alex").
+		AddRow("maria")
 
-	mock.ExpectQuery("SELECT username FROM users WHERE active = true").
+	mock.ExpectQuery("SELECT name FROM users").
 		WillReturnRows(rows)
 
-	result, err := service.GetActiveUsers()
+	result, err := service.GetNames()
 	require.NoError(t, err)
-	require.Equal(t, []string{"alice", "bob"}, result)
+	require.Equal(t, []string{"alex", "maria"}, result)
+}
 
-	mock.ExpectQuery("SELECT username FROM users WHERE active = true").
-		WillReturnError(errors.New("connection failed"))
+func TestGetNames_FailedQuery(t *testing.T) {
+	t.Parallel()
 
-	result, err = service.GetActiveUsers()
-	require.Error(t, err)
-	require.ErrorContains(t, err, "query error")
+	dbMock, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	defer dbMock.Close()
+
+	service := db.New(dbMock)
+
+	mock.ExpectQuery("SELECT name FROM users").
+		WillReturnError(errors.New("test error"))
+
+	result, err := service.GetNames()
+	require.ErrorContains(t, err, "db query")
 	require.Nil(t, result)
 }
 
-func TestDeactivateUser(t *testing.T) {
+func TestGetNames_BadScan(t *testing.T) {
 	t.Parallel()
 
 	dbMock, mock, err := sqlmock.New()
@@ -47,18 +56,11 @@ func TestDeactivateUser(t *testing.T) {
 
 	service := db.New(dbMock)
 
-	mock.ExpectExec("UPDATE users SET active = false WHERE username = ?").
-		WithArgs("inactive_user").
-		WillReturnResult(sqlmock.NewResult(0, 1))
+	rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
+	mock.ExpectQuery("SELECT name FROM users").
+		WillReturnRows(rows)
 
-	err = service.DeactivateUser("inactive_user")
-	require.NoError(t, err)
-
-	mock.ExpectExec("UPDATE users SET active = false WHERE username = ?").
-		WithArgs("nonexistent").
-		WillReturnResult(sqlmock.NewResult(0, 0))
-
-	err = service.DeactivateUser("nonexistent")
-	require.Error(t, err)
-	require.ErrorContains(t, err, "user not found")
+	result, err := service.GetNames()
+	require.ErrorContains(t, err, "rows scanning")
+	require.Nil(t, result)
 }
