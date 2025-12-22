@@ -72,3 +72,19 @@ func TestGetAddresses(t *testing.T) {
 		})
 	}
 }
+
+func TestGetNames(t *testing.T) {
+	t.Parallel()
+
+	mockWiFi := NewWiFiHandle(t)
+	service := mywifi.New(mockWiFi)
+
+	mockWiFi.On("Interfaces").Return([]*wifi.Interface{
+		{Name: "wlan0"},
+		{Name: "eth0"},
+	}, nil)
+
+	names, err := service.GetNames()
+	require.NoError(t, err)
+	require.Equal(t, []string{"wlan0", "eth0"}, names)
+}
