@@ -1,7 +1,7 @@
 package db_test
 
 import (
-	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -9,11 +9,17 @@ import (
 	"github.com/verticalochka/task-6/internal/db"
 )
 
+var (
+	errTestConnection = fmt.Errorf("test connection error")
+	errTestScan       = fmt.Errorf("test scan error")
+)
+
 func TestGetNames(t *testing.T) {
 	t.Parallel()
 
 	dbMock, mock, err := sqlmock.New()
 	require.NoError(t, err)
+
 	defer dbMock.Close()
 
 	service := db.New(dbMock)
@@ -35,12 +41,13 @@ func TestGetNames_FailedQuery(t *testing.T) {
 
 	dbMock, mock, err := sqlmock.New()
 	require.NoError(t, err)
+
 	defer dbMock.Close()
 
 	service := db.New(dbMock)
 
 	mock.ExpectQuery("SELECT name FROM users").
-		WillReturnError(errors.New("test error"))
+		WillReturnError(errTestConnection)
 
 	result, err := service.GetNames()
 	require.ErrorContains(t, err, "db query")
@@ -52,6 +59,7 @@ func TestGetNames_BadScan(t *testing.T) {
 
 	dbMock, mock, err := sqlmock.New()
 	require.NoError(t, err)
+
 	defer dbMock.Close()
 
 	service := db.New(dbMock)

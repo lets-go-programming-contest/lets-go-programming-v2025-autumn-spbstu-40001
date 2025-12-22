@@ -1,7 +1,7 @@
 package wifi_test
 
 import (
-	"errors"
+	"fmt"
 	"net"
 	"testing"
 
@@ -10,8 +10,13 @@ import (
 	myWifi "github.com/verticalochka/task-6/internal/wifi"
 )
 
+var (
+	errTestInterfaces = fmt.Errorf("test interfaces error")
+)
+
 func createMAC(s string) net.HardwareAddr {
 	addr, _ := net.ParseMAC(s)
+
 	return addr
 }
 
@@ -42,7 +47,7 @@ func TestGetAddresses_Failed(t *testing.T) {
 	mockHandler := NewWiFiHandle(t)
 	service := myWifi.New(mockHandler)
 
-	mockHandler.On("Interfaces").Return(nil, errors.New("test error"))
+	mockHandler.On("Interfaces").Return(nil, errTestInterfaces)
 
 	macs, err := service.GetAddresses()
 	require.ErrorContains(t, err, "getting interfaces")
@@ -73,7 +78,7 @@ func TestGetNames_Failed(t *testing.T) {
 	mockHandler := NewWiFiHandle(t)
 	service := myWifi.New(mockHandler)
 
-	mockHandler.On("Interfaces").Return(nil, errors.New("test error"))
+	mockHandler.On("Interfaces").Return(nil, errTestInterfaces)
 
 	names, err := service.GetNames()
 	require.ErrorContains(t, err, "getting interfaces")
