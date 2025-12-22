@@ -1,7 +1,7 @@
 package wifi_test
 
 import (
-	"fmt"
+	"errors"
 	"net"
 	"testing"
 
@@ -10,17 +10,16 @@ import (
 	myWifi "github.com/verticalochka/task-6/internal/wifi"
 )
 
-var (
-	errTestInterfaces = fmt.Errorf("test interfaces error")
-)
+//go:generate mockery --all --testonly --quiet --outpkg wifi_test --output .
+
+var errTest = errors.New("test error")
 
 func createMAC(s string) net.HardwareAddr {
 	addr, _ := net.ParseMAC(s)
-
 	return addr
 }
 
-func TestGetAddresses(t *testing.T) {
+func TestRetrieveMACs_Successful(t *testing.T) {
 	t.Parallel()
 
 	mockHandler := NewWiFiHandle(t)
@@ -41,20 +40,20 @@ func TestGetAddresses(t *testing.T) {
 	}, macs)
 }
 
-func TestGetAddresses_Failed(t *testing.T) {
+func TestRetrieveMACs_Failed(t *testing.T) {
 	t.Parallel()
 
 	mockHandler := NewWiFiHandle(t)
 	service := myWifi.New(mockHandler)
 
-	mockHandler.On("Interfaces").Return(nil, errTestInterfaces)
+	mockHandler.On("Interfaces").Return(nil, errTest)
 
 	macs, err := service.GetAddresses()
 	require.ErrorContains(t, err, "getting interfaces")
 	require.Nil(t, macs)
 }
 
-func TestGetNames(t *testing.T) {
+func TestRetrieveInterfaceNames_Successful(t *testing.T) {
 	t.Parallel()
 
 	mockHandler := NewWiFiHandle(t)
@@ -72,20 +71,20 @@ func TestGetNames(t *testing.T) {
 	require.Equal(t, []string{"wireless0", "ethernet1"}, names)
 }
 
-func TestGetNames_Failed(t *testing.T) {
+func TestRetrieveInterfaceNames_Failed(t *testing.T) {
 	t.Parallel()
 
 	mockHandler := NewWiFiHandle(t)
 	service := myWifi.New(mockHandler)
 
-	mockHandler.On("Interfaces").Return(nil, errTestInterfaces)
+	mockHandler.On("Interfaces").Return(nil, errTest)
 
 	names, err := service.GetNames()
 	require.ErrorContains(t, err, "getting interfaces")
 	require.Nil(t, names)
 }
 
-func TestGetAddresses_EmptyResult(t *testing.T) {
+func TestRetrieveMACs_EmptyResult(t *testing.T) {
 	t.Parallel()
 
 	mockHandler := NewWiFiHandle(t)
