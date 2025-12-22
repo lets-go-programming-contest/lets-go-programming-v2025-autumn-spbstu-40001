@@ -5,10 +5,9 @@ import (
 	"net"
 	"testing"
 
+	mywifi "github.com/A1exMas1ov/task-6/internal/wifi"
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/require"
-
-	mywifi "github.com/A1exMas1ov/task-6/internal/wifi"
 )
 
 var errWiFi = errors.New("wifi error")
@@ -76,15 +75,51 @@ func TestGetAddresses(t *testing.T) {
 func TestGetNames(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := NewWiFiHandle(t)
-	service := mywifi.New(mockWiFi)
+	tests := []struct {
+		name      string
+		ifaces    []*wifi.Interface
+		err       error
+		expectErr bool
+		expect    []string
+	}{
+		{
+			name: "success",
+			ifaces: []*wifi.Interface{
+				{Name: "wlan0"},
+				{Name: "eth0"},
+			},
+			expect: []string{"wlan0", "eth0"},
+		},
+		{
+			name:      "interfaces error",
+			err:       errWiFi,
+			expectErr: true,
+		},
+		{
+			name:   "empty interfaces",
+			ifaces: []*wifi.Interface{},
+			expect: []string{},
+		},
+	}
 
-	mockWiFi.On("Interfaces").Return([]*wifi.Interface{
-		{Name: "wlan0"},
-		{Name: "eth0"},
-	}, nil)
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-	names, err := service.GetNames()
-	require.NoError(t, err)
-	require.Equal(t, []string{"wlan0", "eth0"}, names)
+			mockWiFi := NewWiFiHandle(t)
+			service := mywifi.New(mockWiFi)
+
+			mockWiFi.On("Interfaces").Return(tt.ifaces, tt.err)
+
+			names, err := service.GetNames()
+
+			if tt.expectErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tt.expect, names)
+			}
+		})
+	}
 }
