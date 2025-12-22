@@ -1,4 +1,4 @@
-package users_test
+package db_test
 
 import (
 	"errors"
@@ -6,17 +6,17 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/require"
-	"github.com/verticalochka/task-6/internal/users"
+	"github.com/verticalochka/task-6/internal/db"
 )
 
 func TestGetActiveUsers(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	dbMock, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbMock.Close()
 
-	service := users.New(db)
+	service := db.New(dbMock)
 
 	rows := sqlmock.NewRows([]string{"username"}).
 		AddRow("alice").
@@ -41,11 +41,11 @@ func TestGetActiveUsers(t *testing.T) {
 func TestDeactivateUser(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	dbMock, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbMock.Close()
 
-	service := users.New(db)
+	service := db.New(dbMock)
 
 	mock.ExpectExec("UPDATE users SET active = false WHERE username = ?").
 		WithArgs("inactive_user").

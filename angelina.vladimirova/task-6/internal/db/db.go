@@ -1,4 +1,4 @@
-package users
+package db
 
 import (
 	"database/sql"
@@ -10,15 +10,15 @@ type Database interface {
 	Exec(query string, args ...any) (sql.Result, error)
 }
 
-type UserService struct {
+type DBService struct {
 	DB Database
 }
 
-func New(db Database) UserService {
-	return UserService{DB: db}
+func New(db Database) DBService {
+	return DBService{DB: db}
 }
 
-func (service UserService) GetActiveUsers() ([]string, error) {
+func (service DBService) GetActiveUsers() ([]string, error) {
 	query := "SELECT username FROM users WHERE active = true"
 	rows, err := service.DB.Query(query)
 	if err != nil {
@@ -42,7 +42,7 @@ func (service UserService) GetActiveUsers() ([]string, error) {
 	return users, nil
 }
 
-func (service UserService) DeactivateUser(username string) error {
+func (service DBService) DeactivateUser(username string) error {
 	query := "UPDATE users SET active = false WHERE username = ?"
 	result, err := service.DB.Exec(query, username)
 	if err != nil {

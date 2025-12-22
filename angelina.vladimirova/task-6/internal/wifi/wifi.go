@@ -1,4 +1,4 @@
-package network
+package wifi
 
 import (
 	"fmt"
@@ -7,20 +7,20 @@ import (
 	"github.com/mdlayher/wifi"
 )
 
-type WiFiManager interface {
+type WiFiHandle interface {
 	Interfaces() ([]*wifi.Interface, error)
 	StationInfo(ifi *wifi.Interface) (*wifi.StationInfo, error)
 }
 
-type NetworkService struct {
-	WiFi WiFiManager
+type WiFiService struct {
+	WiFi WiFiHandle
 }
 
-func New(wifi WiFiManager) NetworkService {
-	return NetworkService{WiFi: wifi}
+func New(wifi WiFiHandle) WiFiService {
+	return WiFiService{WiFi: wifi}
 }
 
-func (service NetworkService) GetConnectedDevices() ([]net.HardwareAddr, error) {
+func (service WiFiService) GetConnectedDevices() ([]net.HardwareAddr, error) {
 	interfaces, err := service.WiFi.Interfaces()
 	if err != nil {
 		return nil, fmt.Errorf("get interfaces: %w", err)
@@ -41,7 +41,7 @@ func (service NetworkService) GetConnectedDevices() ([]net.HardwareAddr, error) 
 	return devices, nil
 }
 
-func (service NetworkService) GetInterfaceSpeeds() (map[string]int, error) {
+func (service WiFiService) GetInterfaceSpeeds() (map[string]int, error) {
 	interfaces, err := service.WiFi.Interfaces()
 	if err != nil {
 		return nil, fmt.Errorf("get interfaces: %w", err)

@@ -1,4 +1,4 @@
-package network_test
+package wifi_test
 
 import (
 	"net"
@@ -6,7 +6,7 @@ import (
 
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/require"
-	"github.com/verticalochka/task-6/internal/network"
+	"github.com/verticalochka/task-6/internal/wifi"
 )
 
 func parseMAC(addr string) []byte {
@@ -17,8 +17,8 @@ func parseMAC(addr string) []byte {
 func TestGetConnectedDevices(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := newMockWiFiManager(t)
-	service := network.New(mockWiFi)
+	mockWiFi := newMockWiFiHandle(t)
+	service := wifi.New(mockWiFi)
 
 	interfaces := []*wifi.Interface{
 		{
@@ -53,8 +53,8 @@ func TestGetConnectedDevices(t *testing.T) {
 func TestGetInterfaceSpeeds(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := newMockWiFiManager(t)
-	service := network.New(mockWiFi)
+	mockWiFi := newMockWiFiHandle(t)
+	service := wifi.New(mockWiFi)
 
 	interfaces := []*wifi.Interface{
 		{
