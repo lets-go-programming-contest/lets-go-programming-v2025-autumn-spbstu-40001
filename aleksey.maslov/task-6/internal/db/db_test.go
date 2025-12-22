@@ -1,6 +1,7 @@
 package db_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -18,4 +19,83 @@ func TestNew(t *testing.T) {
 
 	service := db.New(mockDB)
 	require.Equal(t, mockDB, service.DB)
+}
+
+var errExpected = errors.New("expected error")
+
+func TestGetNames(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name          string
+		mockSetup     func(sqlmock.Sqlmock)
+		expectError   bool
+		errorContains string
+		expected      []string
+	}{
+		{
+			name: "success",
+			mockSetup: func(m sqlmock.Sqlmock) {
+				rows := sqlmock.NewRows([]string{"name"}).
+					AddRow("Alice").
+					AddRow("Bob")
+				m.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
+			},
+			expected: []string{"Alice", "Bob"},
+		},
+		{
+			name: "query error",
+			mockSetup: func(m sqlmock.Sqlmock) {
+				m.ExpectQuery("SELECT name FROM users").WillReturnError(errExpected)
+			},
+			expectError:   true,
+			errorContains: "db query",
+		},
+		{
+			name: "scan error",
+			mockSetup: func(m sqlmock.Sqlmock) {
+				rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
+				m.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
+			},
+			expectError:   true,
+			errorContains: "rows scanning",
+		},
+		{
+			name: "rows error",
+			mockSetup: func(m sqlmock.Sqlmock) {
+				rows := sqlmock.NewRows([]string{"name"}).
+					AddRow("Alice").
+					RowError(0, errExpected)
+				m.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
+			},
+			expectError:   true,
+			errorContains: "rows error",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			dbConn, mock, err := sqlmock.New()
+			require.NoError(t, err)
+			defer dbConn.Close()
+
+			service := db.New(dbConn)
+			tt.mockSetup(mock)
+
+			result, err := service.GetNames()
+
+			if tt.expectError {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tt.errorContains)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tt.expected, result)
+			}
+
+			require.NoError(t, mock.ExpectationsWereMet())
+		})
+	}
 }
