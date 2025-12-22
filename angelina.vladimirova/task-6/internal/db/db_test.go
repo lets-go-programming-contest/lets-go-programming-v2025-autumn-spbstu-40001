@@ -4,161 +4,181 @@ import (
 	"errors"
 	"testing"
 
+	"aleksey.kurbyko/task-6/internal/db"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/require"
-	"github.com/verticalochka/task-6/internal/db"
 )
 
 const (
-	selectAllNames = "SELECT name FROM users"
-	selectUnique   = "SELECT DISTINCT name FROM users"
+	queryGetNames       = "^SELECT name FROM users$"
+	queryGetUniqueNames = "^SELECT DISTINCT name FROM users$"
 )
 
-var ErrTest = errors.New("test error")
+var errExpected = errors.New("expected error")
 
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	mockDB, _, err := sqlmock.New()
+	dbConn, _, err := sqlmock.New()
 	require.NoError(t, err)
-	defer mockDB.Close()
+	defer dbConn.Close()
 
-	service := db.New(mockDB)
-	require.Equal(t, mockDB, service.DB)
+	service := db.New(dbConn)
+	require.Equal(t, dbConn, service.DB)
 }
 
-func TestGetUniqueNames_Success(t *testing.T) {
+func TestGetNames(t *testing.T) {
 	t.Parallel()
 
-	mockDB, mock, err := sqlmock.New()
-	require.NoError(t, err)
-	defer mockDB.Close()
+	type testCase struct {
+		rows       *sqlmock.Rows
+		queryErr   error
+		want       []string
+		errIs      error
+		errContain string
+	}
 
-	service := db.DBService{DB: mockDB}
+	cases := []testCase{
+		{
+			rows: sqlmock.NewRows([]string{"name"}).
+				AddRow("Ivan").
+				AddRow("Petr"),
+			want: []string{"Ivan", "Petr"},
+		},
+		{
+			rows: sqlmock.NewRows([]string{"name"}),
+			want: nil,
+		},
+		{
+			queryErr:   errExpected,
+			errIs:      errExpected,
+			errContain: "db query",
+		},
+		{
+			rows:       sqlmock.NewRows([]string{"name"}).AddRow(nil),
+			errContain: "rows scanning",
+		},
+		{
+			rows: sqlmock.NewRows([]string{"name"}).
+				AddRow("Ivan").
+				AddRow("Petr").
+				RowError(1, errExpected),
+			errIs:      errExpected,
+			errContain: "rows error",
+		},
+	}
 
-	rows := sqlmock.NewRows([]string{"name"}).AddRow("Alex").AddRow("Maria")
-	mock.ExpectQuery(selectUnique).WillReturnRows(rows)
+	for i, tc := range cases {
+		dbConn, mock, err := sqlmock.New()
+		require.NoError(t, err)
 
-	names, err := service.GetUniqueNames()
-	require.NoError(t, err)
-	require.Equal(t, []string{"Alex", "Maria"}, names)
+		service := db.DBService{DB: dbConn}
+
+		if tc.queryErr != nil {
+			mock.ExpectQuery(queryGetNames).WillReturnError(tc.queryErr)
+		} else {
+			mock.ExpectQuery(queryGetNames).WillReturnRows(tc.rows)
+		}
+
+		got, err := service.GetNames()
+
+		if tc.errIs != nil || tc.errContain != "" {
+			require.Error(t, err, "case %d", i)
+
+			if tc.errIs != nil {
+				require.ErrorIs(t, err, tc.errIs, "case %d", i)
+			}
+
+			if tc.errContain != "" {
+				require.ErrorContains(t, err, tc.errContain, "case %d", i)
+			}
+
+			require.Nil(t, got, "case %d", i)
+		} else {
+			require.NoError(t, err, "case %d", i)
+			require.Equal(t, tc.want, got, "case %d", i)
+		}
+
+		mock.ExpectClose()
+		require.NoError(t, dbConn.Close())
+		require.NoError(t, mock.ExpectationsWereMet(), "case %d", i)
+	}
 }
 
-func TestGetUniqueNames_QueryFailure(t *testing.T) {
+func TestGetUniqueNames(t *testing.T) {
 	t.Parallel()
 
-	mockDB, mock, err := sqlmock.New()
-	require.NoError(t, err)
-	defer mockDB.Close()
+	type testCase struct {
+		rows       *sqlmock.Rows
+		queryErr   error
+		want       []string
+		errIs      error
+		errContain string
+	}
 
-	service := db.DBService{DB: mockDB}
+	cases := []testCase{
+		{
+			rows: sqlmock.NewRows([]string{"name"}).
+				AddRow("Ivan").
+				AddRow("Petr"),
+			want: []string{"Ivan", "Petr"},
+		},
+		{
+			rows: sqlmock.NewRows([]string{"name"}),
+			want: nil,
+		},
+		{
+			queryErr:   errExpected,
+			errIs:      errExpected,
+			errContain: "db query",
+		},
+		{
+			rows:       sqlmock.NewRows([]string{"name"}).AddRow(nil),
+			errContain: "rows scanning",
+		},
+		{
+			rows: sqlmock.NewRows([]string{"name"}).
+				AddRow("Ivan").
+				AddRow("Petr").
+				RowError(1, errExpected),
+			errIs:      errExpected,
+			errContain: "rows error",
+		},
+	}
 
-	mock.ExpectQuery(selectUnique).WillReturnError(ErrTest)
+	for i, tc := range cases {
+		dbConn, mock, err := sqlmock.New()
+		require.NoError(t, err)
 
-	names, err := service.GetUniqueNames()
-	require.ErrorContains(t, err, "db query")
-	require.Nil(t, names)
-}
+		service := db.DBService{DB: dbConn}
 
-func TestGetUniqueNames_InvalidData(t *testing.T) {
-	t.Parallel()
+		if tc.queryErr != nil {
+			mock.ExpectQuery(queryGetUniqueNames).WillReturnError(tc.queryErr)
+		} else {
+			mock.ExpectQuery(queryGetUniqueNames).WillReturnRows(tc.rows)
+		}
 
-	mockDB, mock, err := sqlmock.New()
-	require.NoError(t, err)
-	defer mockDB.Close()
+		got, err := service.GetUniqueNames()
 
-	service := db.DBService{DB: mockDB}
+		if tc.errIs != nil || tc.errContain != "" {
+			require.Error(t, err, "case %d", i)
 
-	rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
-	mock.ExpectQuery(selectUnique).WillReturnRows(rows)
+			if tc.errIs != nil {
+				require.ErrorIs(t, err, tc.errIs, "case %d", i)
+			}
 
-	names, err := service.GetUniqueNames()
-	require.ErrorContains(t, err, "rows scanning")
-	require.Nil(t, names)
-}
+			if tc.errContain != "" {
+				require.ErrorContains(t, err, tc.errContain, "case %d", i)
+			}
 
-func TestGetUniqueNames_RowIssue(t *testing.T) {
-	t.Parallel()
+			require.Nil(t, got, "case %d", i)
+		} else {
+			require.NoError(t, err, "case %d", i)
+			require.Equal(t, tc.want, got, "case %d", i)
+		}
 
-	mockDB, mock, err := sqlmock.New()
-	require.NoError(t, err)
-	defer mockDB.Close()
-
-	service := db.DBService{DB: mockDB}
-
-	rows := sqlmock.NewRows([]string{"name"}).AddRow("Peter")
-	rows.RowError(0, ErrTest)
-	mock.ExpectQuery(selectUnique).WillReturnRows(rows)
-
-	names, err := service.GetUniqueNames()
-	require.ErrorContains(t, err, "rows error")
-	require.Nil(t, names)
-}
-
-func TestGetNames_Successful(t *testing.T) {
-	t.Parallel()
-
-	mockDB, mock, err := sqlmock.New()
-	require.NoError(t, err)
-	defer mockDB.Close()
-
-	service := db.DBService{DB: mockDB}
-
-	rows := sqlmock.NewRows([]string{"name"}).AddRow("Alex").AddRow("Maria")
-	mock.ExpectQuery(selectAllNames).WillReturnRows(rows)
-
-	names, err := service.GetNames()
-	require.NoError(t, err)
-	require.Equal(t, []string{"Alex", "Maria"}, names)
-}
-
-func TestGetNames_FailedQuery(t *testing.T) {
-	t.Parallel()
-
-	mockDB, mock, err := sqlmock.New()
-	require.NoError(t, err)
-	defer mockDB.Close()
-
-	service := db.DBService{DB: mockDB}
-
-	mock.ExpectQuery(selectAllNames).WillReturnError(ErrTest)
-
-	names, err := service.GetNames()
-	require.ErrorContains(t, err, "db query")
-	require.Nil(t, names)
-}
-
-func TestGetNames_BadScan(t *testing.T) {
-	t.Parallel()
-
-	mockDB, mock, err := sqlmock.New()
-	require.NoError(t, err)
-	defer mockDB.Close()
-
-	service := db.DBService{DB: mockDB}
-
-	rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
-	mock.ExpectQuery(selectAllNames).WillReturnRows(rows)
-
-	names, err := service.GetNames()
-	require.ErrorContains(t, err, "rows scanning")
-	require.Nil(t, names)
-}
-
-func TestGetNames_ProblemRows(t *testing.T) {
-	t.Parallel()
-
-	mockDB, mock, err := sqlmock.New()
-	require.NoError(t, err)
-	defer mockDB.Close()
-
-	service := db.DBService{DB: mockDB}
-
-	rows := sqlmock.NewRows([]string{"name"}).AddRow("Peter")
-	rows.RowError(0, ErrTest)
-	mock.ExpectQuery(selectAllNames).WillReturnRows(rows)
-
-	names, err := service.GetNames()
-	require.ErrorContains(t, err, "rows error")
-	require.Nil(t, names)
+		mock.ExpectClose()
+		require.NoError(t, dbConn.Close())
+		require.NoError(t, mock.ExpectationsWereMet(), "case %d", i)
+	}
 }

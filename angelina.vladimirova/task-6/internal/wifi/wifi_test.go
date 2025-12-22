@@ -1,61 +1,144 @@
 package wifi_test
 
 import (
+	"errors"
 	"fmt"
+	"net"
+	"testing"
 
-	wifi "github.com/mdlayher/wifi"
-	mock "github.com/stretchr/testify/mock"
+	myWifi "verticalochka/task-6/internal/wifi"
+
+	"github.com/mdlayher/wifi"
+	"github.com/stretchr/testify/require"
 )
 
-type WiFiHandle struct {
-	mock.Mock
+//go:generate mockery --all --testonly --quiet --outpkg wifi_test --output .
+
+var errExpected = errors.New("expected error")
+
+type testCase struct {
+	addrs []string
+	err   error
 }
 
-func (_m *WiFiHandle) Interfaces() ([]*wifi.Interface, error) {
-	ret := _m.Called()
+func TestNew(t *testing.T) {
+	t.Parallel()
 
-	if len(ret) == 0 {
-		panic("no return value specified for Interfaces")
+	mockHandle := NewWiFiHandle(t)
+	service := myWifi.New(mockHandle)
+	require.Equal(t, mockHandle, service.WiFi)
+}
+
+func TestGetAddresses(t *testing.T) {
+	t.Parallel()
+
+	cases := []testCase{
+		{addrs: []string{"00:11:22:33:44:55", "aa:bb:cc:dd:ee:ff"}},
+		{addrs: []string{}},
+		{err: errExpected},
 	}
 
-	var r0 []*wifi.Interface
-	var r1 error
+	mockHandle := NewWiFiHandle(t)
+	service := myWifi.WiFiService{WiFi: mockHandle}
 
-	if rf, ok := ret.Get(0).(func() ([]*wifi.Interface, error)); ok {
-		return rf()
-	}
+	for i, tc := range cases {
+		mockHandle.On("Interfaces").Unset()
+		mockHandle.On("Interfaces").Return(makeIfaces(t, tc.addrs), tc.err)
 
-	if rf, ok := ret.Get(0).(func() []*wifi.Interface); ok {
-		r0 = rf()
-	} else if ret.Get(0) != nil {
-		var ok bool
-		r0, ok = ret.Get(0).([]*wifi.Interface)
-		if !ok {
-			panic("failed to cast to []*wifi.Interface")
+		got, err := service.GetAddresses()
+
+		if tc.err != nil {
+			require.ErrorIs(t, err, tc.err, "case %d", i)
+			require.ErrorContains(t, err, "getting interfaces", "case %d", i)
+			require.Nil(t, got, "case %d", i)
+
+			continue
 		}
-	}
 
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
+		require.NoError(t, err, "case %d", i)
+		require.Equal(t, parseMACs(t, tc.addrs), got, "case %d", i)
 	}
-
-	if r1 != nil {
-		return r0, fmt.Errorf("mock error: %w", r1)
-	}
-
-	return r0, nil
 }
 
-func NewWiFiHandle(t interface {
-	mock.TestingT
-	Cleanup(f func())
-}) *WiFiHandle {
-	mock := &WiFiHandle{}
-	mock.Mock.Test(t)
+func TestGetNames(t *testing.T) {
+	t.Parallel()
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	cases := []testCase{
+		{addrs: []string{"00:11:22:33:44:55", "aa:bb:cc:dd:ee:ff"}},
+		{addrs: []string{}},
+		{err: errExpected},
+	}
 
-	return mock
+	mockHandle := NewWiFiHandle(t)
+	service := myWifi.WiFiService{WiFi: mockHandle}
+
+	for i, tc := range cases {
+		mockHandle.On("Interfaces").Unset()
+		mockHandle.On("Interfaces").Return(makeIfaces(t, tc.addrs), tc.err)
+
+		got, err := service.GetNames()
+
+		if tc.err != nil {
+			require.ErrorIs(t, err, tc.err, "case %d", i)
+			require.ErrorContains(t, err, "getting interfaces", "case %d", i)
+			require.Nil(t, got, "case %d", i)
+
+			continue
+		}
+
+		require.NoError(t, err, "case %d", i)
+		require.Equal(t, wantNames(tc.addrs), got, "case %d", i)
+	}
+}
+
+func wantNames(addrs []string) []string {
+	names := make([]string, 0, len(addrs))
+	for i := range addrs {
+		names = append(names, fmt.Sprintf("wlan%d", i+1))
+	}
+
+	return names
+}
+
+func makeIfaces(t *testing.T, addrs []string) []*wifi.Interface {
+	t.Helper()
+
+	ifaces := make([]*wifi.Interface, 0, len(addrs))
+
+	for i, macStr := range addrs {
+		hw := parseMAC(t, macStr)
+
+		ifaces = append(ifaces, &wifi.Interface{
+			Index:        i + 1,
+			Name:         fmt.Sprintf("wlan%d", i+1),
+			HardwareAddr: hw,
+			PHY:          1,
+			Device:       1,
+			Type:         wifi.InterfaceTypeAPVLAN,
+			Frequency:    0,
+		})
+	}
+
+	return ifaces
+}
+
+func parseMACs(t *testing.T, addrs []string) []net.HardwareAddr {
+	t.Helper()
+
+	result := make([]net.HardwareAddr, 0, len(addrs))
+
+	for _, s := range addrs {
+		result = append(result, parseMAC(t, s))
+	}
+
+	return result
+}
+
+func parseMAC(t *testing.T, macStr string) net.HardwareAddr {
+	t.Helper()
+
+	hw, err := net.ParseMAC(macStr)
+	require.NoError(t, err)
+
+	return hw
 }
