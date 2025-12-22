@@ -11,12 +11,12 @@ type Config struct {
 	LogLevel    string `yaml:"log_level"`
 }
 
-func Load() (Config, error) {
+func Load() (*Config, error) {
 	var cfg Config
 
 	if err := yaml.Unmarshal(ActiveConfig, &cfg); err != nil {
-		return cfg, fmt.Errorf("failed to unmarshal: %w", err)
+		return nil, fmt.Errorf("failed to unmarshal: %w", err)
 	}
 
-	return cfg, nil
+	return &cfg, nil
 }
