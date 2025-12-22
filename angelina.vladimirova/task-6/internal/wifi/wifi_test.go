@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/mdlayher/wifi"
-	myWifi "github.com/mipxe/task-6/internal/wifi"
 	"github.com/stretchr/testify/require"
+	myWifi "github.com/verticalochka/task-6/internal/wifi"
 )
 
 //go:generate mockery --all --testonly --quiet --outpkg wifi_test --output .
