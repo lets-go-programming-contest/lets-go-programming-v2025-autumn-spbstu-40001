@@ -10,6 +10,8 @@ import (
 	myWifi "github.com/verticalochka/task-6/internal/wifi"
 )
 
+//go:generate mockery --all --testonly --quiet --outpkg wifi_test --output .
+
 var ErrTest = errors.New("test error")
 
 func TestRetrieveMACs_Successful(t *testing.T) {
