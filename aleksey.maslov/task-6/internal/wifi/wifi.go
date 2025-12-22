@@ -22,7 +22,7 @@ func New(handle WiFiHandle) *Service {
 func (s *Service) GetAddresses() ([]net.HardwareAddr, error) {
 	ifaces, err := s.handle.Interfaces()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get interfaces: %w", err) // Добавить fmt.Errorf
+		return nil, fmt.Errorf("failed to get interfaces: %w", err)
 	}
 
 	addrs := make([]net.HardwareAddr, 0, len(ifaces))
@@ -36,7 +36,7 @@ func (s *Service) GetAddresses() ([]net.HardwareAddr, error) {
 func (s *Service) GetNames() ([]string, error) {
 	ifaces, err := s.handle.Interfaces()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get interfaces: %w", err) // Добавить fmt.Errorf
+		return nil, fmt.Errorf("failed to get interfaces: %w", err)
 	}
 
 	names := make([]string, 0, len(ifaces))

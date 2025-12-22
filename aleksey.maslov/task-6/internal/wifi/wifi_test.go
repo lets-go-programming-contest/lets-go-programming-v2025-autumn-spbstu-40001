@@ -85,10 +85,10 @@ func TestGetNames(t *testing.T) {
 		{
 			name: "success",
 			ifaces: []*wifi.Interface{
-				{Name: "wlan0"},
-				{Name: "eth0"},
+				{Name: "wifi0"},
+				{Name: "lan0"},
 			},
-			expect: []string{"wlan0", "eth0"},
+			expect: []string{"wifi0", "lan0"},
 		},
 		{
 			name:      "interfaces error",
