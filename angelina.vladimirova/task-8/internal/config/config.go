@@ -13,9 +13,11 @@ type Config struct {
 
 func Load() (*Config, error) {
 	var cfg Config
+
 	err := yaml.Unmarshal(ConfigFile, &cfg)
 	if err != nil {
 		return nil, fmt.Errorf("cannot unmarshal file: %w", err)
 	}
+
 	return &cfg, nil
 }

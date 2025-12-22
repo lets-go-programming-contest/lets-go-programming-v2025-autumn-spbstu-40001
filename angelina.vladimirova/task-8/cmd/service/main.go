@@ -11,5 +11,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
 	fmt.Printf("%s %s", cfg.Environment, cfg.LogLevel)
 }
