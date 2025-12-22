@@ -16,12 +16,7 @@ func (m *mockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 		return nil, args.Error(1)
 	}
 
-	interfaces, ok := args.Get(0).([]*wifi.Interface)
-	if !ok {
-		return nil, args.Error(1)
-	}
-
-	return interfaces, args.Error(1)
+	return args.Get(0).([]*wifi.Interface), args.Error(1)
 }
 
 func NewWiFiHandle(t mock.TestingT) *mockWiFiHandle {

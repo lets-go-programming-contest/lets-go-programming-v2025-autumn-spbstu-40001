@@ -2,97 +2,169 @@ package db_test
 
 import (
 	"errors"
-	"net"
 	"testing"
 
-	"github.com/mdlayher/wifi"
+	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/require"
-	myWifi "github.com/verticalochka/task-6/internal/wifi"
+	"github.com/verticalochka/task-6/internal/db"
 )
 
-var ErrExpected = errors.New("expected error")
+const (
+	selectAllNames = "SELECT name FROM users"
+	selectUnique   = "SELECT DISTINCT name FROM users"
+)
 
-func TestGetAddresses_Success(t *testing.T) {
+var ErrTest = errors.New("test error")
+
+func TestNew(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := NewWiFiHandle(t)
-	service := myWifi.New(mockWiFi)
-
-	ifaces := []*wifi.Interface{
-		{Name: "wlan0", HardwareAddr: parseMAC(t, "00:11:22:33:44:55")},
-		{Name: "wlan1", HardwareAddr: parseMAC(t, "aa:bb:cc:dd:ee:ff")},
-	}
-	mockWiFi.On("Interfaces").Return(ifaces, nil)
-
-	addrs, err := service.GetAddresses()
+	mockDB, _, err := sqlmock.New()
 	require.NoError(t, err)
-	require.Equal(t, []net.HardwareAddr{
-		parseMAC(t, "00:11:22:33:44:55"),
-		parseMAC(t, "aa:bb:cc:dd:ee:ff"),
-	}, addrs)
+	defer mockDB.Close()
+
+	service := db.New(mockDB)
+	require.Equal(t, mockDB, service.DB)
 }
 
-func TestGetAddresses_Error(t *testing.T) {
+func TestGetUniqueNames_Success(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := NewWiFiHandle(t)
-	service := myWifi.New(mockWiFi)
-
-	mockWiFi.On("Interfaces").Return(nil, ErrExpected)
-
-	addrs, err := service.GetAddresses()
-	require.ErrorContains(t, err, "getting interfaces")
-	require.Nil(t, addrs)
-}
-
-func TestGetNames_Success(t *testing.T) {
-	t.Parallel()
-
-	mockWiFi := NewWiFiHandle(t)
-	service := myWifi.New(mockWiFi)
-
-	ifaces := []*wifi.Interface{
-		{Name: "wlan0", HardwareAddr: parseMAC(t, "00:11:22:33:44:55")},
-		{Name: "eth1", HardwareAddr: parseMAC(t, "11:22:33:44:55:66")},
-	}
-	mockWiFi.On("Interfaces").Return(ifaces, nil)
-
-	names, err := service.GetNames()
+	mockDB, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	require.Equal(t, []string{"wlan0", "eth1"}, names)
+	defer mockDB.Close()
+
+	service := db.DBService{DB: mockDB}
+
+	rows := sqlmock.NewRows([]string{"name"}).
+		AddRow("Alex").
+		AddRow("Maria")
+
+	mock.ExpectQuery(selectUnique).WillReturnRows(rows)
+
+	names, err := service.GetUniqueNames()
+	require.NoError(t, err)
+	require.Equal(t, []string{"Alex", "Maria"}, names)
 }
 
-func TestGetNames_Error(t *testing.T) {
+func TestGetUniqueNames_QueryFailure(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := NewWiFiHandle(t)
-	service := myWifi.New(mockWiFi)
+	mockDB, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	defer mockDB.Close()
 
-	mockWiFi.On("Interfaces").Return(nil, ErrExpected)
+	service := db.DBService{DB: mockDB}
 
-	names, err := service.GetNames()
-	require.ErrorContains(t, err, "getting interfaces")
+	mock.ExpectQuery(selectUnique).WillReturnError(ErrTest)
+
+	names, err := service.GetUniqueNames()
+	require.ErrorContains(t, err, "db query")
 	require.Nil(t, names)
 }
 
-func TestGetAddresses_EmptyResult(t *testing.T) {
+func TestGetUniqueNames_InvalidData(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := NewWiFiHandle(t)
-	service := myWifi.New(mockWiFi)
-
-	mockWiFi.On("Interfaces").Return([]*wifi.Interface{}, nil)
-
-	addrs, err := service.GetAddresses()
+	mockDB, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	require.Empty(t, addrs)
+	defer mockDB.Close()
+
+	service := db.DBService{DB: mockDB}
+
+	rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
+	mock.ExpectQuery(selectUnique).WillReturnRows(rows)
+
+	names, err := service.GetUniqueNames()
+	require.ErrorContains(t, err, "rows scanning")
+	require.Nil(t, names)
 }
 
-func parseMAC(t *testing.T, s string) net.HardwareAddr {
-	t.Helper()
+func TestGetUniqueNames_RowIssue(t *testing.T) {
+	t.Parallel()
 
-	hwAddr, err := net.ParseMAC(s)
+	mockDB, mock, err := sqlmock.New()
 	require.NoError(t, err)
+	defer mockDB.Close()
 
-	return hwAddr
+	service := db.DBService{DB: mockDB}
+
+	rows := sqlmock.NewRows([]string{"name"}).AddRow("Peter")
+	rows.RowError(0, ErrTest)
+	mock.ExpectQuery(selectUnique).WillReturnRows(rows)
+
+	names, err := service.GetUniqueNames()
+	require.ErrorContains(t, err, "rows error")
+	require.Nil(t, names)
+}
+
+func TestGetNames_Successful(t *testing.T) {
+	t.Parallel()
+
+	mockDB, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	defer mockDB.Close()
+
+	service := db.DBService{DB: mockDB}
+
+	rows := sqlmock.NewRows([]string{"name"}).
+		AddRow("Alex").
+		AddRow("Maria")
+
+	mock.ExpectQuery(selectAllNames).WillReturnRows(rows)
+
+	names, err := service.GetNames()
+	require.NoError(t, err)
+	require.Equal(t, []string{"Alex", "Maria"}, names)
+}
+
+func TestGetNames_FailedQuery(t *testing.T) {
+	t.Parallel()
+
+	mockDB, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	defer mockDB.Close()
+
+	service := db.DBService{DB: mockDB}
+
+	mock.ExpectQuery(selectAllNames).WillReturnError(ErrTest)
+
+	names, err := service.GetNames()
+	require.ErrorContains(t, err, "db query")
+	require.Nil(t, names)
+}
+
+func TestGetNames_BadScan(t *testing.T) {
+	t.Parallel()
+
+	mockDB, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	defer mockDB.Close()
+
+	service := db.DBService{DB: mockDB}
+
+	rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
+	mock.ExpectQuery(selectAllNames).WillReturnRows(rows)
+
+	names, err := service.GetNames()
+	require.ErrorContains(t, err, "rows scanning")
+	require.Nil(t, names)
+}
+
+func TestGetNames_ProblemRows(t *testing.T) {
+	t.Parallel()
+
+	mockDB, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	defer mockDB.Close()
+
+	service := db.DBService{DB: mockDB}
+
+	rows := sqlmock.NewRows([]string{"name"}).AddRow("Peter")
+	rows.RowError(0, ErrTest)
+	mock.ExpectQuery(selectAllNames).WillReturnRows(rows)
+
+	names, err := service.GetNames()
+	require.ErrorContains(t, err, "rows error")
+	require.Nil(t, names)
 }
