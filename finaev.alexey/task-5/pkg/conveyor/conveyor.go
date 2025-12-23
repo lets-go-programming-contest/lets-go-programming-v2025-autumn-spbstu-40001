@@ -18,7 +18,6 @@ type Conveyer struct {
 
 func New(size int) *Conveyer {
 	return &Conveyer{
-		mu:       sync.RWMutex{},
 		channels: make(map[string]chan string),
 		size:     size,
 		handlers: []func(context.Context) error{},
@@ -60,12 +59,20 @@ func (c *Conveyer) RegisterDecorator(
 	outputChan := c.getOrCreateChannel(output)
 
 	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		defer close(outputChan)
+		defer func() {
+			c.mu.Lock()
+			defer c.mu.Unlock()
+			if ch, exists := c.channels[output]; exists {
+				close(ch)
+				delete(c.channels, output)
+			}
+		}()
 
 		return funct(ctx, inputChan, outputChan)
 	})
-	c.mu.Unlock()
 }
 
 func (c *Conveyer) RegisterMultiplexer(
@@ -81,12 +88,20 @@ func (c *Conveyer) RegisterMultiplexer(
 	outCh := c.getOrCreateChannel(output)
 
 	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		defer close(outCh)
+		defer func() {
+			c.mu.Lock()
+			defer c.mu.Unlock()
+			if ch, exists := c.channels[output]; exists {
+				close(ch)
+				delete(c.channels, output)
+			}
+		}()
 
 		return funct(ctx, inChans, outCh)
 	})
-	c.mu.Unlock()
 }
 
 func (c *Conveyer) RegisterSeparator(
@@ -102,29 +117,28 @@ func (c *Conveyer) RegisterSeparator(
 	}
 
 	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
 		defer func() {
-			for _, ch := range outChans {
-				close(ch)
+			c.mu.Lock()
+			defer c.mu.Unlock()
+			for _, name := range outputs {
+				if ch, exists := c.channels[name]; exists {
+					close(ch)
+					delete(c.channels, name)
+				}
 			}
 		}()
 
 		return funct(ctx, inCh, outChans)
 	})
-	c.mu.Unlock()
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
-	defer func() {
-		c.mu.Lock()
-		for _, ch := range c.channels {
-			close(ch)
-		}
-		c.mu.Unlock()
-	}()
-
 	c.mu.RLock()
-	workers := c.handlers
+	workers := make([]func(context.Context) error, len(c.handlers))
+	copy(workers, c.handlers)
 	c.mu.RUnlock()
 
 	group, gctx := errgroup.WithContext(ctx)
@@ -149,9 +163,13 @@ func (c *Conveyer) Send(input, data string) error {
 	if err != nil {
 		return err
 	}
-	channel <- data
 
-	return nil
+	select {
+	case channel <- data:
+		return nil
+	default:
+		return errors.New("channel is full or closed")
+	}
 }
 
 func (c *Conveyer) Recv(output string) (string, error) {
@@ -162,7 +180,7 @@ func (c *Conveyer) Recv(output string) (string, error) {
 
 	val, ok := <-channel
 	if !ok {
-		return "undefined", nil
+		return "", errors.New("channel closed")
 	}
 
 	return val, nil

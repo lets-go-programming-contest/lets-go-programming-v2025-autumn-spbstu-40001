@@ -37,7 +37,7 @@ func PrefixDecoratorFunc(ctx context.Context, inChan, outChan chan string) error
 func SeparatorFunc(ctx context.Context, inChan chan string, outChans []chan string) error {
 	numOut := len(outChans)
 	if numOut == 0 {
-		return errors.New("no output channel")
+		return nil
 	}
 
 	index := 0
