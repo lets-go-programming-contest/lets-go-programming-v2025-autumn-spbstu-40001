@@ -33,8 +33,7 @@ func (temp *Temperature) getSuitableTemperature(operand string, preferredTempera
 	switch operand {
 	case ">=":
 		if preferredTemperature > temp.Max {
-			temp.Min = 1
-			temp.Max = 0
+			temp.Min = temp.Max + 1
 
 			return -1, nil
 		}
@@ -44,8 +43,7 @@ func (temp *Temperature) getSuitableTemperature(operand string, preferredTempera
 		}
 	case "<=":
 		if preferredTemperature < temp.Min {
-			temp.Min = 1
-			temp.Max = 0
+			temp.Max = temp.Min - 1
 
 			return -1, nil
 		}
