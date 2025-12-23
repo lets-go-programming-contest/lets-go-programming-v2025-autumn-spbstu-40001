@@ -33,6 +33,18 @@ func (suite *DatabaseOperationsTestSuite) TearDownTest() {
 	}
 }
 
+func (suite *DatabaseOperationsTestSuite) TestConstructorNew() {
+	conn, mock, err := sqlmock.New()
+	require.NoError(suite.T(), err)
+	defer conn.Close()
+
+	service := db.New(conn)
+	assert.NotNil(suite.T(), service)
+	assert.Equal(suite.T(), conn, service.DB)
+
+	assert.NoError(suite.T(), mock.ExpectationsWereMet())
+}
+
 func (suite *DatabaseOperationsTestSuite) TestServiceInitialization() {
 	dbConn := suite.dataService.DB
 	assert.NotNil(suite.T(), dbConn, "Database connection should be established")
@@ -76,6 +88,7 @@ func (suite *DatabaseOperationsTestSuite) TestFetchUserListDatabaseError() {
 
 	require.Error(suite.T(), err)
 	assert.Contains(suite.T(), err.Error(), "db query")
+	assert.Contains(suite.T(), err.Error(), dbError.Error())
 	assert.Nil(suite.T(), result)
 	require.NoError(suite.T(), suite.mockExecutor.ExpectationsWereMet())
 }
@@ -101,6 +114,20 @@ func (suite *DatabaseOperationsTestSuite) TestFetchUserListRowIterationError() {
 
 	suite.mockExecutor.ExpectQuery("SELECT name FROM users").
 		WillReturnRows(problemRows)
+
+	result, err := suite.dataService.GetNames()
+
+	require.Error(suite.T(), err)
+	assert.Contains(suite.T(), err.Error(), "rows error")
+	assert.Contains(suite.T(), err.Error(), iterationError.Error())
+	assert.Nil(suite.T(), result)
+	require.NoError(suite.T(), suite.mockExecutor.ExpectationsWereMet())
+}
+
+func (suite *DatabaseOperationsTestSuite) TestFetchUserListWithClosedRows() {
+	mockRows := sqlmock.NewRows([]string{"name"}).AddRow("Test").CloseError(errors.New("rows closed"))
+	suite.mockExecutor.ExpectQuery("SELECT name FROM users").
+		WillReturnRows(mockRows)
 
 	result, err := suite.dataService.GetNames()
 
@@ -148,6 +175,7 @@ func (suite *DatabaseOperationsTestSuite) TestFetchDistinctUserListDatabaseError
 
 	require.Error(suite.T(), err)
 	assert.Contains(suite.T(), err.Error(), "db query")
+	assert.Contains(suite.T(), err.Error(), queryError.Error())
 	assert.Nil(suite.T(), result)
 	require.NoError(suite.T(), suite.mockExecutor.ExpectationsWereMet())
 }
@@ -161,6 +189,37 @@ func (suite *DatabaseOperationsTestSuite) TestFetchDistinctUserListRowProcessing
 
 	require.Error(suite.T(), err)
 	assert.Contains(suite.T(), err.Error(), "rows scanning")
+	assert.Nil(suite.T(), result)
+	require.NoError(suite.T(), suite.mockExecutor.ExpectationsWereMet())
+}
+
+func (suite *DatabaseOperationsTestSuite) TestFetchDistinctUserListRowIterationError() {
+	iterationError := errors.New("distinct cursor failure")
+	problemRows := sqlmock.NewRows([]string{"name"}).
+		AddRow("UniqueTest").
+		RowError(0, iterationError)
+
+	suite.mockExecutor.ExpectQuery("SELECT DISTINCT name FROM users").
+		WillReturnRows(problemRows)
+
+	result, err := suite.dataService.GetUniqueNames()
+
+	require.Error(suite.T(), err)
+	assert.Contains(suite.T(), err.Error(), "rows error")
+	assert.Contains(suite.T(), err.Error(), iterationError.Error())
+	assert.Nil(suite.T(), result)
+	require.NoError(suite.T(), suite.mockExecutor.ExpectationsWereMet())
+}
+
+func (suite *DatabaseOperationsTestSuite) TestFetchDistinctUserListWithClosedRows() {
+	mockRows := sqlmock.NewRows([]string{"name"}).AddRow("Unique").CloseError(errors.New("distinct rows closed"))
+	suite.mockExecutor.ExpectQuery("SELECT DISTINCT name FROM users").
+		WillReturnRows(mockRows)
+
+	result, err := suite.dataService.GetUniqueNames()
+
+	require.Error(suite.T(), err)
+	assert.Contains(suite.T(), err.Error(), "rows error")
 	assert.Nil(suite.T(), result)
 	require.NoError(suite.T(), suite.mockExecutor.ExpectationsWereMet())
 }
@@ -200,6 +259,20 @@ func (suite *DatabaseOperationsTestSuite) TestInternationalCharacterSupport() {
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), internationalNames, result)
 	require.NoError(suite.T(), suite.mockExecutor.ExpectationsWereMet())
+}
+
+func (suite *DatabaseOperationsTestSuite) TestDatabaseInterfaceImplementation() {
+	var _ db.Database = (*sql.DB)(nil)
+
+	mockDB := &mockDatabase{}
+	service := db.New(mockDB)
+	assert.NotNil(suite.T(), service)
+}
+
+type mockDatabase struct{}
+
+func (m *mockDatabase) Query(query string, args ...any) (*sql.Rows, error) {
+	return nil, nil
 }
 
 func TestDatabaseOperationsTestSuite(t *testing.T) {

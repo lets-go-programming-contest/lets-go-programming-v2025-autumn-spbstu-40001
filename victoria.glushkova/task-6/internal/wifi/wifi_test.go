@@ -34,6 +34,16 @@ func parseMACAddress(address string) net.HardwareAddr {
 	return mac
 }
 
+func TestConstructorNew() {
+	t := &testing.T{}
+	mockManager := createWirelessInterfaceManagerMock(t)
+
+	service := wifi.New(mockManager)
+	require.NotNil(t, service)
+
+	mockManager.AssertNotCalled(t, "Interfaces")
+}
+
 func TestWirelessServiceAddressRetrieval(t *testing.T) {
 	t.Parallel()
 
@@ -78,6 +88,7 @@ func TestWirelessServiceAddressRetrievalFailure(t *testing.T) {
 
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "getting interfaces")
+	require.Contains(t, err.Error(), interfaceError.Error())
 	require.Nil(t, addresses)
 
 	mockManager.AssertExpectations(t)
@@ -119,6 +130,7 @@ func TestWirelessServiceNameRetrievalFailure(t *testing.T) {
 
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "getting interfaces")
+	require.Contains(t, err.Error(), accessError.Error())
 	require.Nil(t, names)
 
 	mockManager.AssertExpectations(t)
@@ -234,4 +246,11 @@ func TestWirelessServiceMultipleInterfaces(t *testing.T) {
 	require.Equal(t, []string{"wifi0", "wifi1", "wifi2"}, names)
 
 	mockManager.AssertExpectations(t)
+}
+
+func TestWirelessServiceInterfaceImplementation() {
+	var _ wifi.WiFiHandle = (*WirelessInterfaceManagerMock)(nil)
+
+	service := wifi.WiFiService{}
+	require.NotNil(t, service)
 }
