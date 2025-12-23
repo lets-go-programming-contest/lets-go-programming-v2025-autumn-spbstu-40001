@@ -48,5 +48,5 @@ func (service *DBService) GetNames() ([]string, error) {
 }
 
 func (service *DBService) GetUniqueNames() ([]string, error) {
-        return service.queryNames("SELECT DISTINCT name FROM users")
+	return service.queryNames("SELECT DISTINCT name FROM users")
 }
