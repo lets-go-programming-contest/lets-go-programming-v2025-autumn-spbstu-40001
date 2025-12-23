@@ -62,7 +62,6 @@ func (c *Conveyer) RegisterDecorator(
 	defer c.mu.Unlock()
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		defer close(outputChan) // ТОЛЬКО закрываем
 		return funct(ctx, inputChan, outputChan)
 	})
 }
@@ -83,7 +82,6 @@ func (c *Conveyer) RegisterMultiplexer(
 	defer c.mu.Unlock()
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		defer close(outCh) // ТОЛЬКО закрываем
 		return funct(ctx, inChans, outCh)
 	})
 }
@@ -104,11 +102,6 @@ func (c *Conveyer) RegisterSeparator(
 	defer c.mu.Unlock()
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		defer func() {
-			for _, ch := range outChans {
-				close(ch) // ТОЛЬКО закрываем
-			}
-		}()
 		return funct(ctx, inCh, outChans)
 	})
 }
@@ -127,7 +120,16 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		})
 	}
 
-	if err := group.Wait(); err != nil {
+	err := group.Wait()
+
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	for name, ch := range c.channels {
+		close(ch)
+		delete(c.channels, name)
+	}
+
+	if err != nil {
 		return fmt.Errorf("conveyer run failed: %w", err)
 	}
 	return nil
