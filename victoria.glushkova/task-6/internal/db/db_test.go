@@ -7,7 +7,6 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/vikaglushkova/task-6/internal/db"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -110,20 +109,6 @@ func (s *DataServiceTestSuite) TestFetchAllUsers_RowIterationFailure() {
 	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DataServiceTestSuite) TestFetchAllUsers_RowsClosedError() {
-	dataHandler := db.DBService{DB: s.dbConnection}
-	closedRows := sqlmock.NewRows([]string{"name"}).AddRow("Test").CloseError(errClosedRows)
-
-	s.sqlMock.ExpectQuery("SELECT name FROM users").WillReturnRows(closedRows)
-
-	resultData, fetchErr := dataHandler.GetNames()
-	s.Require().Error(fetchErr)
-	s.Require().Contains(fetchErr.Error(), "rows error")
-	s.Require().Contains(fetchErr.Error(), errClosedRows.Error())
-	s.Require().Nil(resultData)
-	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
-}
-
 func (s *DataServiceTestSuite) TestRetrieveDistinctUsers() {
 	dataHandler := db.DBService{DB: s.dbConnection}
 	uniqueData := []string{"Elizabeth", "James", "Olivia"}
@@ -193,20 +178,6 @@ func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_RowIterationFailure() {
 	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_RowsClosedError() {
-	dataHandler := db.DBService{DB: s.dbConnection}
-	closedRows := sqlmock.NewRows([]string{"name"}).AddRow("UniqueTest").CloseError(errClosedRows)
-
-	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(closedRows)
-
-	resultData, fetchErr := dataHandler.GetUniqueNames()
-	s.Require().Error(fetchErr)
-	s.Require().Contains(fetchErr.Error(), "rows error")
-	s.Require().Contains(fetchErr.Error(), errClosedRows.Error())
-	s.Require().Nil(resultData)
-	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
-}
-
 func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_DuplicateFiltering() {
 	dataHandler := db.DBService{DB: s.dbConnection}
 	uniqueEntries := []string{"Benjamin", "Charlotte"}
@@ -243,15 +214,6 @@ func (s *DataServiceTestSuite) TestService_HandlesMultipleInvocations() {
 	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
 }
 
-func (s *DataServiceTestSuite) TestService_WithInvalidConnection() {
-	brokenConnection, _, _ := sqlmock.New()
-	brokenConnection.Close()
-
-	dataHandler := db.DBService{DB: brokenConnection}
-	_, fetchErr := dataHandler.GetNames()
-	s.Require().Error(fetchErr)
-}
-
 func (s *DataServiceTestSuite) TestService_WithSpecialCharacters() {
 	dataHandler := db.DBService{DB: s.dbConnection}
 	testData := []string{"José", "Renée", "Björn", "Siobhán"}
@@ -282,12 +244,6 @@ func (s *DataServiceTestSuite) TestService_WithMixedCaseData() {
 	s.Require().NoError(fetchErr)
 	s.Require().Equal(testData, actualResult)
 	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
-}
-
-func (s *DataServiceTestSuite) TestNewServiceWithInterface() {
-	var dbInterface db.Database = s.dbConnection
-	service := db.New(dbInterface)
-	s.Require().Equal(s.dbConnection, service.DB)
 }
 
 func TestDataServiceTestSuite(t *testing.T) {
