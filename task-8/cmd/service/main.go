@@ -10,6 +10,7 @@ func main() {
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		fmt.Println("when loading config:", err)
+
 		return
 	}
 
