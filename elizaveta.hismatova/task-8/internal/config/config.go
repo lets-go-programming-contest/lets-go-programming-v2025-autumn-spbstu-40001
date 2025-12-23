@@ -14,7 +14,7 @@ type Config struct {
 func LoadConfig() (*Config, error) {
 	var cfg Config
 
-	if err := yaml.Unmarshal(configFile, &cfg); err != nil {
+	if err := yaml.Unmarshal(configData, &cfg); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
 
