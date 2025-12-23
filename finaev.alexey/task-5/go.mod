@@ -1,3 +1,5 @@
-module github.com/AlexeyFinaev02/task-3
+module github.com/AlexeyFinaev02/task-5
 
 go 1.22.7
+
+require golang.org/x/sync v0.11.0 // indirect
