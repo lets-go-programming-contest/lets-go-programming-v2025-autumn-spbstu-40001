@@ -8,55 +8,37 @@ import (
 )
 
 var (
-	decoratorErr = errors.New("can't be decorated")
-	noOutputErr  = errors.New("no output channels")
-	noInputErr   = errors.New("no input channels")
+	ErrNoDecorator = errors.New("can't be decorated")
+	ErrNoOutputs   = errors.New("no output channels")
+	ErrNoInputs    = errors.New("no input channels")
 )
 
 const (
-	prefixMark      = "decorated: "
-	decoratorMarker = "no decorator"
-	skipMuxMarker   = "no multiplexer"
+	Decorated     = "decorated: "
+	NoDecorator   = "no decorator"
+	NoMultiplexer = "no multiplexer"
 )
 
-func PrefixDecoratorFunc(ctx context.Context, source, destination chan string) error {
-	for item := range source {
-		if strings.Contains(item, decoratorMarker) {
-			return decoratorErr
-		}
-
-		if !strings.HasPrefix(item, prefixMark) {
-			item = prefixMark + item
-		}
-
-		select {
-		case destination <- item:
-			continue
-		case <-ctx.Done():
-			return nil
-		}
-	}
-	return nil
-}
-
-func SeparatorFunc(ctx context.Context, source chan string, destinations []chan string) error {
-	if len(destinations) == 0 {
-		return noOutputErr
-	}
-
-	for counter := 0; ; counter++ {
+func PrefixDecoratorFunc(ctx context.Context, inChan, outChan chan string) error {
+	for {
 		select {
 		case <-ctx.Done():
 			return nil
-		case item, active := <-source:
-			if !active {
+		case val, ok := <-inChan:
+			if !ok {
 				return nil
 			}
 
-			targetIdx := counter % len(destinations)
+			if strings.Contains(val, NoDecorator) {
+				return ErrNoDecorator
+			}
+
+			if !strings.HasPrefix(val, Decorated) {
+				val = Decorated + val
+			}
 
 			select {
-			case destinations[targetIdx] <- item:
+			case outChan <- val:
 			case <-ctx.Done():
 				return nil
 			}
@@ -64,50 +46,71 @@ func SeparatorFunc(ctx context.Context, source chan string, destinations []chan 
 	}
 }
 
-func MultiplexerFunc(ctx context.Context, sources []chan string, destination chan string) error {
-	if len(sources) == 0 {
-		return noInputErr
+func SeparatorFunc(ctx context.Context, inChan chan string, outChans []chan string) error {
+	numOut := len(outChans)
+	if numOut == 0 {
+		return ErrNoOutputs
 	}
 
-	var workers sync.WaitGroup
-	errorChan := make(chan error, 1)
+	index := 0
 
-	for _, src := range sources {
-		workers.Add(1)
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case val, ok := <-inChan:
+			if !ok {
+				return nil
+			}
 
-		go func(input chan string) {
-			defer workers.Done()
+			target := index % numOut
+			index++
+
+			select {
+			case outChans[target] <- val:
+			case <-ctx.Done():
+				return nil
+			}
+		}
+	}
+}
+
+func MultiplexerFunc(ctx context.Context, inChans []chan string, outChan chan string) error {
+	numInput := len(inChans)
+	if numInput == 0 {
+		return ErrNoInputs
+	}
+
+	var waitGroup sync.WaitGroup
+
+	waitGroup.Add(numInput)
+
+	for _, channel := range inChans {
+		go func(inChan chan string) {
+			defer waitGroup.Done()
 
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case item, active := <-input:
-					if !active {
+				case val, ok := <-inChan:
+					if !ok {
 						return
 					}
 
-					if strings.Contains(item, skipMuxMarker) {
-						continue
-					}
-
-					select {
-					case destination <- item:
-					case <-ctx.Done():
-						return
+					if !strings.Contains(val, NoMultiplexer) {
+						select {
+						case outChan <- val:
+						case <-ctx.Done():
+							return
+						}
 					}
 				}
 			}
-		}(src)
+		}(channel)
 	}
 
-	workers.Wait()
-	close(errorChan)
+	waitGroup.Wait()
 
-	select {
-	case err := <-errorChan:
-		return err
-	default:
-		return nil
-	}
+	return nil
 }
