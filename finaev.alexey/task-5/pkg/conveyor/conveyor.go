@@ -9,18 +9,20 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+type Handler func(context.Context) error
+
 type Conveyer struct {
 	mu       sync.RWMutex
 	channels map[string]chan string
 	size     int
-	handlers []func(context.Context) error
+	handlers []Handler
 }
 
 func New(size int) *Conveyer {
 	return &Conveyer{
 		channels: make(map[string]chan string),
 		size:     size,
-		handlers: []func(context.Context) error{},
+		handlers: make([]Handler, 0),
 	}
 }
 
@@ -136,15 +138,22 @@ func (c *Conveyer) RegisterSeparator(
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
+	defer func() {
+		c.mu.Lock()
+		for _, ch := range c.channels {
+			close(ch)
+		}
+		c.mu.Unlock()
+	}()
+
 	c.mu.RLock()
-	workers := make([]func(context.Context) error, len(c.handlers))
-	copy(workers, c.handlers)
+	handlers := c.handlers
 	c.mu.RUnlock()
 
 	group, gctx := errgroup.WithContext(ctx)
 
-	for i := range workers {
-		job := workers[i]
+	for i := range handlers {
+		job := handlers[i]
 
 		group.Go(func() error {
 			return job(gctx)
