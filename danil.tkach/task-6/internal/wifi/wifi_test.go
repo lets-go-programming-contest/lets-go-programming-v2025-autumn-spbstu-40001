@@ -89,6 +89,7 @@ func TestGetNames(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		t.Parallel()
+
 		mockHandle := new(WiFiHandleMock)
 
 		mockHandle.On("Interfaces").Return(nil, errFailedFetch)
