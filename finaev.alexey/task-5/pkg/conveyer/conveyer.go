@@ -36,7 +36,6 @@ func (c *Conveyer) getOrCreateChannel(name string) chan string {
 
 	ch := make(chan string, c.size)
 	c.channels[name] = ch
-
 	return ch
 }
 
@@ -48,7 +47,6 @@ func (c *Conveyer) getChannel(name string) (chan string, error) {
 	if !exists {
 		return nil, errors.New("chan not found")
 	}
-
 	return ch, nil
 }
 
@@ -64,15 +62,7 @@ func (c *Conveyer) RegisterDecorator(
 	defer c.mu.Unlock()
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		defer func() {
-			c.mu.Lock()
-			defer c.mu.Unlock()
-			if ch, exists := c.channels[output]; exists {
-				close(ch)
-				delete(c.channels, output)
-			}
-		}()
-
+		defer close(outputChan) // ТОЛЬКО закрываем
 		return funct(ctx, inputChan, outputChan)
 	})
 }
@@ -93,15 +83,7 @@ func (c *Conveyer) RegisterMultiplexer(
 	defer c.mu.Unlock()
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		defer func() {
-			c.mu.Lock()
-			defer c.mu.Unlock()
-			if ch, exists := c.channels[output]; exists {
-				close(ch)
-				delete(c.channels, output)
-			}
-		}()
-
+		defer close(outCh) // ТОЛЬКО закрываем
 		return funct(ctx, inChans, outCh)
 	})
 }
@@ -123,29 +105,15 @@ func (c *Conveyer) RegisterSeparator(
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
 		defer func() {
-			c.mu.Lock()
-			defer c.mu.Unlock()
-			for _, name := range outputs {
-				if ch, exists := c.channels[name]; exists {
-					close(ch)
-					delete(c.channels, name)
-				}
+			for _, ch := range outChans {
+				close(ch) // ТОЛЬКО закрываем
 			}
 		}()
-
 		return funct(ctx, inCh, outChans)
 	})
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
-	defer func() {
-		c.mu.Lock()
-		for _, ch := range c.channels {
-			close(ch)
-		}
-		c.mu.Unlock()
-	}()
-
 	c.mu.RLock()
 	handlers := c.handlers
 	c.mu.RUnlock()
@@ -154,7 +122,6 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	for i := range handlers {
 		job := handlers[i]
-
 		group.Go(func() error {
 			return job(gctx)
 		})
@@ -163,7 +130,6 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	if err := group.Wait(); err != nil {
 		return fmt.Errorf("conveyer run failed: %w", err)
 	}
-
 	return nil
 }
 
@@ -191,6 +157,5 @@ func (c *Conveyer) Recv(output string) (string, error) {
 	if !ok {
 		return "", errors.New("channel closed")
 	}
-
 	return val, nil
 }
