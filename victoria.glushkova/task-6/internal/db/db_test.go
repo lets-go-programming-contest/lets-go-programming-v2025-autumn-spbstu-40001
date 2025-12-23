@@ -1,189 +1,296 @@
-package wifi_test
+package db_test
 
 import (
+	"database/sql"
 	"errors"
-	"net"
 	"testing"
 
-	"github.com/vikaglushkova/task-6/internal/wifi"
-	"github.com/mdlayher/wifi"
-	"github.com/stretchr/testify/mock"
+	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/vikaglushkova/task-6/internal/db"
 	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
-type WiFiHandleMock struct {
-	mock.Mock
+var (
+	errUnreachableDB  = errors.New("database is unreachable")
+	errBadQueryExec   = errors.New("query execution failed")
+	errBrokenIterator = errors.New("iterator broken")
+	errClosedRows     = errors.New("rows closed")
+)
+
+type DataServiceTestSuite struct {
+	suite.Suite
+	dbConnection *sql.DB
+	sqlMock      sqlmock.Sqlmock
 }
 
-func (m *WiFiHandleMock) Interfaces() ([]*wifi.Interface, error) {
-	args := m.Called()
-	ifaces, _ := args.Get(0).([]*wifi.Interface)
-	return ifaces, args.Error(1)
+func (s *DataServiceTestSuite) SetupSuite() {
+	var setupErr error
+	s.dbConnection, s.sqlMock, setupErr = sqlmock.New()
+	s.Require().NoError(setupErr)
 }
 
-func NewWiFiHandle(t *testing.T) *WiFiHandleMock {
-	t.Helper()
-	return &WiFiHandleMock{}
-}
-
-func mustMAC(s string) net.HardwareAddr {
-	m, err := net.ParseMAC(s)
-	if err != nil {
-		panic(err)
+func (s *DataServiceTestSuite) TearDownSuite() {
+	if s.dbConnection != nil {
+		s.dbConnection.Close()
 	}
-	return m
 }
 
-func TestGetAddresses(t *testing.T) {
-	t.Parallel()
-
-	mockWiFi := NewWiFiHandle(t)
-	ifaces := []*wifi.Interface{
-		{
-			Name:         "eth0",
-			HardwareAddr: mustMAC("00:11:22:33:44:55"),
-		},
-		{
-			Name:         "wlan0",
-			HardwareAddr: mustMAC("aa:bb:cc:dd:ee:ff"),
-		},
-	}
-
-	mockWiFi.On("Interfaces").Return(ifaces, nil)
-
-	service := wifi.New(mockWiFi)
-
-	addrs, err := service.GetAddresses()
-
-	require.NoError(t, err)
-	require.Equal(t, []net.HardwareAddr{
-		mustMAC("00:11:22:33:44:55"),
-		mustMAC("aa:bb:cc:dd:ee:ff"),
-	}, addrs)
-
-	mockWiFi.AssertExpectations(t)
+func (s *DataServiceTestSuite) TestConstructor() {
+	dataService := db.New(s.dbConnection)
+	s.Require().Equal(s.dbConnection, dataService.DB)
 }
 
-func TestGetAddresses_Error(t *testing.T) {
-	t.Parallel()
-
-	mockWiFi := NewWiFiHandle(t)
-	mockWiFi.On("Interfaces").Return(nil, errors.New("iface error"))
-
-	service := wifi.New(mockWiFi)
-
-	addrs, err := service.GetAddresses()
-
-	require.Error(t, err)
-	require.Nil(t, addrs)
-
-	mockWiFi.AssertExpectations(t)
-}
-
-func TestGetNames(t *testing.T) {
-	t.Parallel()
-
-	mockWiFi := NewWiFiHandle(t)
-	ifaces := []*wifi.Interface{
-		{Name: "eth0"},
-		{Name: "wlan0"},
+func (s *DataServiceTestSuite) TestFetchAllUsers() {
+	dataHandler := db.DBService{DB: s.dbConnection}
+	expectedData := []string{"Michael", "Sarah", "William"}
+	mockRows := sqlmock.NewRows([]string{"name"})
+	for _, item := range expectedData {
+		mockRows.AddRow(item)
 	}
 
-	mockWiFi.On("Interfaces").Return(ifaces, nil)
+	s.sqlMock.ExpectQuery("SELECT name FROM users").WillReturnRows(mockRows)
 
-	service := wifi.New(mockWiFi)
-
-	names, err := service.GetNames()
-
-	require.NoError(t, err)
-	require.Equal(t, []string{"eth0", "wlan0"}, names)
-
-	mockWiFi.AssertExpectations(t)
+	actualResult, fetchErr := dataHandler.GetNames()
+	s.Require().NoError(fetchErr)
+	s.Require().Equal(expectedData, actualResult)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
 }
 
-func TestGetNames_Error(t *testing.T) {
-	t.Parallel()
+func (s *DataServiceTestSuite) TestFetchAllUsers_EmptyDataset() {
+	dataHandler := db.DBService{DB: s.dbConnection}
+	emptyRows := sqlmock.NewRows([]string{"name"})
 
-	mockWiFi := NewWiFiHandle(t)
-	mockWiFi.On("Interfaces").Return(nil, errors.New("iface error"))
+	s.sqlMock.ExpectQuery("SELECT name FROM users").WillReturnRows(emptyRows)
 
-	service := wifi.New(mockWiFi)
-
-	names, err := service.GetNames()
-
-	require.Error(t, err)
-	require.Nil(t, names)
-
-	mockWiFi.AssertExpectations(t)
+	resultData, fetchErr := dataHandler.GetNames()
+	s.Require().NoError(fetchErr)
+	s.Require().Empty(resultData)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
 }
 
-func TestGetAddresses_Empty(t *testing.T) {
-	t.Parallel()
+func (s *DataServiceTestSuite) TestFetchAllUsers_DatabaseFailure() {
+	dataHandler := db.DBService{DB: s.dbConnection}
+	connectionFailure := errUnreachableDB
 
-	mockWiFi := NewWiFiHandle(t)
-	mockWiFi.On("Interfaces").Return([]*wifi.Interface{}, nil)
+	s.sqlMock.ExpectQuery("SELECT name FROM users").WillReturnError(connectionFailure)
 
-	service := wifi.New(mockWiFi)
-
-	addrs, err := service.GetAddresses()
-
-	require.NoError(t, err)
-	require.Empty(t, addrs)
-
-	mockWiFi.AssertExpectations(t)
+	resultData, fetchErr := dataHandler.GetNames()
+	s.Require().Error(fetchErr)
+	s.Require().Contains(fetchErr.Error(), "db query")
+	s.Require().Contains(fetchErr.Error(), connectionFailure.Error())
+	s.Require().Nil(resultData)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
 }
 
-func TestGetNames_Empty(t *testing.T) {
-	t.Parallel()
+func (s *DataServiceTestSuite) TestFetchAllUsers_RowParsingFailure() {
+	dataHandler := db.DBService{DB: s.dbConnection}
+	faultyRows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
 
-	mockWiFi := NewWiFiHandle(t)
-	mockWiFi.On("Interfaces").Return([]*wifi.Interface{}, nil)
+	s.sqlMock.ExpectQuery("SELECT name FROM users").WillReturnRows(faultyRows)
 
-	service := wifi.New(mockWiFi)
-
-	names, err := service.GetNames()
-
-	require.NoError(t, err)
-	require.Empty(t, names)
-
-	mockWiFi.AssertExpectations(t)
+	resultData, fetchErr := dataHandler.GetNames()
+	s.Require().Error(fetchErr)
+	s.Require().Contains(fetchErr.Error(), "rows scanning")
+	s.Require().Nil(resultData)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
 }
 
-func TestGetAddresses_NilMAC(t *testing.T) {
-	t.Parallel()
+func (s *DataServiceTestSuite) TestFetchAllUsers_RowIterationFailure() {
+	dataHandler := db.DBService{DB: s.dbConnection}
+	problematicRows := sqlmock.NewRows([]string{"name"}).AddRow("Michael").RowError(0, errBrokenIterator)
 
-	mockWiFi := NewWiFiHandle(t)
-	ifaces := []*wifi.Interface{
-		{
-			Name:         "eth0",
-			HardwareAddr: mustMAC("00:11:22:33:44:55"),
-		},
-		{
-			Name:         "wlan0",
-			HardwareAddr: nil,
-		},
+	s.sqlMock.ExpectQuery("SELECT name FROM users").WillReturnRows(problematicRows)
+
+	resultData, fetchErr := dataHandler.GetNames()
+	s.Require().Error(fetchErr)
+	s.Require().Contains(fetchErr.Error(), "rows error")
+	s.Require().Contains(fetchErr.Error(), errBrokenIterator.Error())
+	s.Require().Nil(resultData)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
+}
+
+func (s *DataServiceTestSuite) TestFetchAllUsers_RowsClosedError() {
+	dataHandler := db.DBService{DB: s.dbConnection}
+	closedRows := sqlmock.NewRows([]string{"name"}).AddRow("Test").CloseError(errClosedRows)
+
+	s.sqlMock.ExpectQuery("SELECT name FROM users").WillReturnRows(closedRows)
+
+	resultData, fetchErr := dataHandler.GetNames()
+	s.Require().Error(fetchErr)
+	s.Require().Contains(fetchErr.Error(), "rows error")
+	s.Require().Contains(fetchErr.Error(), errClosedRows.Error())
+	s.Require().Nil(resultData)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
+}
+
+func (s *DataServiceTestSuite) TestRetrieveDistinctUsers() {
+	dataHandler := db.DBService{DB: s.dbConnection}
+	uniqueData := []string{"Elizabeth", "James", "Olivia"}
+	mockRows := sqlmock.NewRows([]string{"name"})
+	for _, item := range uniqueData {
+		mockRows.AddRow(item)
 	}
 
-	mockWiFi.On("Interfaces").Return(ifaces, nil)
+	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(mockRows)
 
-	service := wifi.New(mockWiFi)
-
-	addrs, err := service.GetAddresses()
-
-	require.NoError(t, err)
-	require.Len(t, addrs, 2)
-	require.Equal(t, mustMAC("00:11:22:33:44:55"), addrs[0])
-	require.Nil(t, addrs[1])
-
-	mockWiFi.AssertExpectations(t)
+	actualResult, fetchErr := dataHandler.GetUniqueNames()
+	s.Require().NoError(fetchErr)
+	s.Require().Equal(uniqueData, actualResult)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
 }
 
-func TestNewService(t *testing.T) {
+func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_EmptyDataset() {
+	dataHandler := db.DBService{DB: s.dbConnection}
+	emptyRows := sqlmock.NewRows([]string{"name"})
+
+	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(emptyRows)
+
+	resultData, fetchErr := dataHandler.GetUniqueNames()
+	s.Require().NoError(fetchErr)
+	s.Require().Empty(resultData)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
+}
+
+func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_DatabaseFailure() {
+	dataHandler := db.DBService{DB: s.dbConnection}
+	connectionFailure := errBadQueryExec
+
+	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnError(connectionFailure)
+
+	resultData, fetchErr := dataHandler.GetUniqueNames()
+	s.Require().Error(fetchErr)
+	s.Require().Contains(fetchErr.Error(), "db query")
+	s.Require().Contains(fetchErr.Error(), connectionFailure.Error())
+	s.Require().Nil(resultData)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
+}
+
+func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_RowParsingFailure() {
+	dataHandler := db.DBService{DB: s.dbConnection}
+	faultyRows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
+
+	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(faultyRows)
+
+	resultData, fetchErr := dataHandler.GetUniqueNames()
+	s.Require().Error(fetchErr)
+	s.Require().Contains(fetchErr.Error(), "rows scanning")
+	s.Require().Nil(resultData)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
+}
+
+func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_RowIterationFailure() {
+	dataHandler := db.DBService{DB: s.dbConnection}
+	problematicRows := sqlmock.NewRows([]string{"name"}).AddRow("Elizabeth").RowError(0, errBrokenIterator)
+
+	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(problematicRows)
+
+	resultData, fetchErr := dataHandler.GetUniqueNames()
+	s.Require().Error(fetchErr)
+	s.Require().Contains(fetchErr.Error(), "rows error")
+	s.Require().Contains(fetchErr.Error(), errBrokenIterator.Error())
+	s.Require().Nil(resultData)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
+}
+
+func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_RowsClosedError() {
+	dataHandler := db.DBService{DB: s.dbConnection}
+	closedRows := sqlmock.NewRows([]string{"name"}).AddRow("UniqueTest").CloseError(errClosedRows)
+
+	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(closedRows)
+
+	resultData, fetchErr := dataHandler.GetUniqueNames()
+	s.Require().Error(fetchErr)
+	s.Require().Contains(fetchErr.Error(), "rows error")
+	s.Require().Contains(fetchErr.Error(), errClosedRows.Error())
+	s.Require().Nil(resultData)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
+}
+
+func (s *DataServiceTestSuite) TestRetrieveDistinctUsers_DuplicateFiltering() {
+	dataHandler := db.DBService{DB: s.dbConnection}
+	uniqueEntries := []string{"Benjamin", "Charlotte"}
+	mockRows := sqlmock.NewRows([]string{"name"})
+	for _, entry := range uniqueEntries {
+		mockRows.AddRow(entry)
+	}
+
+	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(mockRows)
+
+	actualResult, fetchErr := dataHandler.GetUniqueNames()
+	s.Require().NoError(fetchErr)
+	s.Require().Equal(uniqueEntries, actualResult)
+	s.Require().Len(actualResult, 2)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
+}
+
+func (s *DataServiceTestSuite) TestService_HandlesMultipleInvocations() {
+	dataHandler := db.DBService{DB: s.dbConnection}
+	firstRows := sqlmock.NewRows([]string{"name"}).AddRow("Thomas")
+	secondRows := sqlmock.NewRows([]string{"name"}).AddRow("Emma")
+
+	s.sqlMock.ExpectQuery("SELECT name FROM users").WillReturnRows(firstRows)
+	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(secondRows)
+
+	firstResult, firstErr := dataHandler.GetNames()
+	s.Require().NoError(firstErr)
+	s.Require().Equal([]string{"Thomas"}, firstResult)
+
+	secondResult, secondErr := dataHandler.GetUniqueNames()
+	s.Require().NoError(secondErr)
+	s.Require().Equal([]string{"Emma"}, secondResult)
+
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
+}
+
+func (s *DataServiceTestSuite) TestService_WithInvalidConnection() {
+	brokenConnection, _, _ := sqlmock.New()
+	brokenConnection.Close()
+
+	dataHandler := db.DBService{DB: brokenConnection}
+	_, fetchErr := dataHandler.GetNames()
+	s.Require().Error(fetchErr)
+}
+
+func (s *DataServiceTestSuite) TestService_WithSpecialCharacters() {
+	dataHandler := db.DBService{DB: s.dbConnection}
+	testData := []string{"José", "Renée", "Björn", "Siobhán"}
+	mockRows := sqlmock.NewRows([]string{"name"})
+	for _, item := range testData {
+		mockRows.AddRow(item)
+	}
+
+	s.sqlMock.ExpectQuery("SELECT name FROM users").WillReturnRows(mockRows)
+
+	actualResult, fetchErr := dataHandler.GetNames()
+	s.Require().NoError(fetchErr)
+	s.Require().Equal(testData, actualResult)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
+}
+
+func (s *DataServiceTestSuite) TestService_WithMixedCaseData() {
+	dataHandler := db.DBService{DB: s.dbConnection}
+	testData := []string{"alex", "ALEX", "Alex", "aLeX"}
+	mockRows := sqlmock.NewRows([]string{"name"})
+	for _, item := range testData {
+		mockRows.AddRow(item)
+	}
+
+	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(mockRows)
+
+	actualResult, fetchErr := dataHandler.GetUniqueNames()
+	s.Require().NoError(fetchErr)
+	s.Require().Equal(testData, actualResult)
+	s.Require().NoError(s.sqlMock.ExpectationsWereMet())
+}
+
+func (s *DataServiceTestSuite) TestNewServiceWithInterface() {
+	var dbInterface db.Database = s.dbConnection
+	service := db.New(dbInterface)
+	s.Require().Equal(s.dbConnection, service.DB)
+}
+
+func TestDataServiceTestSuite(t *testing.T) {
 	t.Parallel()
-
-	mockWiFi := NewWiFiHandle(t)
-	service := wifi.New(mockWiFi)
-	require.NotNil(t, service)
-
-	mockWiFi.AssertNotCalled(t, "Interfaces")
+	suite.Run(t, new(DataServiceTestSuite))
 }
