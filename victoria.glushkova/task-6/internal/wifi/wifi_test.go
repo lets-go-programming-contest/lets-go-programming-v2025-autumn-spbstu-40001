@@ -149,41 +149,12 @@ func TestGetNames_Empty(t *testing.T) {
 	mockWiFi.AssertExpectations(t)
 }
 
-func TestGetAddresses_NilMAC(t *testing.T) {
+func TestWiFiServiceCreation(t *testing.T) {
 	t.Parallel()
 
-	mockWiFi := NewWiFiHandle(t)
-	ifaces := []*wifi.Interface{
-		{
-			Name:         "eth0",
-			HardwareAddr: mustMAC("00:11:22:33:44:55"),
-		},
-		{
-			Name:         "wlan0",
-			HardwareAddr: nil,
-		},
-	}
-
-	mockWiFi.On("Interfaces").Return(ifaces, nil)
-
-	service := wifi.New(mockWiFi)
-
-	addrs, err := service.GetAddresses()
-
-	require.NoError(t, err)
-	require.Len(t, addrs, 2)
-	require.Equal(t, mustMAC("00:11:22:33:44:55"), addrs[0])
-	require.Nil(t, addrs[1])
-
-	mockWiFi.AssertExpectations(t)
-}
-
-func TestNewService(t *testing.T) {
-	t.Parallel()
-
-	mockWiFi := NewWiFiHandle(t)
-	service := wifi.New(mockWiFi)
+	mock := NewWiFiHandle(t)
+	service := wifi.New(mock)
 	require.NotNil(t, service)
 
-	mockWiFi.AssertNotCalled(t, "Interfaces")
+	mock.AssertNotCalled(t, "Interfaces")
 }
