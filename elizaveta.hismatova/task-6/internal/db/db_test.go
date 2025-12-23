@@ -6,7 +6,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/require"
-	"github.com/verticalochka/task-6/internal/db"
+	"github.com/LeeLisssa/task-6/internal/db"
 )
 
 const (
@@ -36,12 +36,12 @@ func TestGetUniqueNames_Success(t *testing.T) {
 
 	service := db.DBService{DB: mockDB}
 
-	rows := sqlmock.NewRows([]string{"name"}).AddRow("Alex").AddRow("Maria")
+	rows := sqlmock.NewRows([]string{"name"}).AddRow("Misha").AddRow("Maria")
 	mock.ExpectQuery(selectUnique).WillReturnRows(rows)
 
 	names, err := service.GetUniqueNames()
 	require.NoError(t, err)
-	require.Equal(t, []string{"Alex", "Maria"}, names)
+	require.Equal(t, []string{"Misha", "Maria"}, names)
 }
 
 func TestGetUniqueNames_QueryFailure(t *testing.T) {
@@ -104,12 +104,12 @@ func TestGetNames_Successful(t *testing.T) {
 
 	service := db.DBService{DB: mockDB}
 
-	rows := sqlmock.NewRows([]string{"name"}).AddRow("Alex").AddRow("Maria")
+	rows := sqlmock.NewRows([]string{"name"}).AddRow("Misha").AddRow("Maria")
 	mock.ExpectQuery(selectAllNames).WillReturnRows(rows)
 
 	names, err := service.GetNames()
 	require.NoError(t, err)
-	require.Equal(t, []string{"Alex", "Maria"}, names)
+	require.Equal(t, []string{"Misha", "Maria"}, names)
 }
 
 func TestGetNames_FailedQuery(t *testing.T) {
