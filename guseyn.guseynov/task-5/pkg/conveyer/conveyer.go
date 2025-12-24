@@ -5,19 +5,19 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"sync/atomic"
 
 	"golang.org/x/sync/errgroup"
 )
 
 const (
-	errSendChanNotFoundMsg = "conveyer.Send: chan not found"
-	errRecvChanNotFoundMsg = "conveyer.Recv: chan not found"
-	undefinedValue         = "undefined"
+	undefinedValue = "undefined"
 )
 
 var (
-	ErrSendChanNotFound = errors.New(errSendChanNotFoundMsg)
-	ErrRecvChanNotFound = errors.New(errRecvChanNotFoundMsg)
+	ErrSendChanNotFound   = errors.New("conveyer.Send: chan not found")
+	ErrRecvChanNotFound   = errors.New("conveyer.Recv: chan not found")
+	ErrInvalidChannelType = errors.New("conveyer.Get: invalid channel type")
 )
 
 type Decorator func(
@@ -89,15 +89,18 @@ func (cr *ChannelRegistry) GetOrCreate(name string) chan string {
 	return channel
 }
 
-func (cr *ChannelRegistry) Get(name string) (chan string, bool) {
+func (cr *ChannelRegistry) Get(name string) (chan string, error) {
 	channel, channelFound := cr.channels.Load(name)
 	if !channelFound {
-		return nil, false
+		return nil, ErrRecvChanNotFound
 	}
 
 	ch, typeOk := channel.(chan string)
+	if !typeOk {
+		return nil, ErrInvalidChannelType
+	}
 
-	return ch, typeOk
+	return ch, nil
 }
 
 func (cr *ChannelRegistry) CloseAllChannels() {
@@ -114,7 +117,7 @@ type Conveyer struct {
 	channelSize int
 	channels    *ChannelRegistry
 	pool        *WorkerPool
-	initialized bool
+	initialized atomic.Bool
 }
 
 func New(channelSize int) *Conveyer {
@@ -122,7 +125,7 @@ func New(channelSize int) *Conveyer {
 		channelSize: channelSize,
 		channels:    NewChannelRegistry(channelSize),
 		pool:        NewWorkerPool(),
-		initialized: false,
+		initialized: atomic.Bool{},
 	}
 }
 
@@ -131,7 +134,7 @@ func (conveyer *Conveyer) RegisterDecorator(
 	input string,
 	output string,
 ) {
-	conveyer.initialized = true
+	conveyer.initialized.Store(true)
 	conveyer.pool.Add(func(ctx context.Context) error {
 		inputChan := conveyer.channels.GetOrCreate(input)
 		outputChan := conveyer.channels.GetOrCreate(output)
@@ -145,7 +148,7 @@ func (conveyer *Conveyer) RegisterMultiplexer(
 	inputs []string,
 	output string,
 ) {
-	conveyer.initialized = true
+	conveyer.initialized.Store(true)
 	conveyer.pool.Add(func(ctx context.Context) error {
 		inputChannels := make([]chan string, len(inputs))
 		for index, inputName := range inputs {
@@ -163,7 +166,7 @@ func (conveyer *Conveyer) RegisterSeparator(
 	input string,
 	outputs []string,
 ) {
-	conveyer.initialized = true
+	conveyer.initialized.Store(true)
 	conveyer.pool.Add(func(ctx context.Context) error {
 		inputChan := conveyer.channels.GetOrCreate(input)
 
@@ -177,28 +180,27 @@ func (conveyer *Conveyer) RegisterSeparator(
 }
 
 func (conveyer *Conveyer) Run(ctx context.Context) error {
+	defer conveyer.channels.CloseAllChannels()
+
 	group, ctxWithErrs := errgroup.WithContext(ctx)
 	workers := conveyer.pool.GetAll()
 
 	for _, worker := range workers {
+		workerFunc := worker
 		group.Go(func() error {
-			return worker(ctxWithErrs)
+			return workerFunc(ctxWithErrs)
 		})
 	}
 
 	if err := group.Wait(); err != nil {
-		conveyer.channels.CloseAllChannels()
-
 		return fmt.Errorf("failed to run workers: %w", err)
 	}
-
-	conveyer.channels.CloseAllChannels()
 
 	return nil
 }
 
 func (conveyer *Conveyer) Send(input string, data string) error {
-	if !conveyer.initialized {
+	if !conveyer.initialized.Load() {
 		return ErrSendChanNotFound
 	}
 
@@ -209,9 +211,9 @@ func (conveyer *Conveyer) Send(input string, data string) error {
 }
 
 func (conveyer *Conveyer) Recv(output string) (string, error) {
-	channel, channelFound := conveyer.channels.Get(output)
-	if !channelFound {
-		return "", ErrRecvChanNotFound
+	channel, err := conveyer.channels.Get(output)
+	if err != nil {
+		return "", err
 	}
 
 	data, ok := <-channel

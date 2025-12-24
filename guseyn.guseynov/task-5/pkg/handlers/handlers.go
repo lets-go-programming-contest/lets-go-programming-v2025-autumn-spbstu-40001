@@ -15,7 +15,11 @@ const (
 	ErrNoMultiplexer = "no multiplexer"
 )
 
-var ErrPrefixDecoratorCantBeDecorated = errors.New("handlers.PrefixDecoratorFunc: can't be decorated")
+var (
+	ErrPrefixDecoratorCantBeDecorated = errors.New("handlers.PrefixDecoratorFunc: can't be decorated")
+	ErrNoOutputChannels               = errors.New("handlers.SeparatorFunc: no output channels")
+	ErrNoInputChannels                = errors.New("handlers.MultiplexerFunc: no input channels")
+)
 
 func PrefixDecoratorFunc(
 	ctx context.Context,
@@ -60,9 +64,14 @@ func MultiplexerFunc(
 	inputs []chan string,
 	output chan string,
 ) error {
+	if len(inputs) == 0 {
+		return ErrNoInputChannels
+	}
+
 	errGroup, ctx := errgroup.WithContext(ctx)
 
 	for _, inputChan := range inputs {
+		inputChan := inputChan
 		errGroup.Go(func() error {
 			for {
 				select {
@@ -100,7 +109,7 @@ func SeparatorFunc(
 	outputs []chan string,
 ) error {
 	if len(outputs) == 0 {
-		return nil
+		return ErrNoOutputChannels
 	}
 
 	index := 0
