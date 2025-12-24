@@ -5,11 +5,7 @@ import (
 	"log"
 
 	"github.com/netwite/task-3/internal/config"
-	"github.com/netwite/task-3/internal/currency"
-	"github.com/netwite/task-3/internal/json"
 	"github.com/netwite/task-3/internal/processor"
-	"github.com/netwite/task-3/internal/sorter"
-	"github.com/netwite/task-3/internal/xml"
 )
 
 func main() {
@@ -21,19 +17,9 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	xmlLoader := xml.NewLoader()
-	currencyConverter := currency.NewConverter()
-	descSorter := sorter.NewDescendingSorter()
-	jsonSaver := json.NewSaver()
+	proc := processor.NewProcessor()
 
-	dataProcessor := processor.NewDataProcessor(
-		xmlLoader,
-		currencyConverter,
-		descSorter,
-		jsonSaver,
-	)
-
-	if err := dataProcessor.Process(cfg.InputFile, cfg.OutputFile); err != nil {
+	if err := proc.Process(cfg.InputFile, cfg.OutputFile); err != nil {
 		log.Fatalf("Failed to process data: %v", err)
 	}
 }

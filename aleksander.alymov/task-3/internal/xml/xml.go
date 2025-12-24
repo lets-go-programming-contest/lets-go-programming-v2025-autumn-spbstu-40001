@@ -1,6 +1,7 @@
 package xml
 
 import (
+	"bytes"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -9,30 +10,19 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
-type FileLoader interface {
-	Load(filename string, target interface{}) error
-}
-
-type XMLLoader struct{}
-
-func NewLoader() *XMLLoader {
-	return &XMLLoader{}
-}
-
-func (l *XMLLoader) Load(filename string, target interface{}) error {
-	file, err := os.Open(filename)
+func DecodeXMLFile[T any](inputFile string, target *T) error {
+	xmlData, err := os.ReadFile(inputFile)
 	if err != nil {
-		return fmt.Errorf("open file: %w", err)
+		return fmt.Errorf("failed to read XML-file %s: %w", inputFile, err)
 	}
-	defer file.Close()
 
-	decoder := xml.NewDecoder(file)
-	decoder.CharsetReader = func(label string, input io.Reader) (io.Reader, error) {
-		return charset.NewReader(input, label)
+	decoder := xml.NewDecoder(bytes.NewReader(xmlData))
+	decoder.CharsetReader = func(c string, input io.Reader) (io.Reader, error) {
+		return charset.NewReader(input, c)
 	}
 
 	if err := decoder.Decode(target); err != nil {
-		return fmt.Errorf("decode XML: %w", err)
+		return fmt.Errorf("failed to parse XML-file: %w", err)
 	}
 
 	return nil

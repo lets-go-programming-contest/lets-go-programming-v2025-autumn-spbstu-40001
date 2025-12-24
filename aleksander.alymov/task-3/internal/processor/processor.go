@@ -2,52 +2,32 @@ package processor
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/netwite/task-3/internal/currency"
 	"github.com/netwite/task-3/internal/json"
-	"github.com/netwite/task-3/internal/sorter"
 	"github.com/netwite/task-3/internal/xml"
 )
 
-type DataProcessor struct {
-	loader    xml.FileLoader
-	converter currency.Converter
-	sorter    sorter.Sorter
-	saver     json.FileSaver
+type Processor struct{}
+
+func NewProcessor() *Processor {
+	return &Processor{}
 }
 
-func NewDataProcessor(
-	loader xml.FileLoader,
-	converter currency.Converter,
-	sorter sorter.Sorter,
-	saver json.FileSaver,
-) *DataProcessor {
-	return &DataProcessor{
-		loader:    loader,
-		converter: converter,
-		sorter:    sorter,
-		saver:     saver,
-	}
-}
+func (p *Processor) Process(inputFile, outputFile string) error {
+	var valCurs currency.ValCurs
 
-func (p *DataProcessor) Process(inputFile, outputFile string) error {
-	var sourceData currency.XMLValCurs
-
-	if err := p.loader.Load(inputFile, &sourceData); err != nil {
-		return fmt.Errorf("load data: %w", err)
+	if err := xml.DecodeXMLFile(inputFile, &valCurs); err != nil {
+		return fmt.Errorf("failed to read and parse XML: %w", err)
 	}
 
-	convertedData, err := p.converter.Convert(&sourceData)
-	if err != nil {
-		return fmt.Errorf("convert data: %w", err)
-	}
+	sort.Slice(valCurs.Valutes, func(i, j int) bool {
+		return valCurs.Valutes[i].Value > valCurs.Valutes[j].Value
+	})
 
-	if sortable, ok := convertedData.(sorter.Sortable); ok && p.sorter != nil {
-		p.sorter.Sort(sortable)
-	}
-
-	if err := p.saver.Save(outputFile, convertedData); err != nil {
-		return fmt.Errorf("save data: %w", err)
+	if err := json.WriteResult(valCurs.Valutes, outputFile); err != nil {
+		return fmt.Errorf("failed to write JSON result: %w", err)
 	}
 
 	return nil
