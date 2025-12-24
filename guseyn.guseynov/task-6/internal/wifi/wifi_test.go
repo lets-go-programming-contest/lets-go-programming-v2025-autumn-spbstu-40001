@@ -2,7 +2,6 @@ package wifi_test
 
 import (
 	"errors"
-	"fmt"
 	"net"
 	"testing"
 
@@ -21,19 +20,13 @@ func (_m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 	ret := _m.Called()
 
 	var r0 []*wifi.Interface
-
 	if val := ret.Get(0); val != nil {
 		if v, ok := val.([]*wifi.Interface); ok {
 			r0 = v
 		}
 	}
 
-	var r1 error
-	if err := ret.Error(1); err != nil {
-		r1 = fmt.Errorf("mock Interfaces error: %w", err)
-	}
-
-	return r0, r1
+	return r0, ret.Error(1)
 }
 
 var errWiFi = errors.New("failed to get interfaces")
@@ -99,9 +92,8 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 
 		addrs, err := svc.GetAddresses()
 
-		require.Error(t, err)
+		require.ErrorContains(t, err, "getting interfaces")
 		assert.Nil(t, addrs)
-		assert.Contains(t, err.Error(), "getting interfaces")
 		mockHandle.AssertExpectations(t)
 	})
 }
@@ -154,9 +146,8 @@ func TestWiFiService_GetNames(t *testing.T) {
 
 		names, err := svc.GetNames()
 
-		require.Error(t, err)
+		require.ErrorContains(t, err, "getting interfaces")
 		assert.Nil(t, names)
-		assert.Contains(t, err.Error(), "getting interfaces")
 		mockHandle.AssertExpectations(t)
 	})
 }

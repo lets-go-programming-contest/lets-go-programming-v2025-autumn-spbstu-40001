@@ -1,7 +1,6 @@
 package db_test
 
 import (
-	"regexp"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -24,7 +23,7 @@ func TestDBService_GetNames(t *testing.T) {
 			AddRow("Alice").
 			AddRow("Bob")
 
-		mock.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnRows(rows)
+		mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 
 		service := db.New(dbMock)
 		names, err := service.GetNames()
@@ -43,7 +42,7 @@ func TestDBService_GetNames(t *testing.T) {
 
 		rows := sqlmock.NewRows([]string{"name"})
 
-		mock.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnRows(rows)
+		mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 
 		service := db.New(dbMock)
 		names, err := service.GetNames()
@@ -60,12 +59,12 @@ func TestDBService_GetNames(t *testing.T) {
 		require.NoError(t, err)
 		defer dbMock.Close()
 
-		mock.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnError(assert.AnError)
+		mock.ExpectQuery("SELECT name FROM users").WillReturnError(assert.AnError)
 
 		service := db.New(dbMock)
 		names, err := service.GetNames()
 
-		require.Error(t, err)
+		require.ErrorContains(t, err, "db query")
 		assert.Nil(t, names)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
@@ -79,12 +78,12 @@ func TestDBService_GetNames(t *testing.T) {
 
 		rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
 
-		mock.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnRows(rows)
+		mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 
 		service := db.New(dbMock)
 		names, err := service.GetNames()
 
-		require.Error(t, err)
+		require.ErrorContains(t, err, "rows scanning")
 		assert.Nil(t, names)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
@@ -100,12 +99,12 @@ func TestDBService_GetNames(t *testing.T) {
 			AddRow("Alice").
 			RowError(0, assert.AnError)
 
-		mock.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnRows(rows)
+		mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 
 		service := db.New(dbMock)
 		names, err := service.GetNames()
 
-		require.Error(t, err)
+		require.ErrorContains(t, err, "rows error")
 		assert.Nil(t, names)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
@@ -125,7 +124,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 			AddRow("Alice").
 			AddRow("Bob")
 
-		mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnRows(rows)
+		mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 
 		service := db.New(dbMock)
 		names, err := service.GetUniqueNames()
@@ -144,7 +143,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 
 		rows := sqlmock.NewRows([]string{"name"})
 
-		mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnRows(rows)
+		mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 
 		service := db.New(dbMock)
 		names, err := service.GetUniqueNames()
@@ -161,12 +160,12 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		require.NoError(t, err)
 		defer dbMock.Close()
 
-		mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnError(assert.AnError)
+		mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnError(assert.AnError)
 
 		service := db.New(dbMock)
 		names, err := service.GetUniqueNames()
 
-		require.Error(t, err)
+		require.ErrorContains(t, err, "db query")
 		assert.Nil(t, names)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
@@ -180,12 +179,12 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 
 		rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
 
-		mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnRows(rows)
+		mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 
 		service := db.New(dbMock)
 		names, err := service.GetUniqueNames()
 
-		require.Error(t, err)
+		require.ErrorContains(t, err, "rows scanning")
 		assert.Nil(t, names)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
@@ -201,12 +200,12 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 			AddRow("Alice").
 			RowError(0, assert.AnError)
 
-		mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnRows(rows)
+		mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 
 		service := db.New(dbMock)
 		names, err := service.GetUniqueNames()
 
-		require.Error(t, err)
+		require.ErrorContains(t, err, "rows error")
 		assert.Nil(t, names)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
