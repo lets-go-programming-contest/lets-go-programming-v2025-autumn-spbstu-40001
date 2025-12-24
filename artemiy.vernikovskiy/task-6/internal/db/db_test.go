@@ -93,7 +93,7 @@ func TestDBServiceGetNamesScanError(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Nil(t, names)
-	assert.Contains(t, err.Error(), ErrRowsScanning.Error())
+	assert.ErrorContains(t, err, ErrRowsScanning.Error())
 }
 
 func TestDBServiceGetNamesRowsError(t *testing.T) {
@@ -115,7 +115,7 @@ func TestDBServiceGetNamesRowsError(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Nil(t, names)
-	assert.Contains(t, err.Error(), ErrRowsError.Error())
+	assert.ErrorContains(t, err, ErrRowsError.Error())
 }
 
 func TestDBServiceGetNamesQueryError(t *testing.T) {
@@ -133,7 +133,7 @@ func TestDBServiceGetNamesQueryError(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Nil(t, names)
-	assert.Contains(t, err.Error(), ErrDBQuery.Error())
+	assert.ErrorContains(t, err, ErrDBQuery.Error())
 }
 
 func TestDBServiceGetUniqueNamesSuccess(t *testing.T) {
@@ -205,7 +205,7 @@ func TestDBServiceGetUniqueNamesScanError(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Nil(t, names)
-	assert.Contains(t, err.Error(), ErrRowsScanning.Error())
+	assert.ErrorContains(t, err, ErrRowsScanning.Error())
 }
 
 func TestDBServiceGetUniqueNamesRowsError(t *testing.T) {
@@ -227,7 +227,7 @@ func TestDBServiceGetUniqueNamesRowsError(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Nil(t, names)
-	assert.Contains(t, err.Error(), ErrRowsError.Error())
+	assert.ErrorContains(t, err, ErrRowsError.Error())
 }
 
 func TestDBServiceGetUniqueNamesQueryError(t *testing.T) {
@@ -245,7 +245,7 @@ func TestDBServiceGetUniqueNamesQueryError(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Nil(t, names)
-	assert.Contains(t, err.Error(), ErrDBQuery.Error())
+	assert.ErrorContains(t, err, ErrDBQuery.Error())
 }
 
 func TestNew(t *testing.T) {
