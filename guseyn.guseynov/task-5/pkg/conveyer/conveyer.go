@@ -118,7 +118,7 @@ type Conveyer struct {
 	channelSize int
 	channels    *ChannelRegistry
 	pool        *WorkerPool
-	initialized uint32
+	initialized atomic.Bool
 }
 
 func New(channelSize int) *Conveyer {
@@ -126,6 +126,7 @@ func New(channelSize int) *Conveyer {
 		channelSize: channelSize,
 		channels:    NewChannelRegistry(channelSize),
 		pool:        NewWorkerPool(),
+		initialized: atomic.Bool{},
 	}
 }
 
@@ -177,7 +178,7 @@ func (conveyer *Conveyer) RegisterSeparator(
 }
 
 func (conveyer *Conveyer) Run(ctx context.Context) error {
-	if !atomic.CompareAndSwapUint32(&conveyer.initialized, 0, 1) {
+	if !conveyer.initialized.CompareAndSwap(false, true) {
 		return ErrAlreadyRunning
 	}
 
@@ -202,6 +203,10 @@ func (conveyer *Conveyer) Run(ctx context.Context) error {
 }
 
 func (conveyer *Conveyer) Send(input string, data string) error {
+	if !conveyer.initialized.Load() {
+		return ErrSendChanNotFound
+	}
+
 	channel := conveyer.channels.GetOrCreate(input)
 	channel <- data
 
