@@ -3,6 +3,7 @@ package conveyer
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 	"sync/atomic"
 
@@ -192,7 +193,11 @@ func (conveyer *Conveyer) Run(ctx context.Context) error {
 		})
 	}
 
-	return group.Wait()
+	if err := group.Wait(); err != nil {
+		return fmt.Errorf("conveyer.Run: %w", err)
+	}
+
+	return nil
 }
 
 func (conveyer *Conveyer) Send(input string, data string) error {
