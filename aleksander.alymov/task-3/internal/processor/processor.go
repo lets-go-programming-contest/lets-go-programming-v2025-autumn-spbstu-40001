@@ -16,7 +16,12 @@ type DataProcessor struct {
 	saver     json.FileSaver
 }
 
-func NewDataProcessor(loader xml.FileLoader, converter currency.Converter, sorter sorter.Sorter, saver json.FileSaver) *DataProcessor { // Измените тип параметра
+func NewDataProcessor(
+	loader xml.FileLoader,
+	converter currency.Converter,
+	sorter sorter.Sorter,
+	saver json.FileSaver,
+) *DataProcessor {
 	return &DataProcessor{
 		loader:    loader,
 		converter: converter,
@@ -26,13 +31,13 @@ func NewDataProcessor(loader xml.FileLoader, converter currency.Converter, sorte
 }
 
 func (p *DataProcessor) Process(inputFile, outputFile string) error {
-	var sourceData currency.XMLValCurs // ← используем конкретный тип
+	var sourceData currency.XMLValCurs
 
 	if err := p.loader.Load(inputFile, &sourceData); err != nil {
 		return fmt.Errorf("load data: %w", err)
 	}
 
-	convertedData, err := p.converter.Convert(&sourceData) // ← передаем указатель
+	convertedData, err := p.converter.Convert(&sourceData)
 	if err != nil {
 		return fmt.Errorf("convert data: %w", err)
 	}
