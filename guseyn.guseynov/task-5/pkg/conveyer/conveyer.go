@@ -3,7 +3,6 @@ package conveyer
 import (
 	"context"
 	"errors"
-	"fmt"
 	"sync"
 	"sync/atomic"
 
@@ -180,6 +179,8 @@ func (conveyer *Conveyer) RegisterSeparator(
 }
 
 func (conveyer *Conveyer) Run(ctx context.Context) error {
+	defer conveyer.channels.CloseAllChannels()
+
 	group, ctxWithErrs := errgroup.WithContext(ctx)
 	workers := conveyer.pool.GetAll()
 
@@ -191,19 +192,7 @@ func (conveyer *Conveyer) Run(ctx context.Context) error {
 		})
 	}
 
-	if err := group.Wait(); err != nil {
-		conveyer.channels.CloseAllChannels()
-
-		return fmt.Errorf("failed to run workers: %w", err)
-	}
-
-	conveyer.channels.CloseAllChannels()
-
-	return nil
-}
-
-func (conveyer *Conveyer) Close() {
-	conveyer.channels.CloseAllChannels()
+	return group.Wait()
 }
 
 func (conveyer *Conveyer) Send(input string, data string) error {
