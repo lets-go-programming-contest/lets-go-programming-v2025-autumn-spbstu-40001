@@ -118,6 +118,7 @@ type Conveyer struct {
 	channelSize int
 	channels    *ChannelRegistry
 	pool        *WorkerPool
+	initialized atomic.Bool
 	running     atomic.Bool
 }
 
@@ -126,9 +127,10 @@ func New(channelSize int) *Conveyer {
 		channelSize: channelSize,
 		channels:    NewChannelRegistry(channelSize),
 		pool:        NewWorkerPool(),
+		initialized: atomic.Bool{},
 		running:     atomic.Bool{},
 	}
-	conveyer.running.Store(true)
+
 	return conveyer
 }
 
@@ -137,6 +139,7 @@ func (conveyer *Conveyer) RegisterDecorator(
 	input string,
 	output string,
 ) {
+	conveyer.initialized.Store(true)
 	conveyer.pool.Add(func(ctx context.Context) error {
 		inputChan := conveyer.channels.GetOrCreate(input)
 		outputChan := conveyer.channels.GetOrCreate(output)
@@ -150,6 +153,7 @@ func (conveyer *Conveyer) RegisterMultiplexer(
 	inputs []string,
 	output string,
 ) {
+	conveyer.initialized.Store(true)
 	conveyer.pool.Add(func(ctx context.Context) error {
 		inputChannels := make([]chan string, len(inputs))
 		for index, inputName := range inputs {
@@ -167,6 +171,7 @@ func (conveyer *Conveyer) RegisterSeparator(
 	input string,
 	outputs []string,
 ) {
+	conveyer.initialized.Store(true)
 	conveyer.pool.Add(func(ctx context.Context) error {
 		inputChan := conveyer.channels.GetOrCreate(input)
 
@@ -203,7 +208,7 @@ func (conveyer *Conveyer) Run(ctx context.Context) error {
 }
 
 func (conveyer *Conveyer) Send(input string, data string) error {
-	if !conveyer.running.Load() {
+	if !conveyer.initialized.Load() {
 		return ErrSendChanNotFound
 	}
 
@@ -214,7 +219,7 @@ func (conveyer *Conveyer) Send(input string, data string) error {
 }
 
 func (conveyer *Conveyer) Recv(output string) (string, error) {
-	if !conveyer.running.Load() {
+	if !conveyer.initialized.Load() {
 		return "", ErrRecvChanNotFound
 	}
 
