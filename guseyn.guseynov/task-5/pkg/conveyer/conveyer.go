@@ -193,6 +193,7 @@ func (conveyer *Conveyer) Run(ctx context.Context) error {
 
 	if err := group.Wait(); err != nil {
 		conveyer.channels.CloseAllChannels()
+
 		return fmt.Errorf("failed to run workers: %w", err)
 	}
 
