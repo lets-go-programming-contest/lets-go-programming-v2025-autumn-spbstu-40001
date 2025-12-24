@@ -197,6 +197,8 @@ func (conveyer *Conveyer) Run(ctx context.Context) error {
 		return fmt.Errorf("failed to run workers: %w", err)
 	}
 
+	conveyer.channels.CloseAllChannels()
+
 	return nil
 }
 

@@ -26,6 +26,8 @@ func PrefixDecoratorFunc(
 	input chan string,
 	output chan string,
 ) error {
+	defer close(output)
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -67,6 +69,8 @@ func MultiplexerFunc(
 	if len(inputs) == 0 {
 		return ErrNoInputChannels
 	}
+
+	defer close(output)
 
 	errGroup, ctx := errgroup.WithContext(ctx)
 
@@ -110,6 +114,12 @@ func SeparatorFunc(
 	if len(outputs) == 0 {
 		return ErrNoOutputChannels
 	}
+
+	defer func() {
+		for _, out := range outputs {
+			close(out)
+		}
+	}()
 
 	index := 0
 
