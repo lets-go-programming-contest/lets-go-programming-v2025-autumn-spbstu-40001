@@ -1,84 +1,39 @@
 package currency
 
 import (
+	"encoding/xml"
 	"fmt"
 	"strconv"
 	"strings"
 )
 
-type Converter interface {
-	Convert(source interface{}) (interface{}, error)
-}
+type RateValue float64
 
-type CurrencyConverter struct{}
-
-func NewConverter() *CurrencyConverter {
-	return &CurrencyConverter{}
-}
-
-type XMLValute struct {
-	NumCode  string `xml:"NumCode"`
-	CharCode string `xml:"CharCode"`
-	Value    string `xml:"Value"`
-}
-
-type XMLValCurs struct {
-	Valutes []XMLValute `xml:"Valute"`
+type ValCurs struct {
+	XMLName xml.Name   `xml:"ValCurs"`
+	Valutes []Currency `xml:"Valute"`
 }
 
 type Currency struct {
-	NumCode  int     `json:"num_code"`
-	CharCode string  `json:"char_code"`
-	Value    float64 `json:"value"`
+	NumCode  int       `json:"num_code" xml:"NumCode"`
+	CharCode string    `json:"char_code" xml:"CharCode"`
+	Value    RateValue `json:"value" xml:"Value"`
 }
 
-type CurrencyCollection []Currency
-
-func (c CurrencyCollection) Len() int           { return len(c) }
-func (c CurrencyCollection) Swap(i, j int)      { c[i], c[j] = c[j], c[i] }
-func (c CurrencyCollection) Less(i, j int) bool { return c[i].Value > c[j].Value }
-
-func (conv *CurrencyConverter) Convert(source interface{}) (interface{}, error) {
-	valCurs, ok := source.(*XMLValCurs)
-	if !ok {
-		return nil, fmt.Errorf("invalid source type for currency conversion")
+func (rate *RateValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	var str string
+	if err := d.DecodeElement(&str, &start); err != nil {
+		return fmt.Errorf("failed to decode XML element: %w", err)
 	}
 
-	currencies := make(CurrencyCollection, 0, len(valCurs.Valutes))
+	str = strings.Replace(str, ",", ".", 1)
 
-	for _, valute := range valCurs.Valutes {
-		currency, err := conv.convertValute(valute)
-		if err != nil {
-			return nil, err
-		}
-		currencies = append(currencies, currency)
-	}
-
-	return currencies, nil
-}
-
-func (conv *CurrencyConverter) convertValute(valute XMLValute) (Currency, error) {
-	var numCode int
-	var err error
-
-	if valute.NumCode == "" {
-		numCode = 0
-	} else {
-		numCode, err = strconv.Atoi(valute.NumCode)
-		if err != nil {
-			return Currency{}, fmt.Errorf("parse NumCode '%s': %w", valute.NumCode, err)
-		}
-	}
-
-	valueStr := strings.Replace(valute.Value, ",", ".", 1)
-	value, err := strconv.ParseFloat(valueStr, 64)
+	val, err := strconv.ParseFloat(str, 64)
 	if err != nil {
-		return Currency{}, fmt.Errorf("parse Value '%s': %w", valute.Value, err)
+		return fmt.Errorf("failed to parse rate value '%s': %w", str, err)
 	}
 
-	return Currency{
-		NumCode:  numCode,
-		CharCode: valute.CharCode,
-		Value:    value,
-	}, nil
+	*rate = RateValue(val)
+
+	return nil
 }
