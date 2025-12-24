@@ -18,6 +18,7 @@ var (
 	ErrSendChanNotFound   = errors.New("conveyer.Send: chan not found")
 	ErrRecvChanNotFound   = errors.New("conveyer.Recv: chan not found")
 	ErrInvalidChannelType = errors.New("conveyer.Get: invalid channel type")
+	ErrAlreadyRunning     = errors.New("conveyer.Run: already running or finished")
 )
 
 type Decorator func(
@@ -117,7 +118,7 @@ type Conveyer struct {
 	channelSize int
 	channels    *ChannelRegistry
 	pool        *WorkerPool
-	initialized atomic.Bool
+	initialized uint32
 }
 
 func New(channelSize int) *Conveyer {
@@ -125,7 +126,6 @@ func New(channelSize int) *Conveyer {
 		channelSize: channelSize,
 		channels:    NewChannelRegistry(channelSize),
 		pool:        NewWorkerPool(),
-		initialized: atomic.Bool{},
 	}
 }
 
@@ -134,7 +134,6 @@ func (conveyer *Conveyer) RegisterDecorator(
 	input string,
 	output string,
 ) {
-	conveyer.initialized.Store(true)
 	conveyer.pool.Add(func(ctx context.Context) error {
 		inputChan := conveyer.channels.GetOrCreate(input)
 		outputChan := conveyer.channels.GetOrCreate(output)
@@ -148,7 +147,6 @@ func (conveyer *Conveyer) RegisterMultiplexer(
 	inputs []string,
 	output string,
 ) {
-	conveyer.initialized.Store(true)
 	conveyer.pool.Add(func(ctx context.Context) error {
 		inputChannels := make([]chan string, len(inputs))
 		for index, inputName := range inputs {
@@ -166,7 +164,6 @@ func (conveyer *Conveyer) RegisterSeparator(
 	input string,
 	outputs []string,
 ) {
-	conveyer.initialized.Store(true)
 	conveyer.pool.Add(func(ctx context.Context) error {
 		inputChan := conveyer.channels.GetOrCreate(input)
 
@@ -180,6 +177,10 @@ func (conveyer *Conveyer) RegisterSeparator(
 }
 
 func (conveyer *Conveyer) Run(ctx context.Context) error {
+	if !atomic.CompareAndSwapUint32(&conveyer.initialized, 0, 1) {
+		return ErrAlreadyRunning
+	}
+
 	defer conveyer.channels.CloseAllChannels()
 
 	group, ctxWithErrs := errgroup.WithContext(ctx)
@@ -201,10 +202,6 @@ func (conveyer *Conveyer) Run(ctx context.Context) error {
 }
 
 func (conveyer *Conveyer) Send(input string, data string) error {
-	if !conveyer.initialized.Load() {
-		return ErrSendChanNotFound
-	}
-
 	channel := conveyer.channels.GetOrCreate(input)
 	channel <- data
 
