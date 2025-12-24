@@ -180,23 +180,27 @@ func (conveyer *Conveyer) RegisterSeparator(
 }
 
 func (conveyer *Conveyer) Run(ctx context.Context) error {
-	defer conveyer.channels.CloseAllChannels()
-
 	group, ctxWithErrs := errgroup.WithContext(ctx)
 	workers := conveyer.pool.GetAll()
 
 	for _, worker := range workers {
 		workerFunc := worker
+
 		group.Go(func() error {
 			return workerFunc(ctxWithErrs)
 		})
 	}
 
 	if err := group.Wait(); err != nil {
+		conveyer.channels.CloseAllChannels()
 		return fmt.Errorf("failed to run workers: %w", err)
 	}
 
 	return nil
+}
+
+func (conveyer *Conveyer) Close() {
+	conveyer.channels.CloseAllChannels()
 }
 
 func (conveyer *Conveyer) Send(input string, data string) error {
