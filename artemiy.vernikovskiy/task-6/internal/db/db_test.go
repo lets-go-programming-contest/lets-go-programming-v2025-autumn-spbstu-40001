@@ -49,9 +49,7 @@ func TestDBServiceGetNamesSuccess(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, names, numberOfData)
 
-	for i, expectedName := range testNames {
-		assert.Equal(t, expectedName, names[i])
-	}
+	assert.Equal(t, testNames, names)
 }
 
 func TestDBServiceGetNamesEmpty(t *testing.T) {
@@ -163,9 +161,7 @@ func TestDBServiceGetUniqueNamesSuccess(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, names, numberOfData)
 
-	for i, expectedName := range testNames {
-		assert.Equal(t, expectedName, names[i])
-	}
+	assert.Equal(t, testNames, names)
 }
 
 func TestDBServiceGetUniqueNamesEmpty(t *testing.T) {
