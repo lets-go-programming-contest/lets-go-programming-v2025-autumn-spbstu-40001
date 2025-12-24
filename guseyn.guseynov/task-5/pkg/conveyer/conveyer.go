@@ -118,6 +118,8 @@ type Conveyer struct {
 	channels    *ChannelRegistry
 	pool        *WorkerPool
 	initialized atomic.Bool
+	mu          sync.RWMutex
+	results     map[string][]string
 }
 
 func New(channelSize int) *Conveyer {
@@ -126,6 +128,7 @@ func New(channelSize int) *Conveyer {
 		channels:    NewChannelRegistry(channelSize),
 		pool:        NewWorkerPool(),
 		initialized: atomic.Bool{},
+		results:     make(map[string][]string),
 	}
 }
 
@@ -223,4 +226,18 @@ func (conveyer *Conveyer) Recv(output string) (string, error) {
 	}
 
 	return data, nil
+}
+
+func (conveyer *Conveyer) RecvAll(output string) ([]string, error) {
+	channel, err := conveyer.channels.Get(output)
+	if err != nil {
+		return nil, err
+	}
+
+	var results []string
+	for data := range channel {
+		results = append(results, data)
+	}
+
+	return results, nil
 }
