@@ -119,6 +119,7 @@ type Conveyer struct {
 	channels    *ChannelRegistry
 	pool        *WorkerPool
 	initialized atomic.Bool
+	running     atomic.Bool
 }
 
 func New(channelSize int) *Conveyer {
@@ -127,6 +128,7 @@ func New(channelSize int) *Conveyer {
 		channels:    NewChannelRegistry(channelSize),
 		pool:        NewWorkerPool(),
 		initialized: atomic.Bool{},
+		running:     atomic.Bool{},
 	}
 }
 
@@ -135,6 +137,7 @@ func (conveyer *Conveyer) RegisterDecorator(
 	input string,
 	output string,
 ) {
+	conveyer.initialized.Store(true)
 	conveyer.pool.Add(func(ctx context.Context) error {
 		inputChan := conveyer.channels.GetOrCreate(input)
 		outputChan := conveyer.channels.GetOrCreate(output)
@@ -148,6 +151,7 @@ func (conveyer *Conveyer) RegisterMultiplexer(
 	inputs []string,
 	output string,
 ) {
+	conveyer.initialized.Store(true)
 	conveyer.pool.Add(func(ctx context.Context) error {
 		inputChannels := make([]chan string, len(inputs))
 		for index, inputName := range inputs {
@@ -165,6 +169,7 @@ func (conveyer *Conveyer) RegisterSeparator(
 	input string,
 	outputs []string,
 ) {
+	conveyer.initialized.Store(true)
 	conveyer.pool.Add(func(ctx context.Context) error {
 		inputChan := conveyer.channels.GetOrCreate(input)
 
@@ -178,7 +183,7 @@ func (conveyer *Conveyer) RegisterSeparator(
 }
 
 func (conveyer *Conveyer) Run(ctx context.Context) error {
-	if !conveyer.initialized.CompareAndSwap(false, true) {
+	if !conveyer.running.CompareAndSwap(false, true) {
 		return ErrAlreadyRunning
 	}
 
