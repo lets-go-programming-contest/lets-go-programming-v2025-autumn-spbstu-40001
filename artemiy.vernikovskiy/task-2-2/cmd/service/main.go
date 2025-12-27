@@ -45,10 +45,11 @@ func main() {
 			fmt.Println("no dish for you")
 
 			return
-		} // здесь надо проверять, потому что Pop может удалить слишком много
+		}
 
 		heap.Pop(workHeap)
 	}
 
 	fmt.Println(heap.Pop(workHeap))
 }
+
