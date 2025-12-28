@@ -5,10 +5,11 @@ import (
 	"net"
 	"testing"
 
-	"github.com/vikaglushkova/task-6/internal/wifi"
 	wifipkg "github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+
+	"github.com/vikaglushkova/task-6/internal/wifi"
 )
 
 type WiFiHandleMock struct {
@@ -68,7 +69,8 @@ func TestGetAddresses_Error(t *testing.T) {
 	t.Parallel()
 
 	mockWiFi := NewWiFiHandle(t)
-	mockWiFi.On("Interfaces").Return(nil, errors.New("interface error"))
+	ifaceErr := errors.New("interface error")
+	mockWiFi.On("Interfaces").Return(nil, ifaceErr)
 
 	service := wifi.New(mockWiFi)
 
@@ -123,7 +125,8 @@ func TestGetNames_Error(t *testing.T) {
 	t.Parallel()
 
 	mockWiFi := NewWiFiHandle(t)
-	mockWiFi.On("Interfaces").Return(nil, errors.New("interface error"))
+	ifaceErr := errors.New("interface error")
+	mockWiFi.On("Interfaces").Return(nil, ifaceErr)
 
 	service := wifi.New(mockWiFi)
 
