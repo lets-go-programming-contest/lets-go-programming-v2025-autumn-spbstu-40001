@@ -11,6 +11,11 @@ import (
 	"github.com/vikaglushkova/task-6/internal/db"
 )
 
+var (
+	errDatabase = errors.New("database error")
+	errRow      = errors.New("row error")
+)
+
 type DataServiceTestSuite struct {
 	suite.Suite
 	dbConnection *sql.DB
@@ -66,9 +71,8 @@ func (s *DataServiceTestSuite) TestGetNames_Empty() {
 func (s *DataServiceTestSuite) TestGetNames_DatabaseError() {
 	service := db.New(s.dbConnection)
 
-	dbErr := errors.New("database error")
 	s.sqlMock.ExpectQuery("SELECT name FROM users").
-		WillReturnError(dbErr)
+		WillReturnError(errDatabase)
 
 	result, err := service.GetNames()
 	s.Require().Error(err)
@@ -95,10 +99,9 @@ func (s *DataServiceTestSuite) TestGetNames_RowScanError() {
 func (s *DataServiceTestSuite) TestGetNames_RowIterationError() {
 	service := db.New(s.dbConnection)
 
-	rowErr := errors.New("row error")
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Alice").
-		RowError(0, rowErr)
+		RowError(0, errRow)
 
 	s.sqlMock.ExpectQuery("SELECT name FROM users").
 		WillReturnRows(rows)
@@ -143,9 +146,8 @@ func (s *DataServiceTestSuite) TestGetUniqueNames_Empty() {
 func (s *DataServiceTestSuite) TestGetUniqueNames_DatabaseError() {
 	service := db.New(s.dbConnection)
 
-	dbErr := errors.New("database error")
 	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").
-		WillReturnError(dbErr)
+		WillReturnError(errDatabase)
 
 	result, err := service.GetUniqueNames()
 	s.Require().Error(err)
@@ -172,10 +174,9 @@ func (s *DataServiceTestSuite) TestGetUniqueNames_RowScanError() {
 func (s *DataServiceTestSuite) TestGetUniqueNames_RowIterationError() {
 	service := db.New(s.dbConnection)
 
-	rowErr := errors.New("row error")
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Alice").
-		RowError(0, rowErr)
+		RowError(0, errRow)
 
 	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").
 		WillReturnRows(rows)
