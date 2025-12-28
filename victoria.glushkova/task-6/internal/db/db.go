@@ -20,11 +20,9 @@ func New(db Database) DBService {
 func (service DBService) GetNames() ([]string, error) {
 	query := "SELECT name FROM users"
 	rows, err := service.DB.Query(query)
-
 	if err != nil {
 		return nil, fmt.Errorf("db query: %w", err)
 	}
-
 	defer rows.Close()
 
 	var names []string
@@ -34,7 +32,6 @@ func (service DBService) GetNames() ([]string, error) {
 		if err := rows.Scan(&name); err != nil {
 			return nil, fmt.Errorf("rows scanning: %w", err)
 		}
-
 		names = append(names, name)
 	}
 
@@ -48,11 +45,9 @@ func (service DBService) GetNames() ([]string, error) {
 func (service DBService) GetUniqueNames() ([]string, error) {
 	query := "SELECT DISTINCT name FROM users"
 	rows, err := service.DB.Query(query)
-
 	if err != nil {
 		return nil, fmt.Errorf("db query: %w", err)
 	}
-
 	defer rows.Close()
 
 	var values []string
@@ -62,7 +57,6 @@ func (service DBService) GetUniqueNames() ([]string, error) {
 		if err := rows.Scan(&value); err != nil {
 			return nil, fmt.Errorf("rows scanning: %w", err)
 		}
-
 		values = append(values, value)
 	}
 
