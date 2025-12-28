@@ -27,6 +27,7 @@ func (m *WiFiHandleMock) Interfaces() ([]*wifipkg.Interface, error) {
 
 func NewWiFiHandle(t *testing.T) *WiFiHandleMock {
 	t.Helper()
+
 	return &WiFiHandleMock{}
 }
 
