@@ -22,7 +22,12 @@ func (m *WiFiHandleMock) Interfaces() ([]*wifipkg.Interface, error) {
 	args := m.Called()
 	ifaces, _ := args.Get(0).([]*wifipkg.Interface)
 
-	return ifaces, args.Error(1)
+	err := args.Error(1)
+	if err != nil {
+		return ifaces, fmt.Errorf("mock error: %w", err)
+	}
+
+	return ifaces, nil
 }
 
 func NewWiFiHandle(t *testing.T) *WiFiHandleMock {
