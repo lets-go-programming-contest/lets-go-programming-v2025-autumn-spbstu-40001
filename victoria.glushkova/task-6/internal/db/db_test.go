@@ -6,8 +6,9 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/vikaglushkova/task-6/internal/db"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/vikaglushkova/task-6/internal/db"
 )
 
 type DataServiceTestSuite struct {
@@ -65,8 +66,9 @@ func (s *DataServiceTestSuite) TestGetNames_Empty() {
 func (s *DataServiceTestSuite) TestGetNames_DatabaseError() {
 	service := db.New(s.dbConnection)
 
+	dbErr := errors.New("database error")
 	s.sqlMock.ExpectQuery("SELECT name FROM users").
-		WillReturnError(errors.New("database error"))
+		WillReturnError(dbErr)
 
 	result, err := service.GetNames()
 	s.Require().Error(err)
@@ -93,9 +95,10 @@ func (s *DataServiceTestSuite) TestGetNames_RowScanError() {
 func (s *DataServiceTestSuite) TestGetNames_RowIterationError() {
 	service := db.New(s.dbConnection)
 
+	rowErr := errors.New("row error")
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Alice").
-		RowError(0, errors.New("row error"))
+		RowError(0, rowErr)
 
 	s.sqlMock.ExpectQuery("SELECT name FROM users").
 		WillReturnRows(rows)
@@ -140,8 +143,9 @@ func (s *DataServiceTestSuite) TestGetUniqueNames_Empty() {
 func (s *DataServiceTestSuite) TestGetUniqueNames_DatabaseError() {
 	service := db.New(s.dbConnection)
 
+	dbErr := errors.New("database error")
 	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").
-		WillReturnError(errors.New("database error"))
+		WillReturnError(dbErr)
 
 	result, err := service.GetUniqueNames()
 	s.Require().Error(err)
@@ -168,9 +172,10 @@ func (s *DataServiceTestSuite) TestGetUniqueNames_RowScanError() {
 func (s *DataServiceTestSuite) TestGetUniqueNames_RowIterationError() {
 	service := db.New(s.dbConnection)
 
+	rowErr := errors.New("row error")
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Alice").
-		RowError(0, errors.New("row error"))
+		RowError(0, rowErr)
 
 	s.sqlMock.ExpectQuery("SELECT DISTINCT name FROM users").
 		WillReturnRows(rows)
@@ -220,5 +225,6 @@ func (s *DataServiceTestSuite) TestServiceWithSpecialCharacters() {
 }
 
 func TestDataServiceTestSuite(t *testing.T) {
+	t.Parallel()
 	suite.Run(t, new(DataServiceTestSuite))
 }
