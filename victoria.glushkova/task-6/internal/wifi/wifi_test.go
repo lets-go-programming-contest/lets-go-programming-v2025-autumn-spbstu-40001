@@ -12,6 +12,8 @@ import (
 	"github.com/vikaglushkova/task-6/internal/wifi"
 )
 
+var errInterface = errors.New("interface error")
+
 type WiFiHandleMock struct {
 	mock.Mock
 }
@@ -19,6 +21,7 @@ type WiFiHandleMock struct {
 func (m *WiFiHandleMock) Interfaces() ([]*wifipkg.Interface, error) {
 	args := m.Called()
 	ifaces, _ := args.Get(0).([]*wifipkg.Interface)
+
 	return ifaces, args.Error(1)
 }
 
@@ -32,6 +35,7 @@ func mustMAC(s string) net.HardwareAddr {
 	if err != nil {
 		panic(err)
 	}
+
 	return m
 }
 
@@ -69,8 +73,7 @@ func TestGetAddresses_Error(t *testing.T) {
 	t.Parallel()
 
 	mockWiFi := NewWiFiHandle(t)
-	ifaceErr := errors.New("interface error")
-	mockWiFi.On("Interfaces").Return(nil, ifaceErr)
+	mockWiFi.On("Interfaces").Return(nil, errInterface)
 
 	service := wifi.New(mockWiFi)
 
@@ -125,8 +128,7 @@ func TestGetNames_Error(t *testing.T) {
 	t.Parallel()
 
 	mockWiFi := NewWiFiHandle(t)
-	ifaceErr := errors.New("interface error")
-	mockWiFi.On("Interfaces").Return(nil, ifaceErr)
+	mockWiFi.On("Interfaces").Return(nil, errInterface)
 
 	service := wifi.New(mockWiFi)
 
