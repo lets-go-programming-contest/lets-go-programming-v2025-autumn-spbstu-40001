@@ -16,6 +16,7 @@ func main() {
 	}
 
 	var envShort string
+
 	switch cfg.Environment {
 	case "production":
 		envShort = "prod"

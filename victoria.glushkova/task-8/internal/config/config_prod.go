@@ -15,6 +15,6 @@ func (e *embedLoaderProd) Load() ([]byte, error) {
 	return configDataProd, nil
 }
 
-func NewLoader() Loader {
+func NewLoader() *embedLoaderProd {
 	return &embedLoaderProd{}
 }
