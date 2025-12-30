@@ -1,4 +1,4 @@
-module github.com/vikaglushkova/task-8
+module victoria.glushkova/task-8
 
 go 1.22
 
