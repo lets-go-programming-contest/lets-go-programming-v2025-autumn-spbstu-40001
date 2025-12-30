@@ -1,9 +1,15 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 
 	"gopkg.in/yaml.v3"
+)
+
+var (
+	ErrEnvironmentRequired = errors.New("environment field is required")
+	ErrLogLevelRequired    = errors.New("log_level field is required")
 )
 
 type Config struct {
@@ -22,10 +28,11 @@ func Load(data []byte) (*Config, error) {
 	}
 
 	if cfg.Environment == "" {
-		return nil, fmt.Errorf("environment field is required")
+		return nil, ErrEnvironmentRequired
 	}
+
 	if cfg.LogLevel == "" {
-		return nil, fmt.Errorf("log_level field is required")
+		return nil, ErrLogLevelRequired
 	}
 
 	return &cfg, nil
@@ -36,5 +43,6 @@ func GetConfig(loader Loader) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
+
 	return Load(data)
 }
