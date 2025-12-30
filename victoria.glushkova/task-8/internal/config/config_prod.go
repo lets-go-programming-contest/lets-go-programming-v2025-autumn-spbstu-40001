@@ -1,17 +1,21 @@
+
+//go:build !dev
+
 package config
 
 import (
 	_ "embed"
 )
 
-var configData []byte
+//go:embed configs/prod.yaml
+var configDataProd []byte
 
-type embedLoader struct{}
+type embedLoaderProd struct{}
 
-func (e *embedLoader) Load() ([]byte, error) {
-	return configData, nil
+func (e *embedLoaderProd) Load() ([]byte, error) {
+	return configDataProd, nil
 }
 
 func NewLoader() Loader {
-	return &embedLoader{}
+	return &embedLoaderProd{}
 }
