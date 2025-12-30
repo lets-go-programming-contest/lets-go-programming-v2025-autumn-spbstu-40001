@@ -15,5 +15,15 @@ func main() {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
-	fmt.Printf("%s %s\n", cfg.Environment, cfg.LogLevel)
+	var envShort string
+	switch cfg.Environment {
+	case "production":
+		envShort = "prod"
+	case "development":
+		envShort = "dev"
+	default:
+		envShort = cfg.Environment
+	}
+
+	fmt.Print(envShort, " ", cfg.LogLevel)
 }
