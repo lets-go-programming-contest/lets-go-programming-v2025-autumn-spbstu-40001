@@ -168,6 +168,7 @@ func (p *Pipeline) Run(ctx context.Context) error {
 		group.Go(func() error {
 			inputChan := p.getOrCreateChannel(modifier.input)
 			outputChan := p.getOrCreateChannel(modifier.output)
+
 			return modifier.function(groupCtx, inputChan, outputChan)
 		})
 	}
