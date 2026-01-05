@@ -3,7 +3,10 @@ package handlers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
+
+	"golang.org/x/sync/errgroup"
 )
 
 var (
@@ -76,24 +79,36 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		return nil
 	}
 
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		case data, ok := <-inputs[0]:
-			if !ok {
-				return nil
-			}
+	group, groupCtx := errgroup.WithContext(ctx)
 
-			if strings.Contains(data, noMultiplexerText) {
-				continue
-			}
+	for _, inputChan := range inputs {
+		group.Go(func() error {
+			for {
+				select {
+				case <-groupCtx.Done():
+					return nil
+				case data, ok := <-inputChan:
+					if !ok {
+						return nil
+					}
 
-			select {
-			case output <- data:
-			case <-ctx.Done():
-				return nil
+					if strings.Contains(data, noMultiplexerText) {
+						continue
+					}
+
+					select {
+					case output <- data:
+					case <-groupCtx.Done():
+						return nil
+					}
+				}
 			}
-		}
+		})
 	}
+
+	if err := group.Wait(); err != nil {
+		return fmt.Errorf("multiplexer error: %w", err)
+	}
+
+	return nil
 }

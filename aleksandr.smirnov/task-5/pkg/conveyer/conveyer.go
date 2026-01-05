@@ -3,7 +3,10 @@ package conveyer
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
+
+	"golang.org/x/sync/errgroup"
 )
 
 var ErrChannelNotFound = errors.New("chan not found")
@@ -158,6 +161,46 @@ func (p *Pipeline) RegisterSeparator(
 
 func (p *Pipeline) Run(ctx context.Context) error {
 	defer p.closeAllChannels()
+
+	group, groupCtx := errgroup.WithContext(ctx)
+
+	for _, modifier := range p.modifiers {
+		group.Go(func() error {
+			inputChan := p.getOrCreateChannel(modifier.input)
+			outputChan := p.getOrCreateChannel(modifier.output)
+			return modifier.function(groupCtx, inputChan, outputChan)
+		})
+	}
+
+	for _, mux := range p.muxers {
+		group.Go(func() error {
+			inputChans := make([]chan string, len(mux.inputs))
+			for i, inputName := range mux.inputs {
+				inputChans[i] = p.getOrCreateChannel(inputName)
+			}
+
+			outputChan := p.getOrCreateChannel(mux.output)
+
+			return mux.function(groupCtx, inputChans, outputChan)
+		})
+	}
+
+	for _, splitter := range p.splitters {
+		group.Go(func() error {
+			inputChan := p.getOrCreateChannel(splitter.input)
+
+			outputChans := make([]chan string, len(splitter.outputs))
+			for i, outputName := range splitter.outputs {
+				outputChans[i] = p.getOrCreateChannel(outputName)
+			}
+
+			return splitter.function(groupCtx, inputChan, outputChans)
+		})
+	}
+
+	if err := group.Wait(); err != nil {
+		return fmt.Errorf("conveyer run failed: %w", err)
+	}
 
 	return nil
 }
