@@ -70,3 +70,30 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 		}
 	}
 }
+
+func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
+	if len(inputs) == 0 {
+		return nil
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case data, ok := <-inputs[0]:
+			if !ok {
+				return nil
+			}
+
+			if strings.Contains(data, noMultiplexerText) {
+				continue
+			}
+
+			select {
+			case output <- data:
+			case <-ctx.Done():
+				return nil
+			}
+		}
+	}
+}
