@@ -79,3 +79,28 @@ func (p *Pipeline) closeAllChannels() {
 		close(ch)
 	}
 }
+
+func (p *Pipeline) Send(input string, data string) error {
+	ch, exists := p.getChannel(input)
+	if !exists {
+		return ErrChannelNotFound
+	}
+
+	ch <- data
+
+	return nil
+}
+
+func (p *Pipeline) Recv(output string) (string, error) {
+	ch, exists := p.getChannel(output)
+	if !exists {
+		return "", ErrChannelNotFound
+	}
+
+	value, ok := <-ch
+	if !ok {
+		return undefined, nil
+	}
+
+	return value, nil
+}
