@@ -104,3 +104,51 @@ func (p *Pipeline) Recv(output string) (string, error) {
 
 	return value, nil
 }
+
+func (p *Pipeline) RegisterDecorator(
+	function func(ctx context.Context, input chan string, output chan string) error,
+	input string,
+	output string,
+) {
+	p.modifiers = append(p.modifiers, modifierEntry{
+		function: function,
+		input:    input,
+		output:   output,
+	})
+}
+
+func (p *Pipeline) RegisterMultiplexer(
+	function func(ctx context.Context, inputs []chan string, output chan string) error,
+	inputs []string,
+	output string,
+) {
+	if len(inputs) > 0 {
+		p.getOrCreateChannel(inputs[0])
+	}
+
+	p.getOrCreateChannel(output)
+
+	p.muxers = append(p.muxers, muxEntry{
+		function: function,
+		inputs:   inputs,
+		output:   output,
+	})
+}
+
+func (p *Pipeline) RegisterSeparator(
+	function func(ctx context.Context, input chan string, outputs []chan string) error,
+	input string,
+	outputs []string,
+) {
+	p.getOrCreateChannel(input)
+
+	for i := 0; i <= len(outputs); i++ {
+		p.getOrCreateChannel(outputs[i])
+	}
+
+	p.splitters = append(p.splitters, splitterEntry{
+		function: function,
+		input:    input,
+		outputs:  outputs,
+	})
+}
