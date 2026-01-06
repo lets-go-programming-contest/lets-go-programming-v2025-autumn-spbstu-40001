@@ -97,6 +97,7 @@ func TestGetNames(t *testing.T) {
 			require.Equal(t, tc.expected, got, "test case %d", idx)
 		}
 
+		mock.ExpectClose()
 		require.NoError(t, dbConn.Close())
 		require.NoError(t, mock.ExpectationsWereMet(), "test case %d", idx)
 	}
@@ -173,6 +174,7 @@ func TestGetUniqueNames(t *testing.T) {
 			require.Equal(t, tc.expected, got, "test case %d", idx)
 		}
 
+		mock.ExpectClose()
 		require.NoError(t, dbConn.Close())
 		require.NoError(t, mock.ExpectationsWereMet(), "test case %d", idx)
 	}
