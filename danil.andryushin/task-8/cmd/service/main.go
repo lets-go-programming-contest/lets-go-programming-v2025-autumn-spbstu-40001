@@ -1,7 +1,16 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/atroxxxxxx/task-/internal/config"
+)
 
 func main() {
-	fmt.Println("hello world")
+	conf, err := config.LoadConfig()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(conf.Environment, " ", conf.LogLevel)
 }
