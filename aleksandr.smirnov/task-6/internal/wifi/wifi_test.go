@@ -12,7 +12,7 @@ import (
 	myWifi "github.com/A1exCRE/task-6/internal/wifi"
 )
 
-var testErr = errors.New("test error")
+var errTest = errors.New("test error")
 
 type testScenario struct {
 	macAddresses []string
@@ -33,7 +33,7 @@ func TestGetAddresses(t *testing.T) {
 	scenarios := []testScenario{
 		{macAddresses: []string{"00:11:22:33:44:55", "aa:bb:cc:dd:ee:ff"}},
 		{macAddresses: []string{}},
-		{expectedErr: testErr},
+		{expectedErr: errTest},
 	}
 
 	mockHandle := NewWiFiHandle(t)
@@ -49,12 +49,12 @@ func TestGetAddresses(t *testing.T) {
 			require.ErrorIs(t, err, sc.expectedErr, "scenario %d", idx)
 			require.ErrorContains(t, err, "getting interfaces", "scenario %d", idx)
 			require.Nil(t, resultAddrs, "scenario %d", idx)
+
 			continue
 		}
 
 		require.NoError(t, err, "scenario %d", idx)
-		require.Equal(t, parseMACAddresses(sc.macAddresses), resultAddrs,
-			"scenario %d", idx)
+		require.Equal(t, parseMACAddresses(sc.macAddresses), resultAddrs, "scenario %d", idx)
 	}
 }
 
@@ -64,7 +64,7 @@ func TestGetNames(t *testing.T) {
 	scenarios := []testScenario{
 		{macAddresses: []string{"00:11:22:33:44:55", "aa:bb:cc:dd:ee:ff"}},
 		{macAddresses: []string{}},
-		{expectedErr: testErr},
+		{expectedErr: errTest},
 	}
 
 	mockHandle := NewWiFiHandle(t)
@@ -80,12 +80,12 @@ func TestGetNames(t *testing.T) {
 			require.ErrorIs(t, err, sc.expectedErr, "scenario %d", idx)
 			require.ErrorContains(t, err, "getting interfaces", "scenario %d", idx)
 			require.Nil(t, resultNames, "scenario %d", idx)
+
 			continue
 		}
 
 		require.NoError(t, err, "scenario %d", idx)
-		require.Equal(t, generateExpectedNames(sc.macAddresses), resultNames,
-			"scenario %d", idx)
+		require.Equal(t, generateExpectedNames(sc.macAddresses), resultNames, "scenario %d", idx)
 	}
 }
 
@@ -94,6 +94,7 @@ func generateExpectedNames(macAddrs []string) []string {
 	for i := range macAddrs {
 		names = append(names, fmt.Sprintf("wlan%d", i+1))
 	}
+
 	return names
 }
 
@@ -125,6 +126,7 @@ func parseMACAddresses(macStrs []string) []net.HardwareAddr {
 	for _, s := range macStrs {
 		result = append(result, parseMAC(s))
 	}
+
 	return result
 }
 
@@ -133,5 +135,6 @@ func parseMAC(macStr string) net.HardwareAddr {
 	if err != nil {
 		return nil
 	}
+
 	return hw
 }

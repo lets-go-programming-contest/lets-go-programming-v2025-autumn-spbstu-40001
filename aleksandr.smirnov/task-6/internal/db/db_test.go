@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var testErr = errors.New("test error")
+var errTest = errors.New("test error")
 
 const (
 	selectNamesQuery  = "SELECT name FROM users"
@@ -48,8 +48,8 @@ func TestGetNames(t *testing.T) {
 			expected: nil,
 		},
 		{
-			queryErr:   testErr,
-			errCheck:   testErr,
+			queryErr:   errTest,
+			errCheck:   errTest,
 			errMessage: "db query",
 		},
 		{
@@ -60,8 +60,8 @@ func TestGetNames(t *testing.T) {
 			rows: sqlmock.NewRows([]string{"name"}).
 				AddRow("Alex").
 				AddRow("Maria").
-				RowError(1, testErr),
-			errCheck:   testErr,
+				RowError(1, errTest),
+			errCheck:   errTest,
 			errMessage: "rows error",
 		},
 	}
@@ -125,8 +125,8 @@ func TestGetUniqueNames(t *testing.T) {
 			expected: nil,
 		},
 		{
-			queryErr:   testErr,
-			errCheck:   testErr,
+			queryErr:   errTest,
+			errCheck:   errTest,
 			errMessage: "db query",
 		},
 		{
@@ -137,8 +137,8 @@ func TestGetUniqueNames(t *testing.T) {
 			rows: sqlmock.NewRows([]string{"name"}).
 				AddRow("Alex").
 				AddRow("Maria").
-				RowError(1, testErr),
-			errCheck:   testErr,
+				RowError(1, errTest),
+			errCheck:   errTest,
 			errMessage: "rows error",
 		},
 	}
