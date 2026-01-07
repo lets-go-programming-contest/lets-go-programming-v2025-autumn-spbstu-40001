@@ -33,21 +33,21 @@ func New(size int) Conveyer {
 
 func (obj *Conveyer) RegisterDecorator(
 	handler func(
-	ctx context.Context,
-	input chan string,
-	output chan string,
-) error,
+		ctx context.Context,
+		input chan string,
+		output chan string,
+	) error,
 	input string,
 	output string,
 ) {
-
-	in := obj.createChanel(input)
+	inp := obj.createChanel(input)
 	out := obj.createChanel(output)
 
 	obj.handlers = append(obj.handlers, func(ctx context.Context) error {
-		return handler(ctx, in, out)
+		return handler(ctx, inp, out)
 	})
 }
+
 func (obj *Conveyer) RegisterMultiplexer(
 	handler func(ctx context.Context, inputs []chan string, output chan string) error,
 	inputs []string,
@@ -60,12 +60,14 @@ func (obj *Conveyer) RegisterMultiplexer(
 	for idx, name := range inputs {
 		ins[idx] = obj.createChanel(name)
 	}
+
 	out := obj.createChanel(output)
 
 	obj.handlers = append(obj.handlers, func(ctx context.Context) error {
 		return handler(ctx, ins, out)
 	})
 }
+
 func (obj *Conveyer) RegisterSeparator(
 	handler func(ctx context.Context, input chan string, outputs []chan string) error,
 	input string,
@@ -74,18 +76,21 @@ func (obj *Conveyer) RegisterSeparator(
 	obj.mutex.Lock()
 	defer obj.mutex.Unlock()
 
-	in := obj.createChanel(input)
+	inp := obj.createChanel(input)
+
 	outs := make([]chan string, len(outputs))
 	for idx, name := range outputs {
 		outs[idx] = obj.createChanel(name)
 	}
+
 	obj.handlers = append(obj.handlers, func(ctx context.Context) error {
-		return handler(ctx, in, outs)
+		return handler(ctx, inp, outs)
 	})
 }
 
 func (obj *Conveyer) Run(ctx context.Context) error {
 	defer obj.closeAllChannels()
+
 	obj.mutex.RLock()
 	defer obj.mutex.RUnlock()
 
@@ -96,28 +101,36 @@ func (obj *Conveyer) Run(ctx context.Context) error {
 		})
 	}
 
-	if err := group.Wait(); err != nil {
+	err := group.Wait()
+	if err != nil {
 		return fmt.Errorf("failed to run conveyer: %w", err)
 	}
+
 	return nil
 }
+
 func (obj *Conveyer) Send(input string, data string) error {
 	ch, err := obj.getChanel(input)
 	if err != nil {
 		return err
 	}
+
 	ch <- data
+
 	return nil
 }
+
 func (obj *Conveyer) Recv(output string) (string, error) {
 	ch, err := obj.getChanel(output)
 	if err != nil {
 		return "", err
 	}
+
 	data, ok := <-ch
 	if !ok {
 		return UndefinedMsg, nil
 	}
+
 	return data, nil
 }
 
@@ -126,11 +139,13 @@ func (obj *Conveyer) createChanel(name string) chan string {
 	if exists {
 		return chanel
 	}
+
 	chanel = make(chan string, obj.size)
 	obj.channels[name] = chanel
 
 	return chanel
 }
+
 func (obj *Conveyer) getChanel(name string) (chan string, error) {
 	chanel, exists := obj.channels[name]
 	if exists {
@@ -139,9 +154,11 @@ func (obj *Conveyer) getChanel(name string) (chan string, error) {
 
 	return nil, ErrChanelNotFound
 }
+
 func (obj *Conveyer) closeAllChannels() {
 	obj.mutex.Lock()
 	defer obj.mutex.Unlock()
+
 	for _, ch := range obj.channels {
 		close(ch)
 	}

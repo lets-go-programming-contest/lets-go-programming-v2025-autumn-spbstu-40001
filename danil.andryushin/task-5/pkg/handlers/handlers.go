@@ -31,12 +31,15 @@ func PrefixDecoratorFunc(
 			if !ok {
 				return nil
 			}
+
 			if strings.Contains(message, NoDecorator) {
 				return ErrDecoration
 			}
+
 			if !strings.HasPrefix(message, Decorator) {
 				message = Decorator + message
 			}
+
 			select {
 			case output <- message:
 			case <-ctx.Done():
@@ -55,7 +58,8 @@ func SeparatorFunc(
 		return ErrEmptyChannel
 	}
 
-	var index int = 0
+	index := 0
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -67,6 +71,7 @@ func SeparatorFunc(
 
 			target := outputs[index]
 			index = (index + 1) % len(outputs)
+
 			select {
 			case target <- message:
 			case <-ctx.Done():
@@ -86,17 +91,20 @@ func MultiplexerFunc(
 	}
 
 	var waitGroup sync.WaitGroup
+
 	for _, channel := range inputs {
-		go func(in chan string) {
+		go func(inp chan string) {
 			defer waitGroup.Done()
+
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case message, ok := <-in:
+				case message, ok := <-inp:
 					if !ok {
 						return
 					}
+
 					if strings.Contains(message, NoMultiplexer) {
 						continue
 					}
@@ -112,5 +120,6 @@ func MultiplexerFunc(
 	}
 
 	waitGroup.Wait()
+
 	return nil
 }
