@@ -10,53 +10,52 @@ var ErrOfScan = errors.New("scan failed")
 
 type MaxHeap []int
 
-// Все методы используют pointer receiver для согласованности
-func (iHeap *MaxHeap) Len() int {
-	return len(*iHeap)
+func (h *MaxHeap) Len() int {
+	return len(*h)
 }
 
-func (iHeap *MaxHeap) Less(firstIndex, secondIndex int) bool {
-	h := *iHeap
-	if firstIndex < 0 || secondIndex < 0 || firstIndex >= len(h) || secondIndex >= len(h) {
+func (h *MaxHeap) Less(firstIndex, secondIndex int) bool {
+	heapSlice := *h
+	if firstIndex < 0 || secondIndex < 0 || firstIndex >= len(heapSlice) || secondIndex >= len(heapSlice) {
 		panic("index out of range in less")
 	}
 
-	return h[firstIndex] > h[secondIndex]
+	return heapSlice[firstIndex] > heapSlice[secondIndex]
 }
 
-func (iHeap *MaxHeap) Swap(firstIndex, secondIndex int) {
-	h := *iHeap
-	if firstIndex < 0 || secondIndex < 0 || firstIndex >= len(h) || secondIndex >= len(h) {
+func (h *MaxHeap) Swap(firstIndex, secondIndex int) {
+	heapSlice := *h
+	if firstIndex < 0 || secondIndex < 0 || firstIndex >= len(heapSlice) || secondIndex >= len(heapSlice) {
 		panic("index out of range in swap")
 	}
 
-	h[firstIndex], h[secondIndex] = h[secondIndex], h[firstIndex]
+	heapSlice[firstIndex], heapSlice[secondIndex] = heapSlice[secondIndex], heapSlice[firstIndex]
 }
 
-func (iHeap *MaxHeap) Push(x any) {
+func (h *MaxHeap) Push(x any) {
 	value, ok := x.(int)
 	if !ok {
 		panic("heap: Push of non-int value")
 	}
 
-	*iHeap = append(*iHeap, value)
+	*h = append(*h, value)
 }
 
-func (iHeap *MaxHeap) Pop() any {
-	h := *iHeap
-	length := len(h)
+func (h *MaxHeap) Pop() any {
+	heapSlice := *h
+	length := len(heapSlice)
 
 	if length == 0 {
 		return nil
 	}
 
-	last := h[length-1]
-	*iHeap = h[:length-1]
+	last := heapSlice[length-1]
+	*h = heapSlice[:length-1]
 
 	return last
 }
 
-func readInt(prompt string, min, max int) (int, error) {
+func readInt(prompt string, minValue, maxValue int) (int, error) {
 	var value int
 	_, err := fmt.Scan(&value)
 
@@ -64,17 +63,25 @@ func readInt(prompt string, min, max int) (int, error) {
 		return 0, fmt.Errorf("invalid input of %s: %w", prompt, err)
 	}
 
-	if value < min || value > max {
-		return 0, fmt.Errorf("%s must be between %d and %d", prompt, min, max)
+	if value < minValue || value > maxValue {
+		return 0, fmt.Errorf("%s must be between %d and %d", prompt, minValue, maxValue)
 	}
 
 	return value, nil
 }
 
 func main() {
-	countOfDishes, err := readInt("count of dishes", 1, 10000)
+	const (
+		minDishes = 1
+		maxDishes = 10000
+		minRating = -10000
+		maxRating = 10000
+	)
+
+	countOfDishes, err := readInt("count of dishes", minDishes, maxDishes)
 	if err != nil {
 		fmt.Println(err)
+
 		return
 	}
 
@@ -82,9 +89,10 @@ func main() {
 	heap.Init(dishHeap)
 
 	for range countOfDishes {
-		rating, err := readInt("rating of dish", -10000, 10000)
+		rating, err := readInt("rating of dish", minRating, maxRating)
 		if err != nil {
 			fmt.Println(err)
+
 			return
 		}
 
@@ -94,6 +102,7 @@ func main() {
 	numOfPreference, err := readInt("num of preference", 1, countOfDishes)
 	if err != nil {
 		fmt.Println(err)
+
 		return
 	}
 
@@ -108,6 +117,7 @@ func main() {
 
 	if !ok {
 		fmt.Println("Type assertion failed")
+
 		return
 	}
 
