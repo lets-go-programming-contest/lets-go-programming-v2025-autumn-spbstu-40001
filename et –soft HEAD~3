@@ -1,0 +1,763 @@
+[33mcommit d01fc03ce667fcf058645bb2f4f4d2dea620767c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: DmitryBalashov <olegworker665@gmail.com>
+Date:   Thu Jan 8 19:13:56 2026 +0300
+
+    [TASK-1]
+
+[33mcommit 29be0636cbe303b74186e6955f0f0fa00408aa3e[m
+Author: DmitryBalashov <olegworker665@gmail.com>
+Date:   Thu Jan 8 18:58:32 2026 +0300
+
+    [TASK-2-1]
+
+[33mcommit a71041e19930d73bfbf7166272af0ae17ec75980[m
+Author: DmitryBalashov <olegworker665@gmail.com>
+Date:   Thu Jan 8 18:19:54 2026 +0300
+
+    do main
+
+[33mcommit 5863aa2cc9f18f186340007a577fc67a4acb6748[m
+Author: vikaglushkova <vikagluskova2006@gmail.com>
+Date:   Thu Dec 25 00:26:22 2025 +0300
+
+    [TASK-2-1] (#72)
+    
+    * [TASK-2-1] Initial commit
+    
+    * [TASK-2-1] fix lint
+    
+    * [TASK-2-1] fix: error handling, magic numbers, range loops
+    
+    * [TASK-2-1] error handling and code stylу
+    
+    * [TASK-2-1] fix: all linter issues
+    
+    * [TASK-2-1] fix: wsl formatting rules
+    
+    * [TASK-2-1] fix: variable declaration spacing
+    
+    * [TASK-2-1] fix commentari
+    
+    * [TASK-2-1] fix linte
+    
+    * [TASK-2-1] fix
+    
+    * [TASK-2-1] one var
+    
+    * [TASK-2-1] combine variable declarations in one line
+    
+    * [TASK-2-1] lint
+    
+    * [TASK-2-1] one var and lint
+    
+    * [TASK-2-1] rjvvtynfhbq
+    
+    * [TASK-2-1] lint202
+    
+    * [TASK-2-1] test2
+    
+    * [TASK-2-1] lint c switch-case
+    
+    * [TASK-2-1] fix validation and error handling logic
+    
+    * [TASK-2-1] fix linter nlreturn style issue
+    
+    * [TASK-2-1] fix: stop after first error
+    
+    * [TASK-2-1] fix logic and complete thermostat task solution
+    
+    * [TASK-2-1] fix lint exhaustruct and nlreturn
+    
+    * [TASK-2-1] remove -1 output for invalid input operations
+    
+    * [TASK-2-1] add blank lines before return
+    
+    * [TASK-2-1] fix commentarii gh
+    
+    * [TASK-2-1] fix lint wsl
+    
+    * [TASK-2-1] fix tests logic
+    
+    * [TASK-2-1] fix lint errors
+    
+    * [TASK-2-1] fix input validation
+    
+    * [TASK-2-1] fix lint errors wsl
+    
+    * [TASK-2-1] fix gofumpt formatting
+    
+    * [TASK-2-1] fix a review comments
+
+[33mcommit fb67afc3515b96664d45400f51695906ee7932ba[m
+Author: PigoDog <maksimtmfv@gmail.com>
+Date:   Thu Dec 25 00:24:31 2025 +0300
+
+    [TASK-5]  (#106)
+    
+    * [TASK-5] Initial commit
+    
+    * [TASK-5] try to fix lint
+    
+    * [TASK-5] try to fix lint
+    
+    * [TASK-5] close channels
+    
+    * [TASK-5] close channels
+    
+    * [TASK-5] close channels
+    
+    * [TASK-5] close channels
+    
+    * [TASK-5] close channels
+    
+    * [TASK-5] try to close channels
+    
+    * [TASK-5] try to close channels
+    
+    * [TASK-5] try to close channels
+    
+    * [TASK-5] try to close channels
+    
+    * [TASK-5] try to close channels
+    
+    * [TASK-5] try to close channels
+    
+    * [TASK-5] try to close channels
+    
+    * [TASK-5] try to close channels
+    
+    * [TASK-5] try to close channels
+    
+    * [TASK-5] try to close channels
+    
+    * [TASK-5] try to close channels
+    
+    * [TASK-5] try to close channels
+    
+    * [TASK-5] lint
+    
+    * [TASK-5] lint
+    
+    * [TASK-5] lint
+    
+    * [TASK-5] lint
+    
+    * [TASK-5] lint
+
+[33mcommit 601b38b33f539732bb2328fd78e509be2783d31b[m
+Author: Nekich06 <p.nikita.73526@gmail.com>
+Date:   Thu Dec 25 00:17:27 2025 +0300
+
+    [TASK-6] (#128)
+    
+    * [TASK-6] Initial commit
+    
+    * [TASK-6] Right initial commit
+    
+    * [TASK-6] Started implementing tests...
+    
+    * [TASK-6] Implemented some tests
+    
+    * [TASK-6] Implemented other db tests
+    
+    * [TASK-6] Implemented wifi tests
+    
+    * [TASK-6] Increasing coverage area in db
+    
+    * [TASK-6] Fixing dynamic errors
+    
+    * [TASK-6] Changed testing methods accroding linter
+    
+    * [TASK-6] Ya errors
+    
+    * [TASK-6] Errors format..
+
+[33mcommit b5ab2efe490ccd9a615ebee094cb4ff851757363[m
+Author: Nekich06 <p.nikita.73526@gmail.com>
+Date:   Thu Dec 25 00:14:52 2025 +0300
+
+    [TASK-5] (#108)
+    
+    * [TASK-5] Initial commit
+    
+    * [TASK-5] Implemented main.go for testing, started implementing conveyer (WIP)
+    
+    * [TASK-5] Implemented modifiers' registration logic
+    
+    * [TASK-5] Implemented conveyer and its methods
+    
+    * [TASK-5] Reimplemented conveyer and its methods, implemented handlers, removed main.go
+    
+    * [TASK-5] Added errgroup logic to Run and removed separating on functions
+    
+    * [TASK-5] Fix error
+    
+    * [TASK-5] Changed return value
+    
+    * [TASK-5] Added errors processing in recieve method
+    
+    * [TASK-5] Implemented unification of modifiers types and added mutex to Conveyer struct
+    
+    * [TASK-5] Removed extra files
+    
+    * [TASK-5] Fix deleting of nil channel
+    
+    * [TASK-5] Linter fix
+    
+    * [TASK-5] Ya linter fix
+    
+    * [TASK-5] Imported required packages
+    
+    * [TASK-5] Changed order of packages
+
+[33mcommit 51593cdf80b45b44ba57d7210e75cbb64e5f6a87[m
+Author: GuseynovGuseynGG <ganx.gamer@gmail.com>
+Date:   Thu Dec 25 00:09:19 2025 +0300
+
+    [TASK-5] (#112)
+    
+    * [TASK-5] first try
+    
+    * [TASK-5] fix lint and test in handler
+    
+    * [TASK-5] fix
+    
+    * [TASK-5] maybe work
+    
+    * [TASK-5] fifth try
+    
+    * [TASK-5] try fix for comments
+    
+    * [TASK-5] try fix for comments
+    
+    * [TASK-5] try fix lint
+    
+    * [TASK-5] fix lint and test
+    
+    * [TASK-5] fifth try fix tests and lint
+    
+    * [TASK-5] try fix lint
+    
+    * [TASK-5] fix for comments
+    
+    * [TASK-5] try fix
+    
+    * [TASK-5] fix lint
+    
+    * [TASK-5] fix
+    
+    * [TASK-5] fix
+    
+    * [TASK-5] fix
+    
+    * [TASK-5] fix for comments
+    
+    * [TASK-5] fix
+    
+    * [TASK-5] fix
+    
+    * [TASK-5] fix
+    
+    * [TASK-5] fix
+    
+    * [TASK-5] fix
+    
+    * [TASK-5] fix
+    
+    * [TASK-5] fix
+    
+    * [TASK-5] FIX
+    
+    * [TASK-5] FIX
+    
+    * [TASK-5] FIX
+    
+    * [TASK-5] i hope last fix
+    
+    * [TASK-5] mistake
+
+[33mcommit f5ea901414ff5dca451933f721cc69d822f4b893[m
+Author: GuseynovGuseynGG <ganx.gamer@gmail.com>
+Date:   Wed Dec 24 21:05:57 2025 +0300
+
+    [TASK-6] (#120)
+    
+    * [TASK-6] Initial commit
+    
+    * [TASK-6] unfinished business
+    
+    * [TASK-6] finishing unfinished
+    
+    * [TASK-6] fix
+    
+    * [TASK-6] FIX
+    
+    * [TASK-6] fix lint
+
+[33mcommit ece397322712ce256e9653ad47afdfd13f735042[m
+Author: Aapng-cmd <82652158+Aapng-cmd@users.noreply.github.com>
+Date:   Wed Dec 24 11:54:08 2025 -0600
+
+    [TASK-8] (#118)
+    
+    * [TASK-8] Initial commit for task-8
+    
+    * [TASK-8] First take
+    
+    * [TASK-8] First take
+    
+    * [TASK-8] Fix build
+    
+    * [TASK-8] Sorry, i forgot
+    
+    * [TASK-8] I forgot to add yaml files
+    
+    * [TASK-8] God damn those tests
+    
+    * [TASK-8] Gues the test, i like it
+
+[33mcommit 5d202f2596393b70f3ae1ec560f3db5544719242[m
+Author: Aapng-cmd <82652158+Aapng-cmd@users.noreply.github.com>
+Date:   Wed Dec 24 08:41:13 2025 -0600
+
+    [TASK-6] (#116)
+    
+    * [TASK-6] Git problems resolving
+    
+    * [TASK-6] Added sql tests
+    
+    * [TASK-6] Added wifi tests
+    
+    * [TASK-6] Fix crackhead code
+    
+    * [TASK-6] I am half asleep, very sorry for typo and memmory error
+    
+    * [TASK-6] God, I hate linter
+    
+    * [TASK-6] Why can not I use underscore in package names? Chat, should i use dash?
+    
+    * [TASK-6] Moved files
+    
+    * [TASK-6] Fixed imports
+    
+    * [TASK-6] Mock was out of test file
+    
+    * [TASK-6] Am I blind?
+    
+    * [TASK-6] Sum added
+    
+    * [TASK-6] Eh, to, bleh. I forgot about one test and its error, sorry
+    
+    * [TASK-6] I checked, fr
+    
+    * [TASK-6] Mockery yay!
+    
+    * [TASK-6] Db fixed
+    
+    * [TASK-6] Wifi fixed
+    
+    * [TASK-6] Db fixed equasion two arrays
+    
+    * [TASK-6] Added ErrorContains
+
+[33mcommit 40f68daa707d087e0c0f51cadcce9a72e7098687[m
+Author: Richmick <ry4ckov.misha2018@yandex.ru>
+Date:   Wed Dec 24 03:03:45 2025 +0300
+
+    [TASK-6] (#124)
+    
+    * [TASK-6] Initial commit
+    
+    * [TASK-6] Add task files
+    
+    * [TASK-6] Add db tests
+    
+    * [TASK-6] Add wifi tests
+    
+    * [TASK-6] Apply linter
+    
+    * [TASK-6] Separate subfunctions
+
+[33mcommit 308d8b5acf184d563db5faa9f0a26c539ee667ec[m
+Author: LeeLisssa <likachich12@gmail.com>
+Date:   Wed Dec 24 00:25:00 2025 +0300
+
+    [TASK-8] (#143)
+    
+    * [TASK-8] adding internal
+    
+    * [TASK-8] fix config
+    
+    * [TASK-8] adding main
+
+[33mcommit 1331ba2f536e1fe94900ec19291b5a133f7d65fd[m
+Author: LeeLisssa <likachich12@gmail.com>
+Date:   Wed Dec 24 00:23:14 2025 +0300
+
+    [TASK-6] (#142)
+    
+    * [TASK-6] adding db
+    
+    * [TASK-6] adding wifi
+    
+    * [TASK-6] fixing db
+    
+    * [TASK-6] fixing lint
+
+[33mcommit c0f0f553f6450ecb78e74ce6894d2b9342456944[m
+Author: Данил <68580374+Danil3352@users.noreply.github.com>
+Date:   Wed Dec 24 00:19:21 2025 +0300
+
+    [TASK-6] (#141)
+    
+    * [TASK-6] Initial commit
+    
+    * [TASK-6] Add tests for wifi
+    
+    * [TASK-6] Add db testd + some fixes lint
+    
+    * [TASK-6] Fix version
+    
+    * [TASK-6] Fix lint 1
+    
+    * [TASK-6] Fix lint 2
+    
+    * [TASK-6] Fix lint 3
+
+[33mcommit 09ae357f36ab40da628f8cb4fe1f644b1b0a0558[m
+Author: mipxe <mariamozegova8726@gmail.com>
+Date:   Tue Dec 23 23:56:26 2025 +0300
+
+    [TASK-6] (#126)
+    
+    * [TASK-6] initial commit
+    
+    * [TASK-6] add internal
+    
+    * [TASK-6] add test for db
+    
+    * [TASK-6] add test for wifi
+
+[33mcommit 8c34ab42331a0e62585d621f5a12dcc9513b6c46[m
+Author: GuseynovGuseynGG <ganx.gamer@gmail.com>
+Date:   Tue Dec 23 23:40:35 2025 +0300
+
+    [TASK-8] (#144)
+    
+    * [TASK-8] INITIAL COMMIT
+    
+    * [TASK-8] FIRST TRY
+
+[33mcommit 725b01129798a3583360f864bd7d0aea51afac9a[m
+Author: Алексей <finaev.av@edu.spbstu.ru>
+Date:   Tue Dec 23 23:25:26 2025 +0300
+
+    [TASK-5] (#140)
+    
+    * [TASK-5] Initial commit for task 5
+    
+    * [TASK-5] first vers lab task-5
+    
+    * [TASK-5] fix mistakes
+    
+    * [TASK-5] fix conveyor
+    
+    * [TASK-5] fix lab
+    
+    * [TASK-5] test
+    
+    * [TASK-5] fix do files
+    
+    * [TASK-5] full new lab
+    
+    * [TASK-5] fix lab
+    
+    * [TASK-5] fix
+    
+    * [TASK-5] fix lab
+    
+    * [TASK-5] fix again
+    
+    * [TASK-5] fix lab
+    
+    ---------
+    
+    Co-authored-by: AlexeyFinaev02 <finaev0212212@mail.ru>
+
+[33mcommit fe192af217ef38c2992375dcd9e9a9164cab436f[m
+Author: mipxe <mariamozegova8726@gmail.com>
+Date:   Tue Dec 23 23:23:48 2025 +0300
+
+    [TASK-5] (#114)
+    
+    * [TASK-5] initial commit
+    
+    * [TASK-5] realise conveyer
+    
+    * [TASK-5] realise handlers
+    
+    * [TASK-5] fix lint
+    
+    * [TASK-5] fixing
+    
+    * [TASK-5] fixing
+    
+    * [TASK-5] fix closing channels
+    
+    * [TASK-5] delete recover()
+
+[33mcommit 6bbe191e315f7782920ae7e95c8039dbd5ac6f2b[m
+Author: Tuc0Sa1amanka <sparowj765@gmail.com>
+Date:   Tue Dec 23 23:12:54 2025 +0300
+
+    [TASK-5] (#113)
+    
+    * [TASK-5] Initial commit
+    
+    * [TASK-5] added implementation of conveyer
+    
+    * [TASK-5] added implementation of handles
+    
+    * [TASK-5] removed unusable main
+
+[33mcommit 9609032a71fec10172ec87d0efa6ad8460e29a75[m
+Author: vikaglushkova <vikagluskova2006@gmail.com>
+Date:   Tue Dec 23 23:08:12 2025 +0300
+
+    [TASK-5] (#111)
+    
+    * [TASK-5] Initial commit
+    
+    * [TASK-5] fix go.mod
+    
+    * [TASK-5] fix go.mod2
+    
+    * [TASK-5] fix go.mod3
+    
+    * [TASK-5] fix context deadline errors
+    
+    * [TASK-5] fix go.sum
+    
+    * [TASK-5] fix multiplexer channel closing
+    
+    * [TASK-5] fix go.sum
+    
+    * [TASK-5] fix checksum mismatch
+    
+    * [TASK-5] Fix context cancellation handling
+    
+    * [TASK-5] Fix linting issues comprehensively
+    
+    * [TASK-5] Fix linter
+    
+    * [TASK-5] Fix lint2
+    
+    * [TASK-5] Fix lint3
+    
+    * [TASK-5] fix commentarii
+    
+    * [TASK-5] fix teacher comments lint
+    
+    * [TASK-5] fix lint formatting issues
+
+[33mcommit 1d4948127d1172202824824faf8e25e5d8db8928[m
+Author: lina <verticalochka@gmail.com>
+Date:   Tue Dec 23 23:02:55 2025 +0300
+
+    [TASK-5] (#110)
+    
+    * [TASK-5] Initial commit
+    
+    * [TASK-5] Initial commit
+    
+    * [TASK-5] lint
+    
+    * [TASK-5] lint2
+    
+    * [TASK-5] lint3
+    
+    * [TASK-5] lint4
+
+[33mcommit 835faa3cb1b9d21b5442596bd905d7f5500f1685[m
+Author: netw1te <aleksander.alymov@gmail.com>
+Date:   Tue Dec 23 22:57:19 2025 +0300
+
+    [TASK-5] (#109)
+    
+    * [TASK-5] Initial commit
+    
+    * [TASK-5] Fix concurrency issues in conveyer implementation
+    
+    * [TASK-5] Remove closeAllChans
+    
+    * [TASK-5] Fix Send to return error for non-existent channels and prevent double channel closing
+    
+    * [TASK-5] fix conveyer channel issues
+    
+    * [TASK-5] fix conveyer channel issues2
+    
+    * [TASK-5] Replace handler-based execution with task functions
+    
+    * [TASK-5] Send now blocks until data can be written to channel
+    
+    * [TASK-5] Add defer close() calls to all handler tasks
+    
+    * [TASK-5] fix conveyer channel issues
+    
+    * [TASK-5] lint fix
+    
+    * [TASK-5] lint fix2
+    
+    * [TASK-5] lint fix3
+    
+    * [TASK-5] lint fix4
+    
+    * [TASK-5] remove excessive mutex locks from task registration
+    
+    * [TASK-5] remove excessive mutex locks from task registration2
+    
+    * [TASK-5] lint fix
+    
+    * [TASK-5] remove channel closure from handlers
+    
+    * [TASK-5] maintain channel map for Recv after conveyer stop
+    
+    * [TASK-5] remove channel closure from handlers, keep original Recv behavior
+    
+    * [TASK-5] return to the latest working version
+    
+    * [TASK-5] ix comments 1
+    
+    * [TASK-5] lint fix
+    
+    * [TASK-5] lint fix 2
+    
+    * [TASK-5] lint fix 3
+    
+    * [TASK-5] fix comments 2
+    
+    * [TASK-5] lint fix
+    
+    * [TASK-5] fix comments
+    
+    * [TASK-5] fix lint
+    
+    * [TASK-5] comment fix
+    
+    * [TASK-5] fix lint
+
+[33mcommit 09a45f7d40c2b94291d64a551284e4fdc6a0469a[m
+Author: nepolx <118815019+nepolx@users.noreply.github.com>
+Date:   Tue Dec 23 22:52:58 2025 +0300
+
+    [TASK-5] (#107)
+    
+    * [TASK-5] Initial committt
+    
+    * [TASK-5] conveyer
+    
+    * [TASK-5] handlers
+    
+    * [TASK-5] fix conveyer
+    
+    * [TASK-5] fix
+    
+    * [TASK-5] fix
+    
+    * [TASK-5] fix
+    
+    * [TASK-5] fix
+    
+    * [TASK-5] remove default
+    
+    * [TASK-5] fix
+    
+    * [TASK-5] lint
+    
+    * [TASK-5] lint
+    
+    * [TASK-5] lint
+    
+    * [TASK-5] lint
+    
+    * [TASK-5] lint
+    
+    * [TASK-5] lint
+    
+    * [TASK-5] rework mistakes
+    
+    * [TASK-5] rework mistakes
+    
+    * [TASK-5] lint
+    
+    * [TASK-5] lint
+
+[33mcommit 6f95f42184efaea829953536eee04e84690a0738[m
+Author: vikaglushkova <vikagluskova2006@gmail.com>
+Date:   Tue Dec 23 22:46:13 2025 +0300
+
+    [TASK-3] (#94)
+    
+    * [TASK-3] Initial commit
+    
+    * [TASK-3] Fix linter issues and test requirements
+    
+    * [TASK-3] Fix xml
+    
+    * [TASK-3] Fix lint
+    
+    * [TASK-3] Fix lint tests
+    
+    * [TASK-3] Fix lin
+    
+    * [TASK-3] Fix tests
+    
+    * [TASK-3] Fix test
+    
+    * [TASK-3] Fix problem
+    
+    * [TASK-3] Fix linters tests
+    
+    * [TASK-3] Fix lint 2
+    
+    * [TASK-3] Fix json
+    
+    * [TASK-3] Fix magic number lint error
+    
+    * [TASK-3] Fix octal notation formatting
+    
+    * [TASK-3] fix c commentarii
+    
+    * [TASK-3] fix lint file close
+    
+    * [TASK-3] fix apply code review fixes and linter corrections
+    
+    * [TASK-3] fix: apply all code review corrections
+    
+    * [TASK-3] fix: remove unused os import
+    
+    * [TASK-3] fix: apply currencyValue UnmarshalXML for decimal parsing
+    
+    * [TASK-3] fix: export CurrencyValue type and fix decimal parsing
+    
+    * [TASK-3] address linter issues - formatting, magic numbers, return lines
+    
+    * [TASK-3] remove unused os import
+    
+    * [TASK-3] fix: proper formatting for Valute struct
+    
+    * [TASK-3] fix: correct struct fieldq
+    
+    * [TASK-3] use single Valute struct with both XML and JSON tags
+    
+    * [TASK-3] fix align struct tags
+    
+    * [TASK-3] fix struct
+    
+    * [TASK-3] remov unmarshal.go
+    
+    * [TASK-3] fix currency
+    
+    * [TASK-3] fix main
+    
+    * [TASK-3] fix proper formatt
