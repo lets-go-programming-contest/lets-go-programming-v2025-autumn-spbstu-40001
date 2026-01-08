@@ -12,11 +12,9 @@ import (
 
 var errWifi = errors.New("wifi")
 
-type testT struct {
-}
-
 func hardwareAddr(str string) net.HardwareAddr {
 	addr, _ := net.ParseMAC(str)
+
 	return addr
 }
 

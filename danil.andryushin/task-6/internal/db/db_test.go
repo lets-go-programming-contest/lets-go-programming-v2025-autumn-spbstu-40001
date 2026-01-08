@@ -16,6 +16,7 @@ func TestNew(t *testing.T) {
 
 	mockDB, _, err := sqlmock.New()
 	require.NoError(t, err)
+
 	defer mockDB.Close()
 
 	service := db.New(mockDB)
@@ -24,6 +25,7 @@ func TestNew(t *testing.T) {
 
 func TestDBService_GetNames(test *testing.T) {
 	test.Parallel()
+
 	tests := []struct {
 		name          string
 		mockSetup     func(sqlmock.Sqlmock)
@@ -72,10 +74,13 @@ func TestDBService_GetNames(test *testing.T) {
 
 			dbConn, mock, err := sqlmock.New()
 			require.NoError(t2, err)
+
 			defer dbConn.Close()
 
 			service := db.New(dbConn)
+
 			t.mockSetup(mock)
+
 			result, err := service.GetNames()
 			if t.expectError {
 				require.Error(t2, err)
@@ -90,6 +95,7 @@ func TestDBService_GetNames(test *testing.T) {
 
 func TestDBService_GetUniqueNames(test *testing.T) {
 	test.Parallel()
+
 	tests := []struct {
 		name          string
 		mockSetup     func(sqlmock.Sqlmock)
@@ -139,10 +145,13 @@ func TestDBService_GetUniqueNames(test *testing.T) {
 
 			dbConn, mock, err := sqlmock.New()
 			require.NoError(t2, err)
+
 			defer dbConn.Close()
 
 			service := db.New(dbConn)
+
 			t.mockSetup(mock)
+
 			result, err := service.GetUniqueNames()
 			if t.expectError {
 				require.Error(t2, err)
