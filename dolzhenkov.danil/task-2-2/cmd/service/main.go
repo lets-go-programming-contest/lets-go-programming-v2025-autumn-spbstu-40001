@@ -10,24 +10,27 @@ var ErrOfScan = errors.New("scan failed")
 
 type MaxHeap []int
 
-func (iHeap MaxHeap) Len() int {
-	return len(iHeap)
+// Все методы используют pointer receiver для согласованности
+func (iHeap *MaxHeap) Len() int {
+	return len(*iHeap)
 }
 
-func (iHeap MaxHeap) Less(firstIndex, secondIndex int) bool {
-	if firstIndex < 0 || secondIndex < 0 || firstIndex >= len(iHeap) || secondIndex >= len(iHeap) {
+func (iHeap *MaxHeap) Less(firstIndex, secondIndex int) bool {
+	h := *iHeap
+	if firstIndex < 0 || secondIndex < 0 || firstIndex >= len(h) || secondIndex >= len(h) {
 		panic("index out of range in less")
 	}
 
-	return iHeap[firstIndex] > iHeap[secondIndex]
+	return h[firstIndex] > h[secondIndex]
 }
 
-func (iHeap MaxHeap) Swap(firstIndex, secondIndex int) {
-	if firstIndex < 0 || secondIndex < 0 || firstIndex >= len(iHeap) || secondIndex >= len(iHeap) {
+func (iHeap *MaxHeap) Swap(firstIndex, secondIndex int) {
+	h := *iHeap
+	if firstIndex < 0 || secondIndex < 0 || firstIndex >= len(h) || secondIndex >= len(h) {
 		panic("index out of range in swap")
 	}
 
-	iHeap[firstIndex], iHeap[secondIndex] = iHeap[secondIndex], iHeap[firstIndex]
+	h[firstIndex], h[secondIndex] = h[secondIndex], h[firstIndex]
 }
 
 func (iHeap *MaxHeap) Push(x any) {
@@ -40,30 +43,38 @@ func (iHeap *MaxHeap) Push(x any) {
 }
 
 func (iHeap *MaxHeap) Pop() any {
-	olhH := *iHeap
-	length := len(olhH)
+	h := *iHeap
+	length := len(h)
 
 	if length == 0 {
 		return nil
 	}
 
-	last := olhH[length-1]
-	*iHeap = olhH[:length-1]
+	last := h[length-1]
+	*iHeap = h[:length-1]
 
 	return last
 }
 
-func main() {
-	var countOfDishes int
+func readInt(prompt string, min, max int) (int, error) {
+	var value int
+	_, err := fmt.Scan(&value)
 
-	_, err := fmt.Scan(&countOfDishes)
 	if err != nil {
-		fmt.Println("Invalid input of count of dishes:", err)
-		return
+		return 0, fmt.Errorf("invalid input of %s: %w", prompt, err)
 	}
 
-	if countOfDishes < 1 || countOfDishes > 10000 {
-		fmt.Println("Count of dishes must be between 1 and 10000")
+	if value < min || value > max {
+		return 0, fmt.Errorf("%s must be between %d and %d", prompt, min, max)
+	}
+
+	return value, nil
+}
+
+func main() {
+	countOfDishes, err := readInt("count of dishes", 1, 10000)
+	if err != nil {
+		fmt.Println(err)
 		return
 	}
 
@@ -71,41 +82,30 @@ func main() {
 	heap.Init(dishHeap)
 
 	for range countOfDishes {
-		var rating int
-
-		_, err := fmt.Scan(&rating)
+		rating, err := readInt("rating of dish", -10000, 10000)
 		if err != nil {
-			fmt.Println("Invalid input of rating of dish:", err)
-			return
-		}
-
-		if rating < -10000 || rating > 10000 {
-			fmt.Println("Rating must be between -10000 and 10000")
+			fmt.Println(err)
 			return
 		}
 
 		heap.Push(dishHeap, rating)
 	}
 
-	var numOfPreference int
-
-	_, err = fmt.Scan(&numOfPreference)
+	numOfPreference, err := readInt("num of preference", 1, countOfDishes)
 	if err != nil {
-		fmt.Println("Invalid input of num of preference:", err)
+		fmt.Println(err)
 		return
 	}
 
-	if numOfPreference < 1 || numOfPreference > countOfDishes {
-		fmt.Println("Num of preference must be between 1 and", countOfDishes)
-		return
-	}
-
-	for range numOfPreference - 1 {
-		heap.Pop(dishHeap)
+	if numOfPreference > 1 {
+		for range numOfPreference - 1 {
+			heap.Pop(dishHeap)
+		}
 	}
 
 	kthLargestRaw := heap.Pop(dishHeap)
 	kthLargest, ok := kthLargestRaw.(int)
+
 	if !ok {
 		fmt.Println("Type assertion failed")
 		return
