@@ -39,8 +39,11 @@ func main() {
 	)
 
 	fmt.Println("Calling runtime.GC()...")
+
 	gcStart := time.Now()
+
 	runtime.GC()
+
 	fmt.Printf("GC duration: %v\n", time.Since(gcStart))
 
 	runtime.ReadMemStats(&stats)
