@@ -33,7 +33,12 @@ func LoadFromFile(path string) (*Bank, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot open file: %w", err)
 	}
-	defer file.Close()
 
-	return DecodeXML(file)
+	bankData, decodeErr := DecodeXML(file)
+
+	if closeErr := file.Close(); closeErr != nil && decodeErr == nil {
+		return nil, fmt.Errorf("failed to close file: %w", closeErr)
+	}
+
+	return bankData, decodeErr
 }

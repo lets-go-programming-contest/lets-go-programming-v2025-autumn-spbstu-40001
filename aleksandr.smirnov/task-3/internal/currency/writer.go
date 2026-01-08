@@ -31,7 +31,12 @@ func (list outputList) WriteJSONFile(path string) error {
 	if err != nil {
 		return fmt.Errorf("create file %s: %w", path, err)
 	}
-	defer file.Close()
 
-	return list.WriteJSON(file)
+	writeErr := list.WriteJSON(file)
+
+	if closeErr := file.Close(); writeErr == nil && closeErr != nil {
+		return fmt.Errorf("failed to close file: %w", closeErr)
+	}
+
+	return writeErr
 }

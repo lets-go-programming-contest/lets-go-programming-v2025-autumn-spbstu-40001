@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -17,13 +18,26 @@ func Load(path string) (*AppConfig, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot open config: %w", err)
 	}
-	defer file.Close()
 
+	cfg, decodeErr := decodeConfig(file)
+
+	if closeErr := file.Close(); decodeErr != nil {
+		if closeErr != nil {
+			return nil, fmt.Errorf("failed to load config: %w", decodeErr)
+		}
+		return nil, fmt.Errorf("failed to load config: %w", decodeErr)
+	} else if closeErr != nil {
+		return nil, fmt.Errorf("failed to close config file: %w", closeErr)
+	}
+
+	return cfg, nil
+}
+
+func decodeConfig(r io.Reader) (*AppConfig, error) {
 	var cfg AppConfig
-	decoder := yaml.NewDecoder(file)
+	decoder := yaml.NewDecoder(r)
 	if err := decoder.Decode(&cfg); err != nil {
 		return nil, fmt.Errorf("cannot decode yaml: %w", err)
 	}
-
 	return &cfg, nil
 }
