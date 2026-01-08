@@ -12,6 +12,13 @@ const (
 	mbDivisor    = 1024 * 1024
 )
 
+func allocate() {
+	data := make([][]byte, objectsCount)
+	for index := range data {
+		data[index] = make([]byte, objectSize)
+	}
+}
+
 func main() {
 	var stats runtime.MemStats
 
@@ -19,22 +26,15 @@ func main() {
 	fmt.Printf("Before allocation — Heap: %v MB, GC cycles: %v\n",
 		stats.HeapAlloc/mbDivisor, stats.NumGC)
 
-	data := make([][]byte, objectsCount)
-	for index := range data {
-		data[index] = make([]byte, objectSize)
-	}
+	allocate()
 
 	runtime.ReadMemStats(&stats)
 	fmt.Printf("After allocation  — Heap: %v MB, GC cycles: %v\n",
 		stats.HeapAlloc/mbDivisor, stats.NumGC)
 
-	data = nil
-
 	fmt.Println("Calling runtime.GC()...")
-
 	gcStart := time.Now()
 	runtime.GC()
-
 	fmt.Printf("GC duration: %v\n", time.Since(gcStart))
 
 	runtime.ReadMemStats(&stats)
