@@ -14,8 +14,8 @@ const (
 
 func allocate() {
 	data := make([][]byte, objectsCount)
-	for index := range data {
-		data[index] = make([]byte, objectSize)
+	for i := range data {
+		data[i] = make([]byte, objectSize)
 	}
 }
 
@@ -23,23 +23,35 @@ func main() {
 	var stats runtime.MemStats
 
 	runtime.ReadMemStats(&stats)
-	fmt.Printf("Before allocation — Heap: %v MB, GC cycles: %v\n",
-		stats.HeapAlloc/mbDivisor, stats.NumGC)
+	fmt.Printf(
+		"Before allocation — Heap: %v MB, GC cycles: %v\n",
+		stats.HeapAlloc/mbDivisor,
+		stats.NumGC,
+	)
 
 	allocate()
 
 	runtime.ReadMemStats(&stats)
-	fmt.Printf("After allocation  — Heap: %v MB, GC cycles: %v\n",
-		stats.HeapAlloc/mbDivisor, stats.NumGC)
+	fmt.Printf(
+		"After allocation  — Heap: %v MB, GC cycles: %v\n",
+		stats.HeapAlloc/mbDivisor,
+		stats.NumGC,
+	)
 
 	fmt.Println("Calling runtime.GC()...")
+
 	gcStart := time.Now()
+
 	runtime.GC()
+
 	fmt.Printf("GC duration: %v\n", time.Since(gcStart))
 
 	runtime.ReadMemStats(&stats)
-	fmt.Printf("After GC         — Heap: %v MB, GC cycles: %v\n",
-		stats.HeapAlloc/mbDivisor, stats.NumGC)
+	fmt.Printf(
+		"After GC         — Heap: %v MB, GC cycles: %v\n",
+		stats.HeapAlloc/mbDivisor,
+		stats.NumGC,
+	)
 
 	time.Sleep(time.Second)
 }
