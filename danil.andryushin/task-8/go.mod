@@ -1,4 +1,4 @@
-module github.com/atroxxxxxx/task-
+module github.com/atroxxxxxx/task-8
 
 go 1.22.7
 

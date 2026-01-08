@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/atroxxxxxx/task-/internal/config"
+	"github.com/atroxxxxxx/task-8/internal/config"
 )
 
 func main() {
