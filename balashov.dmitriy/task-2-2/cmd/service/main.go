@@ -25,18 +25,21 @@ func main() {
 	}
 
 	runtime.ReadMemStats(&stats)
-	fmt.Printf("After allocation — Heap: %v MB, GC cycles: %v\n",
+	fmt.Printf("After allocation  — Heap: %v MB, GC cycles: %v\n",
 		stats.HeapAlloc/mbDivisor, stats.NumGC)
 
+	data = nil
+
 	fmt.Println("Calling runtime.GC()...")
+
 	gcStart := time.Now()
 	runtime.GC()
+
 	fmt.Printf("GC duration: %v\n", time.Since(gcStart))
 
 	runtime.ReadMemStats(&stats)
-	fmt.Printf("After GC — Heap: %v MB, GC cycles: %v\n",
+	fmt.Printf("After GC         — Heap: %v MB, GC cycles: %v\n",
 		stats.HeapAlloc/mbDivisor, stats.NumGC)
 
-	_ = data
 	time.Sleep(time.Second)
 }
