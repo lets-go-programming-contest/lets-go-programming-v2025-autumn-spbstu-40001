@@ -6,97 +6,85 @@ import (
 	"fmt"
 )
 
-var (
-	ErrOfScan       = errors.New("scan failed")
-	ErrInvalidRange = errors.New("value out of valid range")
-)
+var ErrOfScan = errors.New("scan failed")
 
-// MaxHeap implements a max heap data structure.
-type MaxHeap []int
+type IntHeap []int
 
-// All methods use pointer receiver for consistency.
-func (h *MaxHeap) Len() int {
-	return len(*h)
+func (iHeap *IntHeap) Len() int {
+	return len(*iHeap)
 }
 
-func (h *MaxHeap) Less(firstIndex, secondIndex int) bool {
-	heapSlice := *h
-	if firstIndex < 0 || secondIndex < 0 || firstIndex >= len(heapSlice) || secondIndex >= len(heapSlice) {
+func (iHeap *IntHeap) Less(firstIndex, secondIndex int) bool {
+	if firstIndex < 0 || secondIndex < 0 || firstIndex >= len(*iHeap) || secondIndex >= len(*iHeap) {
 		panic("index out of range in less")
 	}
 
-	return heapSlice[firstIndex] > heapSlice[secondIndex]
+	return (*iHeap)[firstIndex] < (*iHeap)[secondIndex]
 }
 
-func (h *MaxHeap) Swap(firstIndex, secondIndex int) {
-	heapSlice := *h
-	if firstIndex < 0 || secondIndex < 0 || firstIndex >= len(heapSlice) || secondIndex >= len(heapSlice) {
+func (iHeap *IntHeap) Swap(firstIndex, secondIndex int) {
+	if firstIndex < 0 || secondIndex < 0 || firstIndex >= len(*iHeap) || secondIndex >= len(*iHeap) {
 		panic("index out of range in swap")
 	}
 
-	heapSlice[firstIndex], heapSlice[secondIndex] = heapSlice[secondIndex], heapSlice[firstIndex]
+	(*iHeap)[firstIndex], (*iHeap)[secondIndex] = (*iHeap)[secondIndex], (*iHeap)[firstIndex]
 }
 
-func (h *MaxHeap) Push(x any) {
+func (iHeap *IntHeap) Push(x any) {
 	value, ok := x.(int)
 	if !ok {
 		panic("heap: Push of non-int value")
 	}
 
-	*h = append(*h, value)
+	*iHeap = append(*iHeap, value)
 }
 
-func (h *MaxHeap) Pop() any {
-	heapSlice := *h
-	length := len(heapSlice)
+func (iHeap *IntHeap) Pop() any {
+	olhH := *iHeap
+	length := len(olhH)
 
 	if length == 0 {
 		return nil
 	}
 
-	last := heapSlice[length-1]
-	*h = heapSlice[:length-1]
+	last := olhH[length-1]
+	*iHeap = olhH[:length-1]
 
 	return last
 }
 
-func readInt(prompt string, minValue, maxValue int) (int, error) {
-	var value int
-	_, err := fmt.Scan(&value)
+func removeMinUntil(dishHeap *IntHeap, numOfPreference int) {
+	for dishHeap.Len() > numOfPreference {
+		heap.Pop(dishHeap)
+	}
+}
 
+func readInt() (int, error) {
+	var val int
+
+	_, err := fmt.Scan(&val)
 	if err != nil {
-		return 0, fmt.Errorf("invalid input of %s: %w", prompt, ErrOfScan)
+		return 0, ErrOfScan
 	}
 
-	if value < minValue || value > maxValue {
-		return 0, fmt.Errorf("%s must be between %d and %d: %w", prompt, minValue, maxValue, ErrInvalidRange)
-	}
-
-	return value, nil
+	return val, nil
 }
 
 func main() {
-	const (
-		minDishes = 1
-		maxDishes = 10000
-		minRating = -10000
-		maxRating = 10000
-	)
-
-	countOfDishes, err := readInt("count of dishes", minDishes, maxDishes)
+	countOfDishes, err := readInt()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Invalid input of count of dishes", err)
 
 		return
 	}
 
-	dishHeap := &MaxHeap{}
+	dishHeap := &IntHeap{}
 	heap.Init(dishHeap)
 
 	for range countOfDishes {
-		rating, err := readInt("rating of dish", minRating, maxRating)
+		rating, err := readInt()
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Invalid input of rating of dish", err)
 
 			return
 		}
@@ -104,27 +92,35 @@ func main() {
 		heap.Push(dishHeap, rating)
 	}
 
-	numOfPreference, err := readInt("num of preference", 1, countOfDishes)
+	numOfPreference, err := readInt()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Invalid input of num of preference", err)
 
 		return
 	}
 
-	if numOfPreference > 1 {
-		for range numOfPreference - 1 {
-			heap.Pop(dishHeap)
-		}
+	if numOfPreference < 1 || numOfPreference > countOfDishes {
+		fmt.Println("Num of preference out of allowed range")
+
+		return
 	}
 
-	kthLargestRaw := heap.Pop(dishHeap)
-	kthLargest, ok := kthLargestRaw.(int)
+	removeMinUntil(dishHeap, numOfPreference)
+
+	if dishHeap.Len() != numOfPreference || dishHeap.Len() == 0 {
+		fmt.Println("Heap size mismatch after trimming")
+
+		return
+	}
+
+	val := heap.Pop(dishHeap)
+	got, ok := val.(int)
 
 	if !ok {
-		fmt.Println("Type assertion failed")
+		fmt.Println("Heap returned non-int value")
 
 		return
 	}
 
-	fmt.Println(kthLargest)
+	fmt.Println(got)
 }
