@@ -11,14 +11,6 @@ import (
 
 var errExpected = errors.New("error expected")
 
-type testT struct {
-	name          string
-	mockSetup     func(sqlmock.Sqlmock)
-	expectError   bool
-	errorContains string
-	expected      []string
-}
-
 func TestNew(t *testing.T) {
 	t.Parallel()
 
@@ -32,7 +24,13 @@ func TestNew(t *testing.T) {
 
 func TestDBService_GetNames(test *testing.T) {
 	test.Parallel()
-	tests := []testT{
+	tests := []struct {
+		name          string
+		mockSetup     func(sqlmock.Sqlmock)
+		expectError   bool
+		errorContains string
+		expected      []string
+	}{
 		{
 			name: "success",
 			mockSetup: func(mock sqlmock.Sqlmock) {
@@ -92,7 +90,13 @@ func TestDBService_GetNames(test *testing.T) {
 
 func TestDBService_GetUniqueNames(test *testing.T) {
 	test.Parallel()
-	tests := []testT{
+	tests := []struct {
+		name          string
+		mockSetup     func(sqlmock.Sqlmock)
+		expectError   bool
+		errorContains string
+		expected      []string
+	}{
 		{
 			name: "success",
 			mockSetup: func(mock sqlmock.Sqlmock) {
