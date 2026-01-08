@@ -14,17 +14,29 @@ func main() {
 
 	cfg, err := config.Load(*configPath)
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
+		fmt.Printf("Config error: %v\n", err)
 		return
 	}
 
-	fmt.Printf("Config loaded\n")
+	fmt.Printf("Loading XML from: %s\n", cfg.Input)
 
-	_, err = currency.LoadFromFile(cfg.Input)
+	bankData, err := currency.LoadFromFile(cfg.Input)
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
+		fmt.Printf("XML error: %v\n", err)
 		return
 	}
 
-	fmt.Println("XML loaded successfully")
+	converted, err := currency.ConvertValues(bankData)
+	if err != nil {
+		fmt.Printf("Conversion error: %v\n", err)
+		return
+	}
+	converted.SortDesc()
+
+	if err := converted.WriteJSONFile(cfg.Output); err != nil {
+		fmt.Printf("Save error: %v\n", err)
+		return
+	}
+
+	fmt.Printf("Success! Saved %d currencies to: %s\n", len(converted), cfg.Output)
 }
