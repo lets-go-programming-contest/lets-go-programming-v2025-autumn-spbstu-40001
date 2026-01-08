@@ -1,57 +1,135 @@
 package main
 
 import (
+	"container/heap"
+	"errors"
 	"fmt"
-	"runtime"
-	"time"
 )
 
-const (
-	objectsCount = 100_000
-	objectSize   = 1024
-	mbDivisor    = 1024 * 1024
+var (
+	errIndexNotPos     = errors.New("index must be positive")
+	errIndexOutOfRange = errors.New("index out of range")
 )
 
-func allocate() {
-	data := make([][]byte, objectsCount)
-	for i := range data {
-		data[i] = make([]byte, objectSize)
+type MinHeap []int
+
+func (heap *MinHeap) checkIndexBounds(index int) {
+	length := heap.Len()
+
+	if index < 0 || index >= length {
+		panic(fmt.Sprintf("heap index out of range [%d] with length %d", index, length))
 	}
 }
 
+func (heap *MinHeap) Len() int {
+	return len(*heap)
+}
+
+func (heap *MinHeap) Less(index1, index2 int) bool {
+	heap.checkIndexBounds(index1)
+	heap.checkIndexBounds(index2)
+
+	return (*heap)[index1] < (*heap)[index2]
+}
+
+func (heap *MinHeap) Swap(index1, index2 int) {
+	heap.checkIndexBounds(index1)
+	heap.checkIndexBounds(index2)
+	(*heap)[index1], (*heap)[index2] = (*heap)[index2], (*heap)[index1]
+}
+
+func (heap *MinHeap) Push(elem any) {
+	val, ok := elem.(int)
+	if !ok {
+		panic(fmt.Sprintf("Push: expected int, but got %T", elem))
+	}
+
+	*heap = append(*heap, val)
+}
+
+func (heap *MinHeap) Pop() any {
+	old := *heap
+
+	size := len(old)
+	if size == 0 {
+		panic("Pop called on empty MinHeap")
+	}
+
+	lastVal := old[size-1]
+	*heap = old[0 : size-1]
+
+	return lastVal
+}
+
+func readAndValidateIndex(dishesCount int) (int, error) {
+	var index int
+
+	_, err := fmt.Scan(&index)
+	if err != nil {
+		return 0, fmt.Errorf("failed to read index of needed dish: %w", err)
+	}
+
+	if index <= 0 {
+		return 0, fmt.Errorf("%w: got %d", errIndexNotPos, index)
+	}
+
+	if index > dishesCount {
+		return 0, fmt.Errorf("%w: index %d, dish count %d", errIndexOutOfRange, index, dishesCount)
+	}
+
+	return index, nil
+}
+
 func main() {
-	var stats runtime.MemStats
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("Error: %v\n", r)
+		}
+	}()
 
-	runtime.ReadMemStats(&stats)
-	fmt.Printf(
-		"Before allocation — Heap: %v MB, GC cycles: %v\n",
-		stats.HeapAlloc/mbDivisor,
-		stats.NumGC,
-	)
+	var dishesCount int
 
-	allocate()
+	_, err := fmt.Scan(&dishesCount)
+	if err != nil {
+		fmt.Println("Failed to read count of dishes:", err)
 
-	runtime.ReadMemStats(&stats)
-	fmt.Printf(
-		"After allocation  — Heap: %v MB, GC cycles: %v\n",
-		stats.HeapAlloc/mbDivisor,
-		stats.NumGC,
-	)
+		return
+	}
 
-	fmt.Println("Calling runtime.GC()...")
+	myHeap := &MinHeap{}
+	heap.Init(myHeap)
 
-	gcStart := time.Now()
+	for range dishesCount {
+		var dishRating int
 
-	runtime.GC()
+		_, err = fmt.Scan(&dishRating)
+		if err != nil {
+			fmt.Println("Failed to read rating of dishes:", err)
 
-	fmt.Printf("GC duration: %v\n", time.Since(gcStart))
+			return
+		}
 
-	runtime.ReadMemStats(&stats)
-	fmt.Printf(
-		"After GC          — Heap: %v MB, GC cycles: %v\n",
-		stats.HeapAlloc/mbDivisor,
-		stats.NumGC,
-	)
+		heap.Push(myHeap, dishRating)
+	}
 
-	time.Sleep(time.Second)
+	index, err := readAndValidateIndex(dishesCount)
+	if err != nil {
+		fmt.Println("Error:", err)
+
+		return
+	}
+
+	for myHeap.Len() > index {
+		heap.Pop(myHeap)
+	}
+
+	needDish, ok := heap.Pop(myHeap).(int)
+
+	if !ok {
+		fmt.Println("Cannot convert to int")
+
+		return
+	}
+
+	fmt.Println(needDish)
 }
