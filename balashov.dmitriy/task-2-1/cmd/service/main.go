@@ -14,29 +14,29 @@ const (
 )
 
 func main() {
-	sc := bufio.NewScanner(os.Stdin)
-	sc.Scan()
-	n, _ := strconv.Atoi(sc.Text())
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	n, _ := strconv.Atoi(scanner.Text())
 
-	for i := 0; i < n; i++ {
-		sc.Scan()
-		k, _ := strconv.Atoi(sc.Text())
+	for department := 0; department < n; department++ {
+		scanner.Scan()
+		k, _ := strconv.Atoi(scanner.Text())
 
 		low := minTemp
 		high := maxTemp
 
-		for j := 0; j < k; j++ {
-			sc.Scan()
-			parts := strings.Split(sc.Text(), " ")
-			t, _ := strconv.Atoi(parts[1])
+		for employee := 0; employee < k; employee++ {
+			scanner.Scan()
+			parts := strings.Split(scanner.Text(), " ")
+			temp, _ := strconv.Atoi(parts[1])
 
 			if parts[0] == ">=" {
-				if t > low {
-					low = t
+				if temp > low {
+					low = temp
 				}
-			} else {
-				if t < high {
-					high = t
+			} else { // "<="
+				if temp < high {
+					high = temp
 				}
 			}
 
