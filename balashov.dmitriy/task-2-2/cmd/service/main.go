@@ -45,7 +45,7 @@ func main() {
 
 	runtime.ReadMemStats(&stats)
 	fmt.Printf(
-		"After GC         — Heap: %v MB, GC cycles: %v\n",
+		"After GC          — Heap: %v MB, GC cycles: %v\n",
 		stats.HeapAlloc/mbDivisor,
 		stats.NumGC,
 	)
