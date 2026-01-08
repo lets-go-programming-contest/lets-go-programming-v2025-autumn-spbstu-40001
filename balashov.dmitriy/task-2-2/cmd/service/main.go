@@ -6,31 +6,37 @@ import (
 	"time"
 )
 
+const (
+	objectsCount = 100_000
+	objectSize   = 1024
+)
+
 func main() {
-	var m runtime.MemStats
+	stats := runtime.MemStats{}
 
-	runtime.ReadMemStats(&m)
-	fmt.Printf("Before alloc — Heap: %v MB, GC cycles: %v\n",
-		m.HeapAlloc/1024/1024, m.NumGC)
+	runtime.ReadMemStats(&stats)
+	fmt.Printf("Before allocation — Heap: %v MB, GC cycles: %v\n",
+		stats.HeapAlloc/1024/1024, stats.NumGC)
 
-	data := make([][]byte, 100000)
-	for i := range data {
-		data[i] = make([]byte, 1024)
+	data := make([][]byte, objectsCount)
+	for index := range data {
+		data[index] = make([]byte, objectSize)
 	}
 
-	runtime.ReadMemStats(&m)
-	fmt.Printf("After alloc — Heap: %v MB, GC cycles: %v\n",
-		m.HeapAlloc/1024/1024, m.NumGC)
+	runtime.ReadMemStats(&stats)
+	fmt.Printf("After allocation — Heap: %v MB, GC cycles: %v\n",
+		stats.HeapAlloc/1024/1024, stats.NumGC)
 
 	fmt.Println("Calling runtime.GC()...")
-	start := time.Now()
+	gcStart := time.Now()
 	runtime.GC()
-	fmt.Printf("GC took: %v\n", time.Since(start))
+	fmt.Printf("GC duration: %v\n", time.Since(gcStart))
 
-	runtime.ReadMemStats(&m)
+	runtime.ReadMemStats(&stats)
 	fmt.Printf("After GC — Heap: %v MB, GC cycles: %v\n",
-		m.HeapAlloc/1024/1024, m.NumGC)
+		stats.HeapAlloc/1024/1024, stats.NumGC)
 
 	_ = data
-	time.Sleep(1 * time.Second)
+
+	time.Sleep(time.Second)
 }
