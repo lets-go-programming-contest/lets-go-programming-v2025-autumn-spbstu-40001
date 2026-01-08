@@ -29,8 +29,22 @@ func main() {
 			sc.Scan()
 			parts := strings.Split(sc.Text(), " ")
 			t, _ := strconv.Atoi(parts[1])
-			op := parts[0]
-			fmt.Printf("%s %d\n", op, t)
+
+			if parts[0] == ">=" {
+				if t > low {
+					low = t
+				}
+			} else {
+				if t < high {
+					high = t
+				}
+			}
+
+			if low > high {
+				fmt.Println(-1)
+			} else {
+				fmt.Println(low)
+			}
 		}
 	}
 }
