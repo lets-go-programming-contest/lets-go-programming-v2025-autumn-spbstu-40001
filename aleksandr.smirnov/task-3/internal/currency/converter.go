@@ -8,9 +8,7 @@ import (
 	"strings"
 )
 
-var (
-	ErrBankIsNil = errors.New("bank is nil")
-)
+var ErrBankIsNil = errors.New("bank is nil")
 
 func ConvertValues(bank *Bank) (outputList, error) {
 	if bank == nil {

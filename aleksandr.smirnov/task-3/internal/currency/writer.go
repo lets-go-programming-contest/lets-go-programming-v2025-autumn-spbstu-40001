@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 )
 
+const dirPerm = 0o755
+
 func (list outputList) WriteJSON(w io.Writer) error {
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "  ")
@@ -22,7 +24,7 @@ func (list outputList) WriteJSON(w io.Writer) error {
 func (list outputList) WriteJSONFile(path string) error {
 	dir := filepath.Dir(path)
 	if dir != "" && dir != "." {
-		if err := os.MkdirAll(dir, 0o755); err != nil {
+		if err := os.MkdirAll(dir, dirPerm); err != nil {
 			return fmt.Errorf("create directory %s: %w", dir, err)
 		}
 	}
