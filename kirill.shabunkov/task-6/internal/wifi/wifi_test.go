@@ -5,7 +5,7 @@ import (
 	"net"
 	"testing"
 
-	"kirill.shabunkov/task-6/internal/wifi"
+	"github.com/Kirill2155/task-6/internal/wifi"
 
 	mdwifi "github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/assert"
