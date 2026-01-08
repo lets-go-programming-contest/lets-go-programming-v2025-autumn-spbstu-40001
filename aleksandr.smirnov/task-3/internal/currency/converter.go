@@ -2,6 +2,7 @@ package currency
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -30,4 +31,10 @@ func ConvertValues(bank *Bank) (outputList, error) {
 	}
 
 	return result, nil
+}
+
+func (list outputList) SortDesc() {
+	sort.Slice(list, func(i, j int) bool {
+		return list[i].Value > list[j].Value
+	})
 }
