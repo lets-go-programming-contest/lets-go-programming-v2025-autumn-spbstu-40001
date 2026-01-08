@@ -25,6 +25,7 @@ func Load(path string) (*AppConfig, error) {
 		if closeErr != nil {
 			return nil, fmt.Errorf("failed to load config: %w", decodeErr)
 		}
+
 		return nil, fmt.Errorf("failed to load config: %w", decodeErr)
 	} else if closeErr != nil {
 		return nil, fmt.Errorf("failed to close config file: %w", closeErr)
@@ -35,9 +36,12 @@ func Load(path string) (*AppConfig, error) {
 
 func decodeConfig(r io.Reader) (*AppConfig, error) {
 	var cfg AppConfig
+
 	decoder := yaml.NewDecoder(r)
+
 	if err := decoder.Decode(&cfg); err != nil {
 		return nil, fmt.Errorf("cannot decode yaml: %w", err)
 	}
+
 	return &cfg, nil
 }

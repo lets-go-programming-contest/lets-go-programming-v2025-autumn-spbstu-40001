@@ -22,7 +22,7 @@ func (list outputList) WriteJSON(w io.Writer) error {
 func (list outputList) WriteJSONFile(path string) error {
 	dir := filepath.Dir(path)
 	if dir != "" && dir != "." {
-		if err := os.MkdirAll(dir, 0755); err != nil {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
 			return fmt.Errorf("create directory %s: %w", dir, err)
 		}
 	}

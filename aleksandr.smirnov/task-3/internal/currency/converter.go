@@ -1,15 +1,20 @@
 package currency
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strconv"
 	"strings"
 )
 
+var (
+	ErrBankIsNil = errors.New("bank is nil")
+)
+
 func ConvertValues(bank *Bank) (outputList, error) {
 	if bank == nil {
-		return nil, fmt.Errorf("bank is nil")
+		return nil, ErrBankIsNil
 	}
 
 	result := make(outputList, 0, len(bank.Items))

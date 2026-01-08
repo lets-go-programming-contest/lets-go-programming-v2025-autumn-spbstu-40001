@@ -12,5 +12,5 @@ func Err(op string, err error) {
 }
 
 func Close(name string, c io.Closer) {
-	Err(fmt.Sprintf("close %s", name), c.Close())
+	Err("close "+name, c.Close())
 }
