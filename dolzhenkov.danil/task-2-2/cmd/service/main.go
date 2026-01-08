@@ -2,10 +2,11 @@ package main
 
 import (
 	"container/heap"
+	"errors"
 	"fmt"
 )
 
-var ErrOfScan = fmt.Errorf("scan failed")
+var ErrOfScan = errors.New("scan failed")
 
 type MaxHeap []int
 
@@ -17,6 +18,7 @@ func (iHeap MaxHeap) Less(firstIndex, secondIndex int) bool {
 	if firstIndex < 0 || secondIndex < 0 || firstIndex >= len(iHeap) || secondIndex >= len(iHeap) {
 		panic("index out of range in less")
 	}
+
 	return iHeap[firstIndex] > iHeap[secondIndex]
 }
 
@@ -24,6 +26,7 @@ func (iHeap MaxHeap) Swap(firstIndex, secondIndex int) {
 	if firstIndex < 0 || secondIndex < 0 || firstIndex >= len(iHeap) || secondIndex >= len(iHeap) {
 		panic("index out of range in swap")
 	}
+
 	iHeap[firstIndex], iHeap[secondIndex] = iHeap[secondIndex], iHeap[firstIndex]
 }
 
@@ -32,22 +35,27 @@ func (iHeap *MaxHeap) Push(x any) {
 	if !ok {
 		panic("heap: Push of non-int value")
 	}
+
 	*iHeap = append(*iHeap, value)
 }
 
 func (iHeap *MaxHeap) Pop() any {
 	olhH := *iHeap
 	length := len(olhH)
+
 	if length == 0 {
 		return nil
 	}
+
 	last := olhH[length-1]
 	*iHeap = olhH[:length-1]
+
 	return last
 }
 
 func main() {
 	var countOfDishes int
+
 	_, err := fmt.Scan(&countOfDishes)
 	if err != nil {
 		fmt.Println("Invalid input of count of dishes:", err)
@@ -62,8 +70,9 @@ func main() {
 	dishHeap := &MaxHeap{}
 	heap.Init(dishHeap)
 
-	for i := 0; i < countOfDishes; i++ {
+	for range countOfDishes {
 		var rating int
+
 		_, err := fmt.Scan(&rating)
 		if err != nil {
 			fmt.Println("Invalid input of rating of dish:", err)
@@ -79,6 +88,7 @@ func main() {
 	}
 
 	var numOfPreference int
+
 	_, err = fmt.Scan(&numOfPreference)
 	if err != nil {
 		fmt.Println("Invalid input of num of preference:", err)
@@ -90,10 +100,16 @@ func main() {
 		return
 	}
 
-	for i := 0; i < numOfPreference-1; i++ {
+	for range numOfPreference - 1 {
 		heap.Pop(dishHeap)
 	}
 
-	kthLargest := heap.Pop(dishHeap).(int)
+	kthLargestRaw := heap.Pop(dishHeap)
+	kthLargest, ok := kthLargestRaw.(int)
+	if !ok {
+		fmt.Println("Type assertion failed")
+		return
+	}
+
 	fmt.Println(kthLargest)
 }
