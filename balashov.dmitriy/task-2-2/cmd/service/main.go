@@ -9,14 +9,15 @@ import (
 const (
 	objectsCount = 100_000
 	objectSize   = 1024
+	mbDivisor    = 1024 * 1024
 )
 
 func main() {
-	stats := runtime.MemStats{}
+	var stats runtime.MemStats
 
 	runtime.ReadMemStats(&stats)
 	fmt.Printf("Before allocation — Heap: %v MB, GC cycles: %v\n",
-		stats.HeapAlloc/1024/1024, stats.NumGC)
+		stats.HeapAlloc/mbDivisor, stats.NumGC)
 
 	data := make([][]byte, objectsCount)
 	for index := range data {
@@ -25,7 +26,7 @@ func main() {
 
 	runtime.ReadMemStats(&stats)
 	fmt.Printf("After allocation — Heap: %v MB, GC cycles: %v\n",
-		stats.HeapAlloc/1024/1024, stats.NumGC)
+		stats.HeapAlloc/mbDivisor, stats.NumGC)
 
 	fmt.Println("Calling runtime.GC()...")
 	gcStart := time.Now()
@@ -34,7 +35,7 @@ func main() {
 
 	runtime.ReadMemStats(&stats)
 	fmt.Printf("After GC — Heap: %v MB, GC cycles: %v\n",
-		stats.HeapAlloc/1024/1024, stats.NumGC)
+		stats.HeapAlloc/mbDivisor, stats.NumGC)
 
 	_ = data
 
