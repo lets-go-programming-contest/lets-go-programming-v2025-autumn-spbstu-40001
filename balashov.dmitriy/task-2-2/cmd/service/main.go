@@ -38,6 +38,5 @@ func main() {
 		stats.HeapAlloc/mbDivisor, stats.NumGC)
 
 	_ = data
-
 	time.Sleep(time.Second)
 }
