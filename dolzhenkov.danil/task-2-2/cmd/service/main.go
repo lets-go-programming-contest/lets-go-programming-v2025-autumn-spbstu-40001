@@ -6,10 +6,15 @@ import (
 	"fmt"
 )
 
-var ErrOfScan = errors.New("scan failed")
+var (
+	ErrOfScan       = errors.New("scan failed")
+	ErrInvalidRange = errors.New("value out of valid range")
+)
 
+// MaxHeap implements a max heap data structure.
 type MaxHeap []int
 
+// All methods use pointer receiver for consistency.
 func (h *MaxHeap) Len() int {
 	return len(*h)
 }
@@ -60,11 +65,11 @@ func readInt(prompt string, minValue, maxValue int) (int, error) {
 	_, err := fmt.Scan(&value)
 
 	if err != nil {
-		return 0, fmt.Errorf("invalid input of %s: %w", prompt, err)
+		return 0, fmt.Errorf("invalid input of %s: %w", prompt, ErrOfScan)
 	}
 
 	if value < minValue || value > maxValue {
-		return 0, fmt.Errorf("%s must be between %d and %d", prompt, minValue, maxValue)
+		return 0, fmt.Errorf("%s must be between %d and %d: %w", prompt, minValue, maxValue, ErrInvalidRange)
 	}
 
 	return value, nil
