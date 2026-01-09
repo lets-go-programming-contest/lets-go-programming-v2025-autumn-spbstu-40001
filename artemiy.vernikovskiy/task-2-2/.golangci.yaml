@@ -1,0 +1,44 @@
+version: "2"
+run:
+  tests: true
+linters:
+  default: all
+  disable:
+    - depguard
+    - forbidigo
+    - mnd
+  settings:
+    cyclop:
+      max-complexity: 12
+    revive:
+      rules:
+        - name: duplicated-imports
+          severity: error
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+    rules:
+      - linters:
+          - ireturn
+        text: returns generic interface
+      - linters:
+          - revive
+        text: 'unexported-return: exported func .+ returns unexported type .+, which can be annoying to use'
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
